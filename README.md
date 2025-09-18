@@ -4,7 +4,7 @@
         alt="TaskForgeLogo" 
         width="200">
   <br>
-  TaskForge v1.0.0
+  TaskForge v0.0.1
   <br>
 </h1>
 
