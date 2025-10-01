@@ -43,5 +43,5 @@ jobs:
         shell: powershell
         run: |
           ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"Software-engineering-TaskForge_software-engineering-group-project" /o:"software-engineering-taskforge" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-          dotnet build "${{ github.workspace }}\TaskForge\TaskForge.sln"
+          dotnet build TaskForge
           ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
