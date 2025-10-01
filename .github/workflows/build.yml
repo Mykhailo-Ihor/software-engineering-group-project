@@ -2,7 +2,7 @@ name: SonarQube
 on:
   push:
     branches:
-      - setup/add-serilog
+      - dev
   pull_request:
     types: [opened, synchronize, reopened]
 jobs:
