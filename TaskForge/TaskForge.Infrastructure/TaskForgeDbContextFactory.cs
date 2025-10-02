@@ -1,9 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Configuration;
-using System.IO;
 using TaskForge.Infrastructure.Data;
 
 public class TaskForgeDbContextFactory : IDesignTimeDbContextFactory<TaskForgeDbContext>
