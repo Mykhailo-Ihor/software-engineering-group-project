@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Serilog;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,6 +20,7 @@ namespace TaskForge.WPF
         public MainWindow()
         {
             InitializeComponent();
+            Log.Information("Додаток запущено");
         }
     }
 }
