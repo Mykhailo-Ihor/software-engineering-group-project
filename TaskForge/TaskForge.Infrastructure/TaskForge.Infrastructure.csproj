@@ -15,4 +15,13 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\Configurations\" />
+    <Folder Include="Data\Migrations\" />
+    <Folder Include="Persistance\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Security\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+
 </Project>
