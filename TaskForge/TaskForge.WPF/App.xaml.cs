@@ -15,11 +15,11 @@ namespace TaskForge.WPF
         {
             // Налаштування глобального логера
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()  // Рівень логування (Debug, Information, Warning, Error, Fatal)
-                .WriteTo.Console()     // Виведення в консоль для розробки
-                .WriteTo.Seq("http://localhost:5341")  // Відправка в Seq (замініть URL, якщо інший)
-                .Enrich.WithMachineName()  // Додає назву машини до логів
-                .Enrich.WithThreadId()    // Додає ID потоку
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.Seq("http://localhost:5341")
+                .Enrich.WithMachineName()
+                .Enrich.WithThreadId()
                 .CreateLogger();
 
             base.OnStartup(e);
@@ -28,7 +28,7 @@ namespace TaskForge.WPF
         protected override void OnExit(ExitEventArgs e)
         {
             Log.Information("Додаток завершує роботу");
-            Log.CloseAndFlush();  // Закриваємо логер при виході
+            Log.CloseAndFlush();
             base.OnExit(e);
         }
     }
