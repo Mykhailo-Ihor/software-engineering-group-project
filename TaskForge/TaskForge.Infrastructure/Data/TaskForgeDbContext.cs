@@ -21,7 +21,9 @@
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Auth0UserId)
+                .IsUnique();
             modelBuilder.Entity<ProjectUser>()
                 .HasOne(pu => pu.User)
                 .WithMany(u => u.ProjectUsers)
