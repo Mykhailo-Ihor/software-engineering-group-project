@@ -1,15 +1,11 @@
-﻿using Duende.IdentityModel.OidcClient;
+﻿using Auth0.OidcClient;
+using Duende.IdentityModel.OidcClient;
+using Microsoft.Extensions.Configuration;
 using Serilog;
-using System.Text;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace TaskForge.WPF
 {
@@ -18,58 +14,90 @@ namespace TaskForge.WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        private LoginResult _loginResult;
-        public MainWindow()
-        {
-            InitializeComponent();
-            Log.Information("Додаток запущено");
-        }
+         private readonly Auth0Service _auth0Service;
+         private LoginResult _currentLoginResult;
 
-        private async void LoginButton_Click(object sender, RoutedEventArgs e)
-        {
-            _loginResult = await App.Auth0Client.LoginAsync();
+         public MainWindow()
+         {
+             InitializeComponent();
+             _auth0Service = new Auth0Service();
+         }
 
-            if (_loginResult.IsError)
-            {
-                MessageBox.Show($"Error: {_loginResult.Error}");
-                return;
-            }
+         private async void LoginButton_Click(object sender, RoutedEventArgs e)
+         {
+             try
+             {
+                 // Вимкнути кнопку під час логіну
+                 LoginButton.IsEnabled = false;
+                 StatusText.Text = "Відкриття браузера для входу...";
 
-            // Успішний логін - тепер доступні токени
-            MessageBox.Show("Login successful!");
-            // Оновіть UI, наприклад, сховайте кнопку логіну
-        }
+                 // Виконати логін
+                 _currentLoginResult = await _auth0Service.LoginAsync();
 
-        private async void LogoutButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_loginResult == null || _loginResult.IsError)
-            {
-                MessageBox.Show("Not logged in.");
-                return;
-            }
+                 if (_currentLoginResult.IsError)
+                 {
+                     StatusText.Text = $"Помилка: {_currentLoginResult.Error}";
+                     LoginButton.IsEnabled = true;
+                     return;
+                 }
 
-            await App.Auth0Client.LogoutAsync();
+                 // Відобразити інформацію про користувача
+                 ShowUserInfo(_currentLoginResult);
 
-            _loginResult = null;
-            UserProfileText.Text = "User Profile";
-            MessageBox.Show("Logout successful!");
-        }
+                 StatusText.Text = "Успішний вхід!";
+             }
+             catch (Exception ex)
+             {
+                 MessageBox.Show($"Помилка при вході: {ex.Message}", "Помилка",
+                     MessageBoxButton.OK, MessageBoxImage.Error);
+                 LoginButton.IsEnabled = true;
+                 StatusText.Text = "";
+             }
+         }
 
-        private void ShowProfileButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (_loginResult == null || _loginResult.IsError)
-            {
-                MessageBox.Show("Please login first.");
-                return;
-            }
+         private async void LogoutButton_Click(object sender, RoutedEventArgs e)
+         {
+             try
+             {
+                 LogoutButton.IsEnabled = false;
+                 StatusText.Text = "Вихід...";
 
-            // Отримати дані користувача з claims
-            var user = _loginResult.User;
-            var profile = $"Name: {user.FindFirst(c => c.Type == "name")?.Value}\n" +
-                          $"Email: {user.FindFirst(c => c.Type == "email")?.Value}\n" +
-                          $"Access Token: {_loginResult.AccessToken.Substring(0, 10)}...";  // Не показуйте повний токен
+                 await _auth0Service.LogoutAsync();
 
-            UserProfileText.Text = profile;
+                 // Очистити інформацію про користувача
+                 _currentLoginResult = null;
+
+                 StatusText.Text = "Ви вийшли з системи";
+             }
+             catch (Exception ex)
+             {
+                 MessageBox.Show($"Помилка при виході: {ex.Message}", "Помилка",
+                     MessageBoxButton.OK, MessageBoxImage.Error);
+                 LogoutButton.IsEnabled = true;
+             }
+         }
+
+         private void ShowUserInfo(LoginResult loginResult)
+         {
+             // Отримати дані користувача
+             var userName = _auth0Service.GetUserName(loginResult) ?? "Невідомо";
+             var userEmail = _auth0Service.GetUserEmail(loginResult) ?? "Невідомо";
+             var userId = _auth0Service.GetUserId(loginResult) ?? "Невідомо";
+
+             // Відобразити дані
+             UserNameText.Text = userName;
+             UserEmailText.Text = userEmail;
+             UserIdText.Text = userId;
+
+             // Перемкнути панелі
+             LoginPanel.Visibility = Visibility.Collapsed;
+             UserInfoPanel.Visibility = Visibility.Visible;
+             LoginButton.Visibility = Visibility.Collapsed;
+             LogoutButton.Visibility = Visibility.Visible;
+
+             // Якщо потрібно використовувати Access Token для API запитів:
+             // var accessToken = _auth0Service.GetAccessToken(loginResult);
+             // Console.WriteLine($"Access Token: {accessToken}");
+         }
         }
     }
-}

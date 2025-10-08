@@ -1,15 +1,14 @@
-﻿using Auth0.OidcClient;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Serilog;
 using System.IO;
+using System.Net.Http;
+using System.Text.Json;
 using System.Windows;
 
 namespace TaskForge.WPF
 {
     public partial class App : Application
     {
-        public static Auth0Client Auth0Client { get; private set; }
-
         protected override void OnStartup(StartupEventArgs e)
         {
             Log.Logger = new LoggerConfiguration()
@@ -21,21 +20,6 @@ namespace TaskForge.WPF
                 .CreateLogger();
 
             base.OnStartup(e);
-
-            IConfiguration configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())  // Шлях до папки запуску (bin/Debug/netX.0)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)  // optional: false - файл обов'язковий
-                .Build();
-
-            string domain = configuration["Auth0:Domain"];
-            string clientId = configuration["Auth0:ClientId"];
-            Auth0Client = new Auth0Client(new Auth0ClientOptions
-            {
-                Domain = domain,
-                ClientId = clientId,
-                RedirectUri = "http://localhost/callback",
-                PostLogoutRedirectUri = "http://localhost"
-            });
         }
 
         protected override void OnExit(ExitEventArgs e)
