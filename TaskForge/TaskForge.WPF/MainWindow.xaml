@@ -7,6 +7,11 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Content="Login" Click="LoginButton_Click" Width="200" Margin="10"/>
+            <Button Content="Logout" Click="LogoutButton_Click" Width="200" Margin="10"/>
+            <Button Content="Show Profile" Click="ShowProfileButton_Click" Width="200" Margin="10"/>
+            <TextBlock x:Name="UserProfileText" Text="User Profile" Margin="10"/>
+        </StackPanel>
     </Grid>
 </Window>
