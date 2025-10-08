@@ -4,11 +4,35 @@ using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
-
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using System;
+using TaskForge.Infrastructure.Repositories;
+using TaskForge.Infrastructure.Data;
 namespace TaskForge.WPF
 {
     public partial class App : Application
     {
+        private IServiceProvider _serviceProvider;
+
+        public App()
+        {
+            var services = new ServiceCollection();
+
+            // Register services
+            services.AddSingleton<Auth0Service>();
+            services.AddSingleton<UserRepository>();
+
+            // Register DbContext
+            services.AddDbContext<TaskForgeDbContext>(options =>
+                options.UseSqlServer("Server=localhost,1433;Database=taskforgelocal;User Id=sa;Password=passworD1#;TrustServerCertificate=True;Max Pool Size=200;Min Pool Size=5;Command Timeout=30;Pooling=true;"));
+
+            // Register MainWindow
+            services.AddTransient<MainWindow>();
+
+            _serviceProvider = services.BuildServiceProvider();
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             Log.Logger = new LoggerConfiguration()
@@ -20,6 +44,9 @@ namespace TaskForge.WPF
                 .CreateLogger();
 
             base.OnStartup(e);
+
+            var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Show();
         }
 
         protected override void OnExit(ExitEventArgs e)

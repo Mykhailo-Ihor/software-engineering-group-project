@@ -1,7 +1,6 @@
 ﻿using Auth0.OidcClient;
 using Duende.IdentityModel.OidcClient;
 using Duende.IdentityModel.OidcClient.Browser;
-//using IdentityModel.OidcClient;
 using System;
 using System.Threading.Tasks;
 
@@ -13,10 +12,9 @@ namespace TaskForge.WPF
 
         public Auth0Service()
         {
-            // Замініть на ваші дані з Auth0 Dashboard
             var options = new Auth0ClientOptions
             {
-                Domain = "dev-4o6nraj4dugki1zl.us.auth0.com", // Наприклад: myapp.eu.auth0.com
+                Domain = "dev-4o6nraj4dugki1zl.us.auth0.com",
                 ClientId = "dbNBZAMnuH3rYesM83BmaK1VTQgeayzL",
                 RedirectUri = "http://localhost/callback",
                 PostLogoutRedirectUri = "http://localhost",
@@ -27,7 +25,7 @@ namespace TaskForge.WPF
         }
 
         /// <summary>
-        /// Логін користувача (відкриває браузер для Auth0 Universal Login)
+        /// Логін користувача
         /// </summary>
         public async Task<LoginResult> LoginAsync()
         {

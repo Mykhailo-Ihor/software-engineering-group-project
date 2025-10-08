@@ -8,7 +8,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <TextBlock Grid.Row="0" 
-                   Text="Auth0 Аутентифікація" 
+                   Text="Аутентифікація" 
                    FontSize="24" 
                    FontWeight="Bold"
                    HorizontalAlignment="Center"
@@ -59,7 +59,7 @@
                        Margin="0,0,0,20"
                        TextWrapping="Wrap"/>
 
-            <TextBlock Text="Натисніть кнопку нижче для входу або реєстрації" 
+            <TextBlock Text="Натисніть кнопку вище для входу або реєстрації" 
                        HorizontalAlignment="Center"
                        Foreground="Gray"
                        TextWrapping="Wrap"

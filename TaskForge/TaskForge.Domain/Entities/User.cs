@@ -22,7 +22,7 @@ public class User
     public string Email { get; set; }
 
     [Required]
-    public string PasswordHash { get; set; }
+    public string Auth0UserId { get; set; }
 
     [InverseProperty(nameof(ProjectUser.User))]
     public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
