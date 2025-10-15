@@ -29,6 +29,7 @@ public class ProjectService : IProjectService
             Id = p.Id,
             Name = p.Name,
             Description = p.Description,
+            Status = p.Status,
             UserRoleInProject = p.ProjectUsers
                                  .FirstOrDefault(pu => pu.UserId == userId)?
                                  .Role.ToString() ?? "Unknown"

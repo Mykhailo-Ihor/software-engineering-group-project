@@ -57,30 +57,80 @@
                         </StackPanel>
                     </Border>
 
-                    <StackPanel HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <StackPanel HorizontalAlignment="Stretch" Margin="0,20,0,0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Button x:Name="CreateProjectButton"
                                     Content="Створити проект"
                                     Height="40"
                                     Width="150"
                                     FontSize="14"
+                                    Background="#2196F3"
+                                    Foreground="White"
+                                    BorderThickness="0"
                                     Click="CreateProjectButton_Click"
-                                    Margin="0,0,10,0"/>
+                                    Margin="0,0,10,0">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="5"
+                                                        BorderThickness="0">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#1976D2"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
 
                             <Button x:Name="ViewProjectsButton"
                                     Content="Переглянути мої проекти"
                                     Height="40"
-                                    Width="200"
+                                    Width="180"
                                     FontSize="14"
-                                    Click="ViewProjectsButton_Click"/>
+                                    Background="#009688"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Click="ViewProjectsButton_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="5"
+                                                        BorderThickness="0">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#00796B"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
                         </StackPanel>
                         
                         <ListView x:Name="ProjectsListView"
                                   Margin="0,15,0,0"
                                   Visibility="Collapsed"
                                   MaxHeight="400"
-                                  BorderThickness="1"
-                                  BorderBrush="LightGray"
+                                  BorderThickness="0"
+                                  Background="GhostWhite"
                                   HorizontalContentAlignment="Stretch">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
@@ -100,7 +150,39 @@
                                                 </TextBlock>
                                             </StackPanel>
 
-                                            <!-- під кнопку -->
+                                            <Button Grid.Column="1" 
+                                                    Content="Створити завдання"
+                                                    Background="Gray"
+                                                    Foreground="White"
+                                                    Height="30"
+                                                    Width="120"
+                                                    FontSize="12"
+                                                    BorderThickness="0"
+                                                    VerticalAlignment="Center"
+                                                    Click="AddTaskToProject_Click"
+                                                    Tag="{Binding Id}">
+                                                <Button.Style>
+                                                    <Style TargetType="Button">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="Button">
+                                                                    <Border Background="{TemplateBinding Background}"
+                                                                            CornerRadius="5"
+                                                                            BorderThickness="0">
+                                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                            VerticalAlignment="Center"/>
+                                                                    </Border>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Style.Triggers>
+                                                            <Trigger Property="IsMouseOver" Value="True">
+                                                                <Setter Property="Background" Value="#00796B"/>
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Button.Style>
+                                            </Button>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -207,15 +289,42 @@
                     <TextBlock Text="Термін виконання:" Margin="0,0,0,5"/>
                     <DatePicker x:Name="TaskDueDateBox" Margin="0,0,0,15"/>
                     <TextBlock x:Name="SelectedAssigneesText" Text="Виконавці: не обрано" Margin="0,0,0,5" Foreground="Gray"/>
-                    <Button Content="Призначити виконавців" Click="AssignUsersButton_Click" Margin="0,0,0,20"/>
+                    <Button Content="Призначити виконавців" 
+                            Click="AssignUsersButton_Click" 
+                            Margin="0,0,0,20"
+                            Width="360" Height="35"
+                            Background="#2196F3"
+                            Foreground="White"
+                            BorderThickness="0"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Створити" Width="100" Margin="0,0,10,0" Click="TaskModalOk_Click"/>
-                        <Button Content="Скасувати" Width="100" Click="TaskModalCancel_Click" IsCancel="True"/>
+                        <Button Content="Створити" Width="80" Height="35" Margin="0,0,10,0" Background="#4CAF50" Foreground="White" BorderThickness="0" Click="TaskModalOk_Click"/>
+                        <Button Content="Скасувати" Width="80" Height="35" Margin="0,0,10,0" Background="Gray" Foreground="White" BorderThickness="0" Click="TaskModalCancel_Click" IsCancel="True"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
         </Grid>
-        
-    <!-- під кнопку модалка -->
+
+        <Grid x:Name="AssignUsersModalOverlay" 
+              Grid.RowSpan="3"
+              Visibility="Collapsed" 
+              Background="#99000000" 
+              Panel.ZIndex="102">
+            <Border Background="White" CornerRadius="10" Padding="20" Width="300" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Вибрати виконавців" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+                    <ListBox x:Name="UsersForAssignmentListBox" Height="200" Margin="0,0,0,15">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding FullName}" Tag="{Binding Id}" IsChecked="{Binding IsSelected}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Зберегти" Width="100" Height="35" Margin="0,0,10,0" Background="#4CAF50" Foreground="White" BorderThickness="0" Click="AssignUsersSave_Click"/>
+                        <Button Content="Скасувати" Width="100" Height="35" Margin="0,0,10,0" Background="Gray" Foreground="White" BorderThickness="0" Click="AssignUsersCancel_Click" IsCancel="True"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
