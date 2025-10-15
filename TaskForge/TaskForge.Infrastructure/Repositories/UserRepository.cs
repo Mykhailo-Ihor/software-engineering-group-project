@@ -13,30 +13,35 @@ public class UserRepository
         _context = context;
     }
 
-    public async Task<bool> AddUserFromAuth0ResponseAsync(string firstName, string lastName, string email, string auth0UserId)
-    {
-        var existingUser = await GetUserByAuth0IdAsync(auth0UserId);
-        if (existingUser != null)
+        public async Task AddUserFromAuth0ResponseAsync(string firstName, string lastName, string email, string auth0Id)
         {
-            return false;
+            var userExists = await _context.Users.AnyAsync(u => u.Auth0UserId == auth0Id);
+
+            if (!userExists)
+            {
+                var newUser = new User
+                {
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Email = email,
+                    Auth0UserId = auth0Id
+                };
+                _context.Users.Add(newUser);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        var user = new User
+        public async Task<User?> GetUserByAuth0IdAsync(string auth0Id)
         {
-            FirstName = firstName,
-            LastName = lastName,
-            Email = email,
-            Auth0UserId = auth0UserId
-        };
+            return await _context.Users.FirstOrDefaultAsync(u => u.Auth0UserId == auth0Id);
+        }
 
-        await _context.Users.AddAsync(user);
-        await _context.SaveChangesAsync();
-
-        return true;
-    }
-
-    public async Task<User?> GetUserByAuth0IdAsync(string auth0UserId)
+    public async Task<List<User>> GetUsersByProjectIdAsync(int projectId)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Auth0UserId == auth0UserId);
+        return await _context.ProjectUsers
+            .Where(pu => pu.ProjectId == projectId)
+            .Select(pu => pu.User)
+            .Distinct()
+            .ToListAsync();
     }
 }

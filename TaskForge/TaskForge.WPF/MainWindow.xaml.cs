@@ -6,9 +6,11 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
-using TaskForge.Infrastructure.Repositories; // Add namespace for UserRepository
+using System.Windows.Controls;
+using TaskForge.Infrastructure.Repositories; 
 using TaskForge.Domain.Enums;
 using TaskForge.Application.Services;
+
 
 namespace TaskForge.WPF
 {
@@ -18,17 +20,20 @@ namespace TaskForge.WPF
     public partial class MainWindow : Window
     {
         private readonly Auth0Service _auth0Service;
-        private readonly UserRepository _userRepository; // Add UserRepository field
+        private readonly UserRepository _userRepository;
         private readonly ProjectRepository _projectRepository;
+        private readonly TaskRepository _taskRepository;
         private LoginResult _currentLoginResult;
+        private List<int> _selectedAssigneeIds = new List<int>();
         private readonly IProjectService _projectService;
 
-        public MainWindow(Auth0Service auth0Service, UserRepository userRepository, ProjectRepository projectRepository, IProjectService projectService)
+        public MainWindow(Auth0Service auth0Service, UserRepository userRepository, ProjectRepository projectRepository, TaskRepository taskRepository, IProjectService projectService)
         {
             InitializeComponent();
             _auth0Service = auth0Service;
-            _userRepository = userRepository; // Initialize UserRepository
+            _userRepository = userRepository; 
             _projectRepository = projectRepository;
+            _taskRepository = taskRepository;
             _projectService = projectService;
         }
 
@@ -48,20 +53,16 @@ namespace TaskForge.WPF
                     return;
                 }
 
-                // Extract user details
                 var userName = _auth0Service.GetUserName(_currentLoginResult) ?? "Невідомо";
                 var userEmail = _auth0Service.GetUserEmail(_currentLoginResult) ?? "Невідомо";
                 var userId = _auth0Service.GetUserId(_currentLoginResult) ?? "Невідомо";
 
-                // Split userName into firstName and lastName
                 var nameParts = userName.Split(' ', 2);
                 var firstName = nameParts.Length > 0 ? nameParts[0] : "";
                 var lastName = nameParts.Length > 1 ? nameParts[1] : "";
 
-                // Add user to the database
                 await _userRepository.AddUserFromAuth0ResponseAsync(firstName, lastName, userEmail, userId);
 
-                // Show user info
                 ShowUserInfo(_currentLoginResult);
                 
                 StatusText.Text = "Успішний вхід!";
@@ -84,19 +85,16 @@ namespace TaskForge.WPF
 
                 await _auth0Service.LogoutAsync();
 
-                // Очистити інформацію про користувача
                 _currentLoginResult = null;
                 UserNameText.Text = string.Empty;
                 UserEmailText.Text = string.Empty;
                 UserIdText.Text = string.Empty;
 
-                // Перемкнути панелі
                 UserInfoPanel.Visibility = Visibility.Collapsed;
                 LoginPanel.Visibility = Visibility.Visible;
                 LogoutButton.Visibility = Visibility.Collapsed;
                 LoginButton.Visibility = Visibility.Visible;
 
-                // Увімкнути кнопку логіну
                 LoginButton.IsEnabled = true;
 
                 StatusText.Text = "Ви вийшли з системи";
@@ -111,25 +109,19 @@ namespace TaskForge.WPF
 
         private void ShowUserInfo(LoginResult loginResult)
         {
-            // Отримати дані користувача
             var userName = _auth0Service.GetUserName(loginResult) ?? "Невідомо";
             var userEmail = _auth0Service.GetUserEmail(loginResult) ?? "Невідомо";
             var userId = _auth0Service.GetUserId(loginResult) ?? "Невідомо";
 
-            // Відобразити дані
             UserNameText.Text = userName;
             UserEmailText.Text = userEmail;
             UserIdText.Text = userId;
 
-            // Перемкнути панелі
             LoginPanel.Visibility = Visibility.Collapsed;
             UserInfoPanel.Visibility = Visibility.Visible;
             LoginButton.Visibility = Visibility.Collapsed;
             LogoutButton.Visibility = Visibility.Visible;
             LogoutButton.IsEnabled = true;
-            // Якщо потрібно використовувати Access Token для API запитів:
-            // var accessToken = _auth0Service.GetAccessToken(loginResult);
-            // Console.WriteLine($"Access Token: {accessToken}");
         }
 
         private void CreateProjectButton_Click(object sender, RoutedEventArgs e)
@@ -191,7 +183,10 @@ namespace TaskForge.WPF
                 }
                 var currentUserId = user.Id;
                 var userProjects = await _projectService.GetUserProjectsAsync(currentUserId);
-                ProjectsListView.ItemsSource = userProjects;
+                
+                ProjectsListView.ItemsSource = userProjects; 
+                ProjectsListView.Visibility = Visibility.Visible;
+
                 if (!userProjects.Any())
                 {
                     MessageBox.Show("У вас ще немає жодного проєкту. Спробуйте створити новий!");
@@ -202,5 +197,44 @@ namespace TaskForge.WPF
                 MessageBox.Show($"Помилка завантаження проєктів: {ex.Message}");
             }
         }
+
+        private async void AddTaskToProject_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag == null) return;
+            
+            var projectId = (int)button.Tag;
+
+            var auth0Id = _auth0Service.GetUserId(_currentLoginResult);
+            var currentUser = await _userRepository.GetUserByAuth0IdAsync(auth0Id);
+            if (currentUser == null) return;
+
+            var userProjects = await _projectRepository.GetProjectsForUserAsync(currentUser.Id);
+            TaskProjectComboBox.ItemsSource = userProjects;
+            
+            TaskProjectComboBox.SelectedValue = projectId;
+
+            TaskTitleBox.Text = "";
+            TaskDescriptionBox.Text = "";
+            TaskDueDateBox.SelectedDate = DateTime.Now.AddDays(1);
+            _selectedAssigneeIds.Clear();
+            SelectedAssigneesText.Text = "Виконавці: не обрано";
+
+            TaskModalOverlay.Visibility = Visibility.Visible;
+        }
+
+        // сюда або не сюда місце під кнопки для асайну юзера на таску
+        
+
+        private void TaskModalCancel_Click(object sender, RoutedEventArgs e)
+        {
+            TaskModalOverlay.Visibility = Visibility.Collapsed;
+        }
+
     }
+    public class UserSelectionViewModel
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }
+        public bool IsSelected { get; set; }
+    }        
 }
