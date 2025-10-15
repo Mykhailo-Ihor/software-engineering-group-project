@@ -36,10 +36,9 @@ namespace TaskForge.Tests
             var repo = new UserRepository(context);
 
             // Act
-            var result = await repo.AddUserFromAuth0ResponseAsync("Alice", "Wonder", "alice@example.com", "auth0|789");
+            await repo.AddUserFromAuth0ResponseAsync("Alice", "Wonder", "alice@example.com", "auth0|789");
 
             // Assert
-            Assert.True(result);
             Assert.Contains(context.Users, u => u.Auth0UserId == "auth0|789");
         }
 
@@ -54,10 +53,11 @@ namespace TaskForge.Tests
             var repo = new UserRepository(context);
 
             // Act
-            var result = await repo.AddUserFromAuth0ResponseAsync("John", "Doe", "john@example.com", "auth0|123");
+            await repo.AddUserFromAuth0ResponseAsync("John", "Doe", "john@example.com", "auth0|123");
 
             // Assert
-            Assert.False(result);
+            Assert.Equal(2, context.Users.Count());
+            Assert.Equal(1, context.Users.Count(u => u.Auth0UserId == "auth0|123"));
         }
 
         [Fact]
