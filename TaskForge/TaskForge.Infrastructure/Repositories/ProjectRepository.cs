@@ -40,13 +40,16 @@ public class ProjectRepository:IProjectRepository
 
     public async Task<IEnumerable<Project>> GetProjectsByUserIdAsync(int userId)
     {
-        // We find all projects where the ProjectUsers navigation property contains
-        // any link with the specified UserId.
-        // We also use Include to load the related ProjectUsers data. 
-        // This is crucial for determining the user's role in the Application layer.
         return await _context.Projects
             .Include(p => p.ProjectUsers)
             .Where(p => p.ProjectUsers.Any(pu => pu.UserId == userId))
             .ToListAsync();
     }
+    public async Task<List<Project>> GetProjectsForUserAsync(int userId)
+        {
+            return await _context.ProjectUsers
+                .Where(pu => pu.UserId == userId)
+                .Select(pu => pu.Project)
+                .ToListAsync();
+        }
 }

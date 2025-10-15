@@ -24,6 +24,7 @@ namespace TaskForge.WPF
             services.AddSingleton<Auth0Service>();
             services.AddSingleton<UserRepository>();
             services.AddSingleton<ProjectRepository>();
+            services.AddSingleton<TaskRepository>();
             services.AddSingleton<IProjectService, ProjectService>(); 
             services.AddSingleton<IProjectRepository, ProjectRepository>(); 
 
