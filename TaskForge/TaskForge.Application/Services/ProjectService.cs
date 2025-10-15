@@ -23,7 +23,7 @@ public class ProjectService : IProjectService
     {
         var projects = await _projectRepository.GetProjectsByUserIdAsync(userId);
 
-        // Map the domain entities to DTOs for the UI layer.
+        // Як буде час замінити на автомапер
         return projects.Select(p => new ProjectDto
         {
             Id = p.Id,
