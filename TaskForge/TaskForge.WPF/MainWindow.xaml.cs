@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using TaskForge.Infrastructure.Repositories; // Add namespace for UserRepository
+using TaskForge.Domain.Enums;
 
 namespace TaskForge.WPF
 {
@@ -17,13 +18,15 @@ namespace TaskForge.WPF
     {
         private readonly Auth0Service _auth0Service;
         private readonly UserRepository _userRepository; // Add UserRepository field
+        private readonly ProjectRepository _projectRepository;
         private LoginResult _currentLoginResult;
 
-        public MainWindow(Auth0Service auth0Service, UserRepository userRepository)
+        public MainWindow(Auth0Service auth0Service, UserRepository userRepository, ProjectRepository projectRepository)
         {
             InitializeComponent();
             _auth0Service = auth0Service;
             _userRepository = userRepository; // Initialize UserRepository
+            _projectRepository = projectRepository;
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -57,7 +60,7 @@ namespace TaskForge.WPF
 
                 // Show user info
                 ShowUserInfo(_currentLoginResult);
-
+                
                 StatusText.Text = "Успішний вхід!";
             }
             catch (Exception ex)
@@ -120,11 +123,52 @@ namespace TaskForge.WPF
             UserInfoPanel.Visibility = Visibility.Visible;
             LoginButton.Visibility = Visibility.Collapsed;
             LogoutButton.Visibility = Visibility.Visible;
-
+            LogoutButton.IsEnabled = true;
             // Якщо потрібно використовувати Access Token для API запитів:
             // var accessToken = _auth0Service.GetAccessToken(loginResult);
             // Console.WriteLine($"Access Token: {accessToken}");
         }
-    }
 
+        private void CreateProjectButton_Click(object sender, RoutedEventArgs e)
+        {
+            ProjectModalOverlay.Visibility = Visibility.Visible;
+            ProjectNameBox.Text = string.Empty;
+            ProjectStatusBox.Text = "Active";
+            ProjectDescriptionBox.Text = string.Empty;
+        }
+
+        private async void ProjectModalOk_Click(object sender, RoutedEventArgs e)
+        {
+            var name = ProjectNameBox.Text.Trim();
+            var status = ProjectStatusBox.Text.Trim();
+            var description = ProjectDescriptionBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(status))
+            {
+                MessageBox.Show("Будь ласка, заповніть всі обов'язкові поля.");
+                return;
+            }
+            if (_currentLoginResult == null)
+            {
+                MessageBox.Show("Будь ласка, увійдіть, щоб створити проект.");
+                ProjectModalOverlay.Visibility = Visibility.Collapsed;
+                return;
+            }
+            var userId = _auth0Service.GetUserId(_currentLoginResult);
+            var user = await _userRepository.GetUserByAuth0IdAsync(userId);
+            if (user == null)
+            {
+                MessageBox.Show("Користувача не знайдено в базі даних.");
+                ProjectModalOverlay.Visibility = Visibility.Collapsed;
+                return;
+            }
+            await _projectRepository.CreateProjectForUserAsync(name, status, description, user.Id, TaskForge.Domain.Enums.Role.Moderator);
+            MessageBox.Show($"Проект '{name}' створено!", "Успіх");
+            ProjectModalOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void ProjectModalCancel_Click(object sender, RoutedEventArgs e)
+        {
+            ProjectModalOverlay.Visibility = Visibility.Collapsed;
+        }
+    }
 }

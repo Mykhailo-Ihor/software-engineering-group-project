@@ -23,6 +23,6 @@ public class Project
     [InverseProperty(nameof(ProjectUser.Project))]
     public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
 
-    [InverseProperty(nameof(Task.Project))]
-    public ICollection<Task> Tasks { get; set; } = new List<Task>();
+    [InverseProperty(nameof(TaskEntity.Project))]
+    public ICollection<TaskEntity> Tasks { get; set; } = new List<TaskEntity>();
 }

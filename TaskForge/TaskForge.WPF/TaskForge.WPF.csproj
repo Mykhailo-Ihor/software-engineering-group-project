@@ -41,7 +41,6 @@
     <Folder Include="Behaviors\" />
     <Folder Include="Converters\" />
     <Folder Include="Resources\Styles\" />
-    <Folder Include="Services\" />
     <Folder Include="VIewModels\" />
     <Folder Include="Views\" />
   </ItemGroup>
