@@ -1,28 +1,29 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace TaskForge.Domain.Entities;
-
-[Table("Projects")]
-public class Project
+namespace TaskForge.Domain.Entities
 {
-    [Key]
-    public int Id { get; set; }
+    [Table("Projects")]
+    public class Project
+    {
+        [Key]
+        public int Id { get; set; }
 
-    [Required]
-    [MaxLength(100)]
-    public string Name { get; set; }
+        [Required]
+        [MaxLength(100)]
+        public string Name { get; set; }
 
-    [Required]
-    [MaxLength(50)]
-    public string Status { get; set; }
+        [Required]
+        [MaxLength(50)]
+        public string Status { get; set; }
 
-    [MaxLength(500)]
-    public string Description { get; set; }
+        [MaxLength(500)]
+        public string Description { get; set; }
 
-    [InverseProperty(nameof(ProjectUser.Project))]
-    public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
+        [InverseProperty(nameof(ProjectUser.Project))]
+        public ICollection<ProjectUser> ProjectUsers { get; set; } = new List<ProjectUser>();
 
-    [InverseProperty(nameof(TaskEntity.Project))]
-    public ICollection<TaskEntity> Tasks { get; set; } = new List<TaskEntity>();
+        [InverseProperty(nameof(TaskEntity.Project))]
+        public ICollection<TaskEntity> Tasks { get; set; } = new List<TaskEntity>();
+    }
 }
