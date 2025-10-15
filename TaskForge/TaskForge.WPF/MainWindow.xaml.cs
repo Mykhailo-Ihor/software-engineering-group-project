@@ -222,8 +222,73 @@ namespace TaskForge.WPF
             TaskModalOverlay.Visibility = Visibility.Visible;
         }
 
-        // сюда або не сюда місце під кнопки для асайну юзера на таску
-        
+        private async void AssignUsersButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (TaskProjectComboBox.SelectedValue == null)
+            {
+                MessageBox.Show("Будь ласка, спочатку виберіть проект.");
+                return;
+            }
+
+            var projectId = (int)TaskProjectComboBox.SelectedValue;
+            var projectUsers = await _userRepository.GetUsersByProjectIdAsync(projectId);
+
+            // Створюємо ViewModel для чекбоксів
+            var userSelectionVM = projectUsers.Select(u => new UserSelectionViewModel
+            {
+                Id = u.Id,
+                FullName = $"{u.FirstName} {u.LastName}",
+                IsSelected = _selectedAssigneeIds.Contains(u.Id) // Відновлюємо попередній вибір
+            }).ToList();
+
+            UsersForAssignmentListBox.ItemsSource = userSelectionVM;
+            AssignUsersModalOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void AssignUsersSave_Click(object sender, RoutedEventArgs e)
+        {
+            var selectedUsers = UsersForAssignmentListBox.ItemsSource as List<UserSelectionViewModel>;
+            if (selectedUsers == null) return;
+
+            _selectedAssigneeIds = selectedUsers
+                .Where(u => u.IsSelected)
+                .Select(u => u.Id)
+                .ToList();
+
+            SelectedAssigneesText.Text = $"Виконавці: обрано {_selectedAssigneeIds.Count}";
+            AssignUsersModalOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private void AssignUsersCancel_Click(object sender, RoutedEventArgs e)
+        {
+            AssignUsersModalOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private async void TaskModalOk_Click(object sender, RoutedEventArgs e)
+        {
+            if (TaskProjectComboBox.SelectedValue == null || string.IsNullOrWhiteSpace(TaskTitleBox.Text) || TaskDueDateBox.SelectedDate == null)
+            {
+                MessageBox.Show("Будь ласка, заповніть усі поля: проект, назва та термін виконання.");
+                return;
+            }
+
+            var projectId = (int)TaskProjectComboBox.SelectedValue;
+            var newTask = await _taskRepository.CreateTaskAsync(
+                TaskTitleBox.Text,
+                TaskDescriptionBox.Text,
+                TaskDueDateBox.SelectedDate.Value,
+                projectId
+            );
+
+            foreach (var userId in _selectedAssigneeIds)
+            {
+                await _taskRepository.AssignUserToTaskAsync(newTask.Id, userId);
+            }
+
+            MessageBox.Show($"Завдання '{newTask.Title}' успішно створено!", "Успіх");
+            TaskModalOverlay.Visibility = Visibility.Collapsed;
+        }
+
 
         private void TaskModalCancel_Click(object sender, RoutedEventArgs e)
         {

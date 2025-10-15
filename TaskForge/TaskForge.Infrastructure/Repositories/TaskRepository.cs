@@ -44,6 +44,62 @@ namespace TaskForge.Infrastructure.Repositories
             return task;
         }
 
-        // місце під асайн і анасайн тасок
+        /// <summary>
+        /// Призначає користувача на виконання завдання.
+        /// </summary>
+        /// <param name="taskId">ID завдання.</param>
+        /// <param name="userId">ID користувача.</param>
+        public async Task AssignUserToTaskAsync(int taskId, int userId)
+        {
+            // Перевіряємо, чи існують завдання та користувач
+            var taskExists = await _context.Tasks.AnyAsync(t => t.Id == taskId);
+            if (!taskExists)
+            {
+                throw new InvalidOperationException($"Завдання з ID {taskId} не знайдено.");
+            }
+
+            var userExists = await _context.Users.AnyAsync(u => u.Id == userId);
+            if (!userExists)
+            {
+                throw new InvalidOperationException($"Користувача з ID {userId} не знайдено.");
+            }
+
+            // Перевіряємо, чи користувач вже не призначений на це завдання
+            var isAlreadyAssigned = await _context.TaskUsers
+                .AnyAsync(tu => tu.TaskId == taskId && tu.UserId == userId);
+
+            if (isAlreadyAssigned)
+            {
+                // Можна або нічого не робити, або кидати виняток
+                return; // Користувач вже призначений
+            }
+
+            var taskUser = new TaskUser
+            {
+                TaskId = taskId,
+                UserId = userId
+            };
+
+            await _context.TaskUsers.AddAsync(taskUser);
+            await _context.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Знімає користувача із завдання.
+        /// </summary>
+        /// <param name="taskId">ID завдання.</param>
+        /// <param name="userId">ID користувача.</param>
+        public async Task UnassignUserFromTaskAsync(int taskId, int userId)
+        {
+            var assignment = await _context.TaskUsers
+                .FirstOrDefaultAsync(tu => tu.TaskId == taskId && tu.UserId == userId);
+
+            if (assignment != null)
+            {
+                _context.TaskUsers.Remove(assignment);
+                await _context.SaveChangesAsync();
+            }
+            // Якщо призначення не знайдено, нічого не робимо.
+        }
     }
 }
