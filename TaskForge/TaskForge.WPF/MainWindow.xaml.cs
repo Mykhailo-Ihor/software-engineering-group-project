@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using TaskForge.Infrastructure.Repositories; // Add namespace for UserRepository
 using TaskForge.Domain.Enums;
+using TaskForge.Application.Services;
 
 namespace TaskForge.WPF
 {
@@ -20,13 +21,15 @@ namespace TaskForge.WPF
         private readonly UserRepository _userRepository; // Add UserRepository field
         private readonly ProjectRepository _projectRepository;
         private LoginResult _currentLoginResult;
+        private readonly IProjectService _projectService;
 
-        public MainWindow(Auth0Service auth0Service, UserRepository userRepository, ProjectRepository projectRepository)
+        public MainWindow(Auth0Service auth0Service, UserRepository userRepository, ProjectRepository projectRepository, IProjectService projectService)
         {
             InitializeComponent();
             _auth0Service = auth0Service;
             _userRepository = userRepository; // Initialize UserRepository
             _projectRepository = projectRepository;
+            _projectService = projectService;
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -169,6 +172,35 @@ namespace TaskForge.WPF
         private void ProjectModalCancel_Click(object sender, RoutedEventArgs e)
         {
             ProjectModalOverlay.Visibility = Visibility.Collapsed;
+        }
+        private async void ViewProjectsButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_currentLoginResult == null || _currentLoginResult.IsError)
+                {
+                    MessageBox.Show("Будь ласка, увійдіть в систему, щоб переглянути проєкти.");
+                    return;
+                }
+                var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
+                var user = await _userRepository.GetUserByAuth0IdAsync(auth0UserId);
+                if (user == null)
+                {
+                    MessageBox.Show("Не вдалося знайти ваші дані в системі.");
+                    return;
+                }
+                var currentUserId = user.Id;
+                var userProjects = await _projectService.GetUserProjectsAsync(currentUserId);
+                ProjectsListView.ItemsSource = userProjects;
+                if (!userProjects.Any())
+                {
+                    MessageBox.Show("У вас ще немає жодного проєкту. Спробуйте створити новий!");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка завантаження проєктів: {ex.Message}");
+            }
         }
     }
 }
