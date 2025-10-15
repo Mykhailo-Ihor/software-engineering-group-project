@@ -15,5 +15,5 @@ public class TaskUser
 
     public int TaskId { get; set; }
     [ForeignKey(nameof(TaskId))]
-    public Task Task { get; set; }
+    public TaskEntity Task { get; set; }
 }

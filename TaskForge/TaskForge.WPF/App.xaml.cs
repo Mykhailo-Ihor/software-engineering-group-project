@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using System;
 using TaskForge.Infrastructure.Repositories;
 using TaskForge.Infrastructure.Data;
 namespace TaskForge.WPF
@@ -22,6 +21,7 @@ namespace TaskForge.WPF
             // Register services
             services.AddSingleton<Auth0Service>();
             services.AddSingleton<UserRepository>();
+            services.AddSingleton<ProjectRepository>();
 
             // Register DbContext
             services.AddDbContext<TaskForgeDbContext>(options =>

@@ -12,7 +12,7 @@
 
         public DbSet<User> Users { get; set; }
         public DbSet<Project> Projects { get; set; }
-        public DbSet<Task> Tasks { get; set; }
+        public DbSet<TaskEntity> Tasks { get; set; }
         public DbSet<Password> Passwords { get; set; }
         public DbSet<Expense> Expenses { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
