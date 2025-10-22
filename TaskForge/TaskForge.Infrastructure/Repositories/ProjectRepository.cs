@@ -52,4 +52,13 @@ public class ProjectRepository:IProjectRepository
                 .Select(pu => pu.Project)
                 .ToListAsync();
         }
+
+    public async Task<List<TaskEntity>> GetTasksByProjectIdAsync(int projectId)
+    {
+        return await _context.Tasks
+            .Where(t => t.ProjectId == projectId)
+            .Include(t => t.TaskUsers)
+            .ThenInclude(tu => tu.User)
+            .ToListAsync();
+    }
 }

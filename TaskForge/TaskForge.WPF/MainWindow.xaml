@@ -142,7 +142,28 @@
                                             </Grid.ColumnDefinitions>
 
                                             <StackPanel Grid.Column="0" Margin="0,0,15,0">
-                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#333"/>
+                                                <Button Background="Transparent" 
+                                                    BorderThickness="0" 
+                                                    Cursor="Hand"
+                                                    HorizontalAlignment="Left"
+                                                    Padding="0"
+                                                    Click="ProjectName_Click"
+                                                    Tag="{Binding Id}">
+                                                    <TextBlock Text="{Binding Name}" 
+                                                       FontWeight="Bold" 
+                                                       FontSize="16" 
+                                                       Foreground="#2196F3"
+                                                       TextDecorations="Underline"/>                
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Opacity" Value="0.7"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+                                                </Button>
                                                 <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="Gray" Margin="0,5,0,5"/>
                                                 <TextBlock FontSize="12">
                                                     <Run Text="Статус:" FontWeight="SemiBold"/>
@@ -150,39 +171,7 @@
                                                 </TextBlock>
                                             </StackPanel>
 
-                                            <Button Grid.Column="1" 
-                                                    Content="Створити завдання"
-                                                    Background="Gray"
-                                                    Foreground="White"
-                                                    Height="30"
-                                                    Width="120"
-                                                    FontSize="12"
-                                                    BorderThickness="0"
-                                                    VerticalAlignment="Center"
-                                                    Click="AddTaskToProject_Click"
-                                                    Tag="{Binding Id}">
-                                                <Button.Style>
-                                                    <Style TargetType="Button">
-                                                        <Setter Property="Template">
-                                                            <Setter.Value>
-                                                                <ControlTemplate TargetType="Button">
-                                                                    <Border Background="{TemplateBinding Background}"
-                                                                            CornerRadius="5"
-                                                                            BorderThickness="0">
-                                                                        <ContentPresenter HorizontalAlignment="Center"
-                                                                            VerticalAlignment="Center"/>
-                                                                    </Border>
-                                                                </ControlTemplate>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                        <Style.Triggers>
-                                                            <Trigger Property="IsMouseOver" Value="True">
-                                                                <Setter Property="Background" Value="#00796B"/>
-                                                            </Trigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </Button.Style>
-                                            </Button>
+                                            <!--тут була кнопка для додати завдання-->
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -272,59 +261,6 @@
             </Border>
         </Grid>
         
-        <Grid x:Name="TaskModalOverlay" 
-              Grid.RowSpan="3"
-              Visibility="Collapsed" 
-              Background="#80000000" 
-              Panel.ZIndex="101">
-            <Border Background="White" CornerRadius="10" Padding="20" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <StackPanel>
-                    <TextBlock Text="Створити нове завдання" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
-                    <TextBlock Text="Проект:" Margin="0,0,0,5"/>
-                    <ComboBox x:Name="TaskProjectComboBox" Margin="0,0,0,10" DisplayMemberPath="Name" SelectedValuePath="Id"/>
-                    <TextBlock Text="Назва завдання:" Margin="0,0,0,5"/>
-                    <TextBox x:Name="TaskTitleBox" Margin="0,0,0,10"/>
-                    <TextBlock Text="Опис:" Margin="0,0,0,5"/>
-                    <TextBox x:Name="TaskDescriptionBox" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,10"/>
-                    <TextBlock Text="Термін виконання:" Margin="0,0,0,5"/>
-                    <DatePicker x:Name="TaskDueDateBox" Margin="0,0,0,15"/>
-                    <TextBlock x:Name="SelectedAssigneesText" Text="Виконавці: не обрано" Margin="0,0,0,5" Foreground="Gray"/>
-                    <Button Content="Призначити виконавців" 
-                            Click="AssignUsersButton_Click" 
-                            Margin="0,0,0,20"
-                            Width="360" Height="35"
-                            Background="#2196F3"
-                            Foreground="White"
-                            BorderThickness="0"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Створити" Width="80" Height="35" Margin="0,0,10,0" Background="#4CAF50" Foreground="White" BorderThickness="0" Click="TaskModalOk_Click"/>
-                        <Button Content="Скасувати" Width="80" Height="35" Margin="0,0,10,0" Background="Gray" Foreground="White" BorderThickness="0" Click="TaskModalCancel_Click" IsCancel="True"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <Grid x:Name="AssignUsersModalOverlay" 
-              Grid.RowSpan="3"
-              Visibility="Collapsed" 
-              Background="#99000000" 
-              Panel.ZIndex="102">
-            <Border Background="White" CornerRadius="10" Padding="20" Width="300" VerticalAlignment="Center" HorizontalAlignment="Center">
-                <StackPanel>
-                    <TextBlock Text="Вибрати виконавців" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
-                    <ListBox x:Name="UsersForAssignmentListBox" Height="200" Margin="0,0,0,15">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <CheckBox Content="{Binding FullName}" Tag="{Binding Id}" IsChecked="{Binding IsSelected}"/>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Зберегти" Width="100" Height="35" Margin="0,0,10,0" Background="#4CAF50" Foreground="White" BorderThickness="0" Click="AssignUsersSave_Click"/>
-                        <Button Content="Скасувати" Width="100" Height="35" Margin="0,0,10,0" Background="Gray" Foreground="White" BorderThickness="0" Click="AssignUsersCancel_Click" IsCancel="True"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
+        <!--тут були модалки-->
     </Grid>
 </Window>

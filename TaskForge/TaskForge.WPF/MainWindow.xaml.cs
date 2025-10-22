@@ -7,9 +7,10 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using TaskForge.Infrastructure.Repositories; 
-using TaskForge.Domain.Enums;
+using TaskForge.Application.DTOs;
 using TaskForge.Application.Services;
+using TaskForge.Domain.Enums;
+using TaskForge.Infrastructure.Repositories; 
 
 
 namespace TaskForge.WPF
@@ -198,108 +199,31 @@ namespace TaskForge.WPF
             }
         }
 
-        private async void AddTaskToProject_Click(object sender, RoutedEventArgs e)
+        private void ProjectName_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button button || button.Tag == null) return;
-            
+
             var projectId = (int)button.Tag;
 
-            var auth0Id = _auth0Service.GetUserId(_currentLoginResult);
-            var currentUser = await _userRepository.GetUserByAuth0IdAsync(auth0Id);
-            if (currentUser == null) return;
+            var selectedProject = (ProjectsListView.ItemsSource as IEnumerable<ProjectDto>)?
+                .FirstOrDefault(p => p.Id == projectId);
 
-            var userProjects = await _projectRepository.GetProjectsForUserAsync(currentUser.Id);
-            TaskProjectComboBox.ItemsSource = userProjects;
-            
-            TaskProjectComboBox.SelectedValue = projectId;
-
-            TaskTitleBox.Text = "";
-            TaskDescriptionBox.Text = "";
-            TaskDueDateBox.SelectedDate = DateTime.Now.AddDays(1);
-            _selectedAssigneeIds.Clear();
-            SelectedAssigneesText.Text = "Виконавці: не обрано";
-
-            TaskModalOverlay.Visibility = Visibility.Visible;
-        }
-
-        private async void AssignUsersButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (TaskProjectComboBox.SelectedValue == null)
+            if (selectedProject == null)
             {
-                MessageBox.Show("Будь ласка, спочатку виберіть проект.");
+                MessageBox.Show("Не вдалося знайти проект");
                 return;
             }
 
-            var projectId = (int)TaskProjectComboBox.SelectedValue;
-            var projectUsers = await _userRepository.GetUsersByProjectIdAsync(projectId);
-
-            // Створюємо ViewModel для чекбоксів
-            var userSelectionVM = projectUsers.Select(u => new UserSelectionViewModel
-            {
-                Id = u.Id,
-                FullName = $"{u.FirstName} {u.LastName}",
-                IsSelected = _selectedAssigneeIds.Contains(u.Id) // Відновлюємо попередній вибір
-            }).ToList();
-
-            UsersForAssignmentListBox.ItemsSource = userSelectionVM;
-            AssignUsersModalOverlay.Visibility = Visibility.Visible;
-        }
-
-        private void AssignUsersSave_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedUsers = UsersForAssignmentListBox.ItemsSource as List<UserSelectionViewModel>;
-            if (selectedUsers == null) return;
-
-            _selectedAssigneeIds = selectedUsers
-                .Where(u => u.IsSelected)
-                .Select(u => u.Id)
-                .ToList();
-
-            SelectedAssigneesText.Text = $"Виконавці: обрано {_selectedAssigneeIds.Count}";
-            AssignUsersModalOverlay.Visibility = Visibility.Collapsed;
-        }
-
-        private void AssignUsersCancel_Click(object sender, RoutedEventArgs e)
-        {
-            AssignUsersModalOverlay.Visibility = Visibility.Collapsed;
-        }
-
-        private async void TaskModalOk_Click(object sender, RoutedEventArgs e)
-        {
-            if (TaskProjectComboBox.SelectedValue == null || string.IsNullOrWhiteSpace(TaskTitleBox.Text) || TaskDueDateBox.SelectedDate == null)
-            {
-                MessageBox.Show("Будь ласка, заповніть усі поля: проект, назва та термін виконання.");
-                return;
-            }
-
-            var projectId = (int)TaskProjectComboBox.SelectedValue;
-            var newTask = await _taskRepository.CreateTaskAsync(
-                TaskTitleBox.Text,
-                TaskDescriptionBox.Text,
-                TaskDueDateBox.SelectedDate.Value,
-                projectId
+            var detailsWindow = new ProjectDetailsWindow(
+                projectId,
+                selectedProject,
+                _projectRepository,
+                _taskRepository,
+                _userRepository,
+                _auth0Service,
+                _currentLoginResult
             );
-
-            foreach (var userId in _selectedAssigneeIds)
-            {
-                await _taskRepository.AssignUserToTaskAsync(newTask.Id, userId);
-            }
-
-            MessageBox.Show($"Завдання '{newTask.Title}' успішно створено!", "Успіх");
-            TaskModalOverlay.Visibility = Visibility.Collapsed;
+            detailsWindow.ShowDialog();
         }
-
-
-        private void TaskModalCancel_Click(object sender, RoutedEventArgs e)
-        {
-            TaskModalOverlay.Visibility = Visibility.Collapsed;
-        }
-
     }
-    public class UserSelectionViewModel
-    {
-        public int Id { get; set; }
-        public string FullName { get; set; }
-        public bool IsSelected { get; set; }
-    }        
 }
