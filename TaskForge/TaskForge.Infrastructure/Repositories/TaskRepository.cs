@@ -101,5 +101,25 @@ namespace TaskForge.Infrastructure.Repositories
             }
             // Якщо призначення не знайдено, нічого не робимо.
         }
+        /// <summary>
+        /// Видаляє завдання за його ID.
+        /// </summary>
+        /// <param name="taskId">ID завдання, яке потрібно видалити.</param>
+        /// <returns>Повертає true, якщо завдання було знайдено та видалено; інакше false.</returns>
+        public async Task<bool> DeleteTaskAsync(int taskId)
+        {
+            var task = await _context.Tasks.FindAsync(taskId);
+
+            if (task == null)
+            {
+                // Завдання не знайдено
+                return false;
+            }
+
+            _context.Tasks.Remove(task);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

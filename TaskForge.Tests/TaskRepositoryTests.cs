@@ -57,5 +57,50 @@ namespace TaskForge.Tests
                 await repo.CreateTaskAsync("Task 1", "Task Desc", DateTime.Now.AddDays(1), 999);
             });
         }
+        [Fact]
+        public async Task DeleteTaskAsync_ShouldDeleteTask_WhenTaskExists()
+        {
+            // Arrange
+            var dbName = nameof(DeleteTaskAsync_ShouldDeleteTask_WhenTaskExists);
+            using var context = CreateInMemoryDbContext(dbName);
+
+            var project = new Project { Id = 1, Name = "Test Project", Status = "Active", Description = "Desc" };
+            var taskToDelete = new TaskEntity
+            {
+                Id = 1,
+                Title = "Task to Delete",
+                Description = "This task should be deleted",
+                DueDate = DateTime.Now,
+                ProjectId = 1
+            };
+
+            context.Projects.Add(project);
+            context.Tasks.Add(taskToDelete);
+            await context.SaveChangesAsync();
+
+            var repo = new TaskRepository(context);
+
+            // Act
+            var result = await repo.DeleteTaskAsync(taskToDelete.Id);
+
+            // Assert
+            Assert.True(result);
+            Assert.False(await context.Tasks.AnyAsync(t => t.Id == taskToDelete.Id));
+        }
+
+        [Fact]
+        public async Task DeleteTaskAsync_ShouldReturnFalse_WhenTaskDoesNotExist()
+        {
+            // Arrange
+            var dbName = nameof(DeleteTaskAsync_ShouldReturnFalse_WhenTaskDoesNotExist);
+            using var context = CreateInMemoryDbContext(dbName);
+            var repo = new TaskRepository(context);
+
+            // Act
+            var result = await repo.DeleteTaskAsync(999);
+
+            // Assert
+            Assert.False(result);
+        }
     }
 }
