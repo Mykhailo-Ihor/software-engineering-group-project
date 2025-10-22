@@ -4,7 +4,8 @@
         Title="Деталі проекту"
         Height="600"
         Width="800"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -69,6 +70,52 @@
                             </Style>
                         </Button.Style>
                     </Button>
+                    <StackPanel Orientation="Horizontal" Margin="340,17,0,5">
+                        <Label Content="" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5" Width="4">
+                            <Label.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="-1"/>
+                                    <SkewTransform/>
+                                    <RotateTransform/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Label.RenderTransform>
+                        </Label>
+                        <ComboBox x:Name="UserFilterComboBox" Width="203" Margin="5,0" SelectionChanged="UserFilterComboBox_SelectionChanged" DisplayMemberPath="Username" SelectedValuePath="Id" RenderTransformOrigin="0.509,0.566" Height="30"/>
+                        <Button
+    Content="Скинути"
+    Background="Gray"
+    Foreground="White"
+    Height="30"
+    Width="52"
+    FontSize="12"
+    BorderThickness="0"
+    Click="ClearFilterButton_Click"
+    Tag="{Binding Id}" Canvas.Left="612" Canvas.Top="17">
+                            <Button.Style>
+                                <Style TargetType="{x:Type Button}">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type Button}">
+                                                <Border Background="{TemplateBinding Background}"
+                            CornerRadius="5"
+                            BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#00796B"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+
+                    </StackPanel>
 
                 </Canvas>
                 <ListView

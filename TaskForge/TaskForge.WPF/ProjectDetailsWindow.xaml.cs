@@ -15,6 +15,7 @@ using TaskForge.Application.DTOs;
 using TaskForge.Domain.Entities;
 using TaskForge.Infrastructure.Repositories;
 using Duende.IdentityModel.OidcClient;
+using TaskForge.Application.Services;
 
 namespace TaskForge.WPF
 {
@@ -27,6 +28,7 @@ namespace TaskForge.WPF
         private readonly TaskRepository _taskRepository;
         private readonly UserRepository _userRepository;
         private readonly Auth0Service _auth0Service;
+        private readonly ITaskFilterService _taskFilterService;
         private readonly LoginResult _currentLoginResult;
         private readonly int _projectId;
         private List<int> _selectedAssigneeIds = new List<int>();
@@ -38,7 +40,8 @@ namespace TaskForge.WPF
             TaskRepository taskRepository,
             UserRepository userRepository,
             Auth0Service auth0Service,
-            LoginResult currentLoginResult
+            LoginResult currentLoginResult,
+            ITaskFilterService taskFilterService
         )
         {
             InitializeComponent();
@@ -48,19 +51,22 @@ namespace TaskForge.WPF
             _userRepository = userRepository;
             _auth0Service = auth0Service;
             _currentLoginResult = currentLoginResult;
-
+            _taskFilterService = taskFilterService;
             ProjectNameText.Text = projectDto.Name;
             ProjectDescriptionText.Text = projectDto.Description ?? "Опис відсутній";
             ProjectStatusText.Text = $"Статус: {projectDto.Status} | Ваша роль: {projectDto.UserRoleInProject}";
 
-            LoadProjectDetails();
         }
-
-        private async Task LoadProjectDetails()
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            await LoadProjectDetails();
+            await LoadProjectUsersForFilter();
+        }
+        private async Task LoadProjectDetails(int? userId = null)
         {
             try
             {
-                var tasks = await _projectRepository.GetTasksByProjectIdAsync(_projectId);
+                var tasks = await _taskFilterService.GetTasksForProjectAsync(_projectId, userId);
                 TasksListView.ItemsSource = tasks;
             }
             catch (Exception ex)
@@ -69,9 +75,35 @@ namespace TaskForge.WPF
             }
         }
 
+        private async Task LoadProjectUsersForFilter()
+        {
+            try
+            {
+                var users = await _userRepository.GetUsersByProjectIdAsync(_projectId);
+                UserFilterComboBox.ItemsSource = users.Select(u => new { Id = u.Id, Username = $"{u.FirstName} {u.LastName}" }).ToList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка завантаження користувачів проєкту: {ex.Message}", "Помилка");
+            }
+        }
+
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+        private async void UserFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (UserFilterComboBox.SelectedValue is int userId)
+            {
+                await LoadProjectDetails(userId);
+            }
+        }
+
+        private async void ClearFilterButton_Click(object sender, RoutedEventArgs e)
+        {
+            UserFilterComboBox.SelectedItem = null;
+            await LoadProjectDetails();
         }
 
         private async void AddTaskButton_Click(object sender, RoutedEventArgs e)
