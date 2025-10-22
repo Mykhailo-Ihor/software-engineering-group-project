@@ -74,14 +74,18 @@ namespace TaskForge.Infrastructure.Repositories
                 return; // Користувач вже призначений
             }
 
-            var taskUser = new TaskUser
-            {
-                TaskId = taskId,
-                UserId = userId
-            };
-
+            var taskUser = new TaskUser { TaskId = taskId, UserId = userId };
             await _context.TaskUsers.AddAsync(taskUser);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<TaskEntity>> GetTasksByProjectIdAndUserIdAsync(int projectId, int userId)
+        {
+            return await _context.Tasks
+                .Where(t => t.ProjectId == projectId && t.TaskUsers.Any(tu => tu.UserId == userId))
+                .Include(t => t.TaskUsers)
+                .ThenInclude(tu => tu.User)
+                .ToListAsync();
         }
 
         /// <summary>
