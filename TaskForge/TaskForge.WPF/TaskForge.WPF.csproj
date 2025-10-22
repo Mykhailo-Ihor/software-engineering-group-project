@@ -40,10 +40,8 @@
 
   <ItemGroup>
     <Folder Include="Behaviors\" />
-    <Folder Include="Converters\" />
     <Folder Include="Resources\Styles\" />
     <Folder Include="VIewModels\" />
-    <Folder Include="Views\" />
   </ItemGroup>
 
 </Project>
