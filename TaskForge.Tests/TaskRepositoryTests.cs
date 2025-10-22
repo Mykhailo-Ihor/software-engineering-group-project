@@ -97,7 +97,7 @@ namespace TaskForge.Tests
             var repo = new TaskRepository(context);
 
             // Act
-            var result = await repo.DeleteTaskAsync(999); // Неіснуючий ID
+            var result = await repo.DeleteTaskAsync(999);
 
             // Assert
             Assert.False(result);
