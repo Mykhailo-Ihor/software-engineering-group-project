@@ -211,6 +211,41 @@ namespace TaskForge.WPF
         {
             TaskModalOverlay.Visibility = Visibility.Collapsed;
         }
+        private async void DeleteTaskButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag == null) return;
+
+            var taskId = (int)button.Tag;
+
+            var result = MessageBox.Show(
+                "Ви впевнені, що хочете видалити це завдання? Цю дію неможливо скасувати.",
+                "Підтвердження видалення",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    var success = await _taskRepository.DeleteTaskAsync(taskId);
+
+                    if (success)
+                    {
+                        MessageBox.Show("Завдання успішно видалено.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                        // Оновлюємо список завдань після видалення
+                        await LoadProjectDetails();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Не вдалося знайти завдання для видалення.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Помилка під час видалення завдання: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
     }
     public class UserSelectionViewModel
     {
