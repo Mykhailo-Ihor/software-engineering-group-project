@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using TaskForge.Application.DTOs;
+using TaskForge.Application.Interfaces;
 using TaskForge.Application.Services;
 using TaskForge.Domain.Enums;
-using TaskForge.Infrastructure.Repositories; 
-
 
 namespace TaskForge.WPF
 {
@@ -21,21 +20,19 @@ namespace TaskForge.WPF
     public partial class MainWindow : Window
     {
         private readonly Auth0Service _auth0Service;
-        private readonly UserRepository _userRepository;
-        private readonly ProjectRepository _projectRepository;
-        private readonly TaskRepository _taskRepository;
+        private readonly IUserService _userService;
+        private readonly IProjectService _projectService;
+        private readonly ITaskService _taskService;
         private LoginResult _currentLoginResult;
         private List<int> _selectedAssigneeIds = new List<int>();
-        private readonly IProjectService _projectService;
 
-        public MainWindow(Auth0Service auth0Service, UserRepository userRepository, ProjectRepository projectRepository, TaskRepository taskRepository, IProjectService projectService)
+        public MainWindow(Auth0Service auth0Service, IUserService userService, IProjectService projectService, ITaskService taskService)
         {
             InitializeComponent();
             _auth0Service = auth0Service;
-            _userRepository = userRepository; 
-            _projectRepository = projectRepository;
-            _taskRepository = taskRepository;
+            _userService = userService;
             _projectService = projectService;
+            _taskService = taskService;
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -62,7 +59,7 @@ namespace TaskForge.WPF
                 var firstName = nameParts.Length > 0 ? nameParts[0] : "";
                 var lastName = nameParts.Length > 1 ? nameParts[1] : "";
 
-                await _userRepository.AddUserFromAuth0ResponseAsync(firstName, lastName, userEmail, userId);
+                await _userService.AddUserFromAuth0ResponseAsync(firstName, lastName, userEmail, userId);
 
                 ShowUserInfo(_currentLoginResult);
                 
@@ -150,14 +147,14 @@ namespace TaskForge.WPF
                 return;
             }
             var userId = _auth0Service.GetUserId(_currentLoginResult);
-            var user = await _userRepository.GetUserByAuth0IdAsync(userId);
+            var user = await _userService.GetUserByAuth0IdAsync(userId);
             if (user == null)
             {
                 MessageBox.Show("Користувача не знайдено в базі даних.");
                 ProjectModalOverlay.Visibility = Visibility.Collapsed;
                 return;
             }
-            await _projectRepository.CreateProjectForUserAsync(name, status, description, user.Id, TaskForge.Domain.Enums.Role.Moderator);
+            await _projectService.CreateProjectForUserAsync(name, status, description, user.Id, TaskForge.Domain.Enums.Role.Moderator);
             MessageBox.Show($"Проект '{name}' створено!", "Успіх");
             ProjectModalOverlay.Visibility = Visibility.Collapsed;
         }
@@ -176,7 +173,7 @@ namespace TaskForge.WPF
                     return;
                 }
                 var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
-                var user = await _userRepository.GetUserByAuth0IdAsync(auth0UserId);
+                var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
                 if (user == null)
                 {
                     MessageBox.Show("Не вдалося знайти ваші дані в системі.");
@@ -217,9 +214,9 @@ namespace TaskForge.WPF
             var detailsWindow = new ProjectDetailsWindow(
                 projectId,
                 selectedProject,
-                _projectRepository,
-                _taskRepository,
-                _userRepository,
+                _projectService,
+                _taskService,
+                _userService,
                 _auth0Service,
                 _currentLoginResult
             );

@@ -10,6 +10,8 @@ using TaskForge.Infrastructure.Repositories;
 using TaskForge.Infrastructure.Data;
 using TaskForge.Application.Services;
 using TaskForge.Domain.Interfaces;
+using TaskForge.Application.Interfaces;
+
 namespace TaskForge.WPF
 {
     public partial class App : System.Windows.Application 
@@ -22,11 +24,12 @@ namespace TaskForge.WPF
 
             // Register services
             services.AddSingleton<Auth0Service>();
-            services.AddSingleton<UserRepository>();
-            services.AddSingleton<ProjectRepository>();
-            services.AddSingleton<TaskRepository>();
+            services.AddSingleton<IUserRepository, UserRepository>();
+            services.AddSingleton<IProjectRepository, ProjectRepository>();
+            services.AddSingleton<ITaskRepository, TaskRepository>();
             services.AddSingleton<IProjectService, ProjectService>(); 
-            services.AddSingleton<IProjectRepository, ProjectRepository>(); 
+            services.AddSingleton<IUserService, UserService>();
+            services.AddSingleton<ITaskService, TaskService>();
 
             // Register DbContext
             services.AddDbContext<TaskForgeDbContext>(options =>

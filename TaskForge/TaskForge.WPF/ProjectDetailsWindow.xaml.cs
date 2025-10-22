@@ -12,8 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using TaskForge.Application.DTOs;
-using TaskForge.Domain.Entities;
-using TaskForge.Infrastructure.Repositories;
+using TaskForge.Application.Interfaces;
+using TaskForge.Application.Services;
 using Duende.IdentityModel.OidcClient;
 
 namespace TaskForge.WPF
@@ -23,9 +23,9 @@ namespace TaskForge.WPF
     /// </summary>
     public partial class ProjectDetailsWindow : Window
     {
-        private readonly ProjectRepository _projectRepository;
-        private readonly TaskRepository _taskRepository;
-        private readonly UserRepository _userRepository;
+        private readonly IProjectService _projectService;
+        private readonly ITaskService _taskService;
+        private readonly IUserService _userService;
         private readonly Auth0Service _auth0Service;
         private readonly LoginResult _currentLoginResult;
         private readonly int _projectId;
@@ -34,18 +34,18 @@ namespace TaskForge.WPF
         public ProjectDetailsWindow(
             int projectId,
             ProjectDto projectDto,
-            ProjectRepository projectRepository,
-            TaskRepository taskRepository,
-            UserRepository userRepository,
+            IProjectService projectService,
+            ITaskService taskService,
+            IUserService userService,
             Auth0Service auth0Service,
             LoginResult currentLoginResult
         )
         {
             InitializeComponent();
             _projectId = projectId;
-            _projectRepository = projectRepository;
-            _taskRepository = taskRepository;
-            _userRepository = userRepository;
+            _projectService = projectService;
+            _taskService = taskService;
+            _userService = userService;
             _auth0Service = auth0Service;
             _currentLoginResult = currentLoginResult;
 
@@ -60,7 +60,7 @@ namespace TaskForge.WPF
         {
             try
             {
-                var tasks = await _projectRepository.GetTasksByProjectIdAsync(_projectId);
+                var tasks = await _projectService.GetTasksByProjectIdAsync(_projectId);
                 TasksListView.ItemsSource = tasks;
             }
             catch (Exception ex)
@@ -79,14 +79,14 @@ namespace TaskForge.WPF
             try
             {
                 var auth0Id = _auth0Service.GetUserId(_currentLoginResult);
-                var currentUser = await _userRepository.GetUserByAuth0IdAsync(auth0Id);
+                var currentUser = await _userService.GetUserByAuth0IdAsync(auth0Id);
                 if (currentUser == null)
                 {
                     MessageBox.Show("Не вдалося визначити поточного користувача", "Помилка");
                     return;
                 }
 
-                var userProjects = await _projectRepository.GetProjectsForUserAsync(currentUser.Id);
+                var userProjects = await _projectService.GetProjectsForUserAsync(currentUser.Id);
                 TaskProjectComboBox.ItemsSource = userProjects;
                 TaskProjectComboBox.SelectedValue = _projectId;
 
@@ -120,7 +120,7 @@ namespace TaskForge.WPF
             try
             {
                 var projectId = (int)TaskProjectComboBox.SelectedValue;
-                var projectUsers = await _userRepository.GetUsersByProjectIdAsync(projectId);
+                var projectUsers = await _userService.GetUsersByProjectIdAsync(projectId);
 
                 var userSelectionVM = projectUsers.Select(u => new UserSelectionViewModel
                 {
@@ -184,7 +184,7 @@ namespace TaskForge.WPF
             {
                 var projectId = (int)TaskProjectComboBox.SelectedValue;
 
-                var newTask = await _taskRepository.CreateTaskAsync(
+                var newTask = await _taskService.CreateTaskAsync(
                     TaskTitleBox.Text,
                     TaskDescriptionBox.Text,
                     TaskDueDateBox.SelectedDate.Value,
@@ -193,7 +193,7 @@ namespace TaskForge.WPF
 
                 foreach (var userId in _selectedAssigneeIds)
                 {
-                    await _taskRepository.AssignUserToTaskAsync(newTask.Id, userId);
+                    await _taskService.AssignUserToTaskAsync(newTask.Id, userId);
                 }
 
                 MessageBox.Show($"Завдання '{newTask.Title}' успішно створено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -227,7 +227,7 @@ namespace TaskForge.WPF
             {
                 try
                 {
-                    var success = await _taskRepository.DeleteTaskAsync(taskId);
+                    var success = await _taskService.DeleteTaskAsync(taskId);
 
                     if (success)
                     {
@@ -244,6 +244,53 @@ namespace TaskForge.WPF
                 {
                     MessageBox.Show($"Помилка під час видалення завдання: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+        }
+
+        private async void AddUserToProjectButton_Click(object sender, RoutedEventArgs e)
+        {
+            AddUserEmailBox.Text = string.Empty;
+            AddUserModalOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void AddUserModalCancel_Click(object sender, RoutedEventArgs e)
+        {
+            AddUserModalOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private async void AddUserModalOk_Click(object sender, RoutedEventArgs e)
+        {
+            var email = AddUserEmailBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                MessageBox.Show("Будь ласка, введіть email користувача.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            try
+            {
+                // Find user by email
+                var user = await _userService.GetUserByEmailAsync(email);
+                if (user == null)
+                {
+                    MessageBox.Show($"Користувача з email '{email}' не знайдено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                // Check if already in project
+                var alreadyInProject = await _userService.IsUserInProjectAsync(user.Id, _projectId);
+                if (alreadyInProject)
+                {
+                    MessageBox.Show($"Користувач вже є учасником проекту.", "Увага", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                // Add user to project
+                await _userService.AddUserToProjectAsync(user.Id, _projectId, TaskForge.Domain.Enums.Role.Member);
+                MessageBox.Show($"Користувача '{user.FirstName} {user.LastName}' додано до проекту!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                AddUserModalOverlay.Visibility = Visibility.Collapsed;
+                await LoadProjectDetails();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при додаванні користувача: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
