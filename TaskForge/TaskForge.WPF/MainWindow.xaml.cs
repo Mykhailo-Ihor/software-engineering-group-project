@@ -27,13 +27,14 @@ namespace TaskForge.WPF
         private ITaskFilterService _taskFilterService;
         private List<int> _selectedAssigneeIds = new List<int>();
 
-        public MainWindow(Auth0Service auth0Service, IUserService userService, IProjectService projectService, ITaskFilterService filterService)
+        public MainWindow(Auth0Service auth0Service, IUserService userService, IProjectService projectService, ITaskFilterService filterService,ITaskService taskService)
         {
             InitializeComponent();
             _auth0Service = auth0Service;
             _userService = userService;
             _projectService = projectService;
             _taskFilterService = filterService;
+            _taskService = taskService;
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -93,6 +94,8 @@ namespace TaskForge.WPF
                 LoginPanel.Visibility = Visibility.Visible;
                 LogoutButton.Visibility = Visibility.Collapsed;
                 LoginButton.Visibility = Visibility.Visible;
+                ProjectsListView.ItemsSource = null;
+                ProjectsListView.Visibility = Visibility.Collapsed;
 
                 LoginButton.IsEnabled = true;
 

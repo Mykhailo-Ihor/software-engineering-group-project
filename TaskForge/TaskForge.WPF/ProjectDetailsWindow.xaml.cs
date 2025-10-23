@@ -79,7 +79,7 @@ namespace TaskForge.WPF
         {
             try
             {
-                var users = await _userRepository.GetUsersByProjectIdAsync(_projectId);
+                var users = await _userService.GetUsersByProjectIdAsync(_projectId);
                 UserFilterComboBox.ItemsSource = users.Select(u => new { Id = u.Id, Username = $"{u.FirstName} {u.LastName}" }).ToList();
             }
             catch (Exception ex)

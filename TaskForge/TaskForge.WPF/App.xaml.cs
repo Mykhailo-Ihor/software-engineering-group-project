@@ -26,11 +26,12 @@ namespace TaskForge.WPF
             services.AddSingleton<Auth0Service>();
             services.AddSingleton<IUserRepository, UserRepository>();
             services.AddSingleton<IProjectRepository, ProjectRepository>();
+            services.AddSingleton<ITaskFilterService, TaskFilterService>();
             services.AddSingleton<ITaskRepository, TaskRepository>();
             services.AddSingleton<IProjectService, ProjectService>(); 
             services.AddSingleton<IUserService, UserService>();
             services.AddSingleton<ITaskService, TaskService>();
-            services.AddSingleton<ITaskFilterService, TaskFilterService>();
+         
 
             // Register DbContext
             services.AddDbContext<TaskForgeDbContext>(options =>
