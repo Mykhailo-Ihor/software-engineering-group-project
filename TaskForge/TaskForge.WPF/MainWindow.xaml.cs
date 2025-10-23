@@ -24,15 +24,16 @@ namespace TaskForge.WPF
         private readonly IProjectService _projectService;
         private readonly ITaskService _taskService;
         private LoginResult _currentLoginResult;
+        private ITaskFilterService _taskFilterService;
         private List<int> _selectedAssigneeIds = new List<int>();
 
-        public MainWindow(Auth0Service auth0Service, IUserService userService, IProjectService projectService, ITaskService taskService)
+        public MainWindow(Auth0Service auth0Service, IUserService userService, IProjectService projectService, ITaskFilterService filterService)
         {
             InitializeComponent();
             _auth0Service = auth0Service;
             _userService = userService;
             _projectService = projectService;
-            _taskService = taskService;
+            _taskFilterService = filterService;
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -218,7 +219,8 @@ namespace TaskForge.WPF
                 _taskService,
                 _userService,
                 _auth0Service,
-                _currentLoginResult
+                _currentLoginResult,
+                _taskFilterService
             );
             detailsWindow.ShowDialog();
         }
