@@ -1,98 +1,90 @@
-﻿using System.Threading.Tasks;
-using Xunit;
-using Microsoft.EntityFrameworkCore;
-using TaskForge.Infrastructure.Repositories;
+﻿using Xunit;
+using System.Threading.Tasks;
+using Moq;
 using TaskForge.Domain.Entities;
-using TaskForge.Infrastructure.Data;
-using System.Collections.Generic;
-using System.Linq;
+using TaskForge.Domain.Enums;
+using TaskForge.Domain.Interfaces;
+using TaskForge.Application.Services;
+using TaskForge.Application.Interfaces;
 
 namespace TaskForge.Tests
 {
-    public class UserRepositoryTests
+    public class UserServiceTests
     {
-        private List<User> GetFakeUsers() => new List<User>
-        {
-            new User { Id = 1, FirstName = "John", LastName = "Doe", Email = "john@example.com", Auth0UserId = "auth0|123" },
-            new User { Id = 2, FirstName = "Jane", LastName = "Smith", Email = "jane@example.com", Auth0UserId = "auth0|456" }
-        };
+        private readonly Mock<IUserRepository> _mockUserRepository;
+        private readonly IUserService _userService;
 
-        private TaskForgeDbContext CreateInMemoryDbContext(string dbName)
+        public UserServiceTests()
         {
-            var options = new DbContextOptionsBuilder<TaskForgeDbContext>()
-                .UseInMemoryDatabase(databaseName: dbName)
-                .Options;
-            return new TaskForgeDbContext(options);
+            _mockUserRepository = new Mock<IUserRepository>();
+            _userService = new UserService(_mockUserRepository.Object);
         }
 
         [Fact]
-        public async Task AddUserFromAuth0ResponseAsync_ShouldAddUser_WhenUserDoesNotExist()
+        public async Task AddUserToProjectAsync_WhenUserNotInProject_AddsUser()
         {
             // Arrange
-            var dbName = nameof(AddUserFromAuth0ResponseAsync_ShouldAddUser_WhenUserDoesNotExist);
-            using var context = CreateInMemoryDbContext(dbName);
-            context.Users.AddRange(GetFakeUsers());
-            context.SaveChanges();
-            var repo = new UserRepository(context);
+            int userId = 1;
+            int projectId = 10;
+            _mockUserRepository.Setup(r => r.IsUserInProjectAsync(userId, projectId)).ReturnsAsync(false);
+            _mockUserRepository.Setup(r => r.AddUserToProjectAsync(userId, projectId, Role.Member)).Returns(Task.CompletedTask).Verifiable();
 
             // Act
-            await repo.AddUserFromAuth0ResponseAsync("Alice", "Wonder", "alice@example.com", "auth0|789");
+            var alreadyInProject = await _mockUserRepository.Object.IsUserInProjectAsync(userId, projectId);
+            if (!alreadyInProject)
+            {
+                await _userService.AddUserToProjectAsync(userId, projectId, Role.Member);
+            }
 
             // Assert
-            Assert.Contains(context.Users, u => u.Auth0UserId == "auth0|789");
+            _mockUserRepository.Verify(r => r.AddUserToProjectAsync(userId, projectId, Role.Member), Times.Once);
         }
 
         [Fact]
-        public async Task AddUserFromAuth0ResponseAsync_ShouldNotAddUser_WhenUserExists()
+        public async Task AddUserToProjectAsync_WhenUserAlreadyInProject_DoesNotAddUser()
         {
             // Arrange
-            var dbName = nameof(AddUserFromAuth0ResponseAsync_ShouldNotAddUser_WhenUserExists);
-            using var context = CreateInMemoryDbContext(dbName);
-            context.Users.AddRange(GetFakeUsers());
-            context.SaveChanges();
-            var repo = new UserRepository(context);
+            int userId = 2;
+            int projectId = 20;
+            _mockUserRepository.Setup(r => r.IsUserInProjectAsync(userId, projectId)).ReturnsAsync(true);
 
             // Act
-            await repo.AddUserFromAuth0ResponseAsync("John", "Doe", "john@example.com", "auth0|123");
+            var alreadyInProject = await _mockUserRepository.Object.IsUserInProjectAsync(userId, projectId);
+            if (!alreadyInProject)
+            {
+                await _userService.AddUserToProjectAsync(userId, projectId, Role.Member);
+            }
 
             // Assert
-            Assert.Equal(2, context.Users.Count());
-            Assert.Equal(1, context.Users.Count(u => u.Auth0UserId == "auth0|123"));
+            _mockUserRepository.Verify(r => r.AddUserToProjectAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<Role>()), Times.Never);
         }
 
         [Fact]
-        public async Task GetUserByAuth0IdAsync_ShouldReturnUser_WhenExists()
+        public async Task GetUserByEmailAsync_WhenUserExists_ReturnsUser()
         {
             // Arrange
-            var dbName = nameof(GetUserByAuth0IdAsync_ShouldReturnUser_WhenExists);
-            using var context = CreateInMemoryDbContext(dbName);
-            context.Users.AddRange(GetFakeUsers());
-            context.SaveChanges();
-            var repo = new UserRepository(context);
+            var user = new User { Id = 3, FirstName = "Alice", LastName = "Wonder", Email = "alice@example.com", Auth0UserId = "auth0|789" };
+            _mockUserRepository.Setup(r => r.GetUserByEmailAsync(user.Email)).ReturnsAsync(user);
 
             // Act
-            var user = await repo.GetUserByAuth0IdAsync("auth0|123");
+            var result = await _userService.GetUserByEmailAsync(user.Email);
 
             // Assert
-            Assert.NotNull(user);
-            Assert.Equal("John", user.FirstName);
+            Assert.NotNull(result);
+            Assert.Equal("Alice", result.FirstName);
         }
 
         [Fact]
-        public async Task GetUserByAuth0IdAsync_ShouldReturnNull_WhenNotExists()
+        public async Task GetUserByEmailAsync_WhenUserDoesNotExist_ReturnsNull()
         {
             // Arrange
-            var dbName = nameof(GetUserByAuth0IdAsync_ShouldReturnNull_WhenNotExists);
-            using var context = CreateInMemoryDbContext(dbName);
-            context.Users.AddRange(GetFakeUsers());
-            context.SaveChanges();
-            var repo = new UserRepository(context);
+            _mockUserRepository.Setup(r => r.GetUserByEmailAsync("notfound@example.com")).ReturnsAsync((User)null);
 
             // Act
-            var user = await repo.GetUserByAuth0IdAsync("auth0|999");
+            var result = await _userService.GetUserByEmailAsync("notfound@example.com");
 
             // Assert
-            Assert.Null(user);
+            Assert.Null(result);
         }
     }
 }

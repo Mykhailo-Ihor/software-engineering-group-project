@@ -13,4 +13,7 @@ public interface IProjectRepository
     /// <param name="userId">The user's ID.</param>
     /// <returns>A collection of projects.</returns>
     Task<IEnumerable<Project>> GetProjectsByUserIdAsync(int userId);
+
+    Task<List<Project>> GetProjectsForUserAsync(int userId);
+    Task<List<TaskEntity>> GetTasksByProjectIdAsync(int projectId);
 }

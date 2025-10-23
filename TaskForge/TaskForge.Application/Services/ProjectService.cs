@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TaskForge.Application.DTOs;
 using TaskForge.Domain.Entities;
+using TaskForge.Domain.Enums;
 using TaskForge.Domain.Interfaces;
 
 namespace TaskForge.Application.Services;
@@ -35,4 +36,13 @@ public class ProjectService : IProjectService
                                  .Role.ToString() ?? "Unknown"
         });
     }
+
+    public Task<List<TaskEntity>> GetTasksByProjectIdAsync(int projectId)
+        => _projectRepository.GetTasksByProjectIdAsync(projectId);
+
+    public Task<List<Project>> GetProjectsForUserAsync(int userId)
+        => _projectRepository.GetProjectsForUserAsync(userId);
+
+    public Task<Project> CreateProjectForUserAsync(string name, string status, string description, int userId, Role role)
+        => _projectRepository.CreateProjectForUserAsync(name, status, description, userId, role);
 }

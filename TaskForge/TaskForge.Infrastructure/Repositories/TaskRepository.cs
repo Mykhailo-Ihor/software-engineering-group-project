@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using TaskForge.Domain.Entities;
 using TaskForge.Infrastructure.Data;
+using TaskForge.Domain.Interfaces;
 
 namespace TaskForge.Infrastructure.Repositories
 {
-    public class TaskRepository
+    public class TaskRepository : ITaskRepository
     {
         private readonly TaskForgeDbContext _context;
 
