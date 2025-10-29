@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TaskForge.Domain.Enums;
 
 namespace TaskForge.Domain.Entities;
 
@@ -14,14 +15,12 @@ public class Expense
     public decimal Amount { get; set; }
 
     [Required]
-    [MaxLength(3)]
-    public string Currency { get; set; }
+    public Currency Currency { get; set; }
 
     [Required]
     public DateTime Date { get; set; }
 
-    [MaxLength(50)]
-    public string Category { get; set; }
+    public ExpenceCategory Category { get; set; }
 
     [MaxLength(500)]
     public string Description { get; set; }

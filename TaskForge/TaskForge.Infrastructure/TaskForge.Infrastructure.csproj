@@ -23,7 +23,6 @@
     <Folder Include="Data\Configurations\" />
     <Folder Include="Data\Migrations\" />
     <Folder Include="Persistance\" />
-    <Folder Include="Repositories\" />
     <Folder Include="Security\" />
     <Folder Include="Services\" />
   </ItemGroup>

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskForge.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using TaskForge.Infrastructure.Data;
 namespace TaskForge.Infrastructure.Migrations
 {
     [DbContext(typeof(TaskForgeDbContext))]
-    partial class TaskForgeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251029185701_ChangedFieldsTypeToEnumInExpences")]
+    partial class ChangedFieldsTypeToEnumInExpences
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,9 +37,11 @@ namespace TaskForge.Infrastructure.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Category")
+                        .HasMaxLength(50)
                         .HasColumnType("int");
 
                     b.Property<int>("Currency")
+                        .HasMaxLength(3)
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
