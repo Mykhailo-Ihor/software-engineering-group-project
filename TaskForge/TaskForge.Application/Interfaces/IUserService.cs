@@ -13,5 +13,6 @@ namespace TaskForge.Application.Interfaces
         Task<User?> GetUserByEmailAsync(string email);
         Task<bool> IsUserInProjectAsync(int userId, int projectId);
         Task AddUserToProjectAsync(int userId, int projectId, Role role);
+        Task UpdateUserRoleInProjectAsync(int userId, int projectId, Role newRole);
     }
 }

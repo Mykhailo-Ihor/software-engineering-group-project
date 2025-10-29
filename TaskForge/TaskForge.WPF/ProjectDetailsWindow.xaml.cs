@@ -60,6 +60,16 @@ namespace TaskForge.WPF
         }
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            var auth0Id = _auth0Service.GetUserId(_currentLoginResult);
+            var currentUser = await _userService.GetUserByAuth0IdAsync(auth0Id);
+            var projectUser = await _projectService.GetProjectUserAsync(currentUser.Id, _projectId);
+
+            // Перевіряємо роль і показуємо кнопку
+            if (projectUser?.Role == TaskForge.Domain.Enums.Role.Moderator)
+            {
+                ManageModeratorsButton.Visibility = Visibility.Visible;
+            }
+            
             await LoadProjectDetails();
             await LoadProjectUsersForFilter();
         }
@@ -326,6 +336,64 @@ namespace TaskForge.WPF
                 MessageBox.Show($"Помилка при додаванні користувача: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        private async void ManageModeratorsButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var projectUsers = await _userService.GetUsersByProjectIdAsync(_projectId);
+                var auth0Id = _auth0Service.GetUserId(_currentLoginResult);
+                var currentUser = await _userService.GetUserByAuth0IdAsync(auth0Id);
+
+                var moderatorVms = new List<ModeratorSelectionViewModel>();
+                foreach (var user in projectUsers)
+                {
+                    var projectUser = await _projectService.GetProjectUserAsync(user.Id, _projectId);
+                    moderatorVms.Add(new ModeratorSelectionViewModel
+                    {
+                        Id = user.Id,
+                        FullName = $"{user.FirstName} {user.LastName}",
+                        IsModerator = projectUser?.Role == TaskForge.Domain.Enums.Role.Moderator,
+                        CanChange = user.Id != currentUser.Id // Забороняємо змінювати власну роль
+                    });
+                }
+
+                ModeratorsListView.ItemsSource = moderatorVms;
+                ManageModeratorsModalOverlay.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка завантаження користувачів: {ex.Message}", "Помилка");
+            }
+        }
+
+        private async void ManageModeratorsSave_Click(object sender, RoutedEventArgs e)
+        {
+            if (ModeratorsListView.ItemsSource is not List<ModeratorSelectionViewModel> userRoles) return;
+
+            try
+            {
+                foreach (var userRole in userRoles)
+                {
+                    if (!userRole.CanChange) continue; // Пропускаємо, якщо зміна заборонена
+
+                    var newRole = userRole.IsModerator ? TaskForge.Domain.Enums.Role.Moderator : TaskForge.Domain.Enums.Role.Member;
+                    await _userService.UpdateUserRoleInProjectAsync(userRole.Id, _projectId, newRole);
+                }
+
+                MessageBox.Show("Ролі модераторів успішно оновлено.", "Успіх");
+                ManageModeratorsModalOverlay.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при оновленні ролей: {ex.Message}", "Помилка");
+            }
+        }
+
+        private void ManageModeratorsCancel_Click(object sender, RoutedEventArgs e)
+        {
+            ManageModeratorsModalOverlay.Visibility = Visibility.Collapsed;
+        }
+
         private int _editingTaskId;
 
         private async void EditTaskButton_Click(object sender, RoutedEventArgs e)
@@ -419,5 +487,12 @@ namespace TaskForge.WPF
         public int Id { get; set; }
         public string FullName { get; set; }
         public bool IsSelected { get; set; }
+    }
+    public class ModeratorSelectionViewModel
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }
+        public bool IsModerator { get; set; }
+        public bool CanChange { get; set; } // Щоб не можна було зняти модерку з себе
     }
 }

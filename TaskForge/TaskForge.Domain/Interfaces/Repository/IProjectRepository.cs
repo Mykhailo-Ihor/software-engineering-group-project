@@ -16,4 +16,5 @@ public interface IProjectRepository
 
     Task<List<Project>> GetProjectsForUserAsync(int userId);
     Task<List<TaskEntity>> GetTasksByProjectIdAsync(int projectId);
+    Task<ProjectUser> GetProjectUserAsync(int userId, int projectId);
 }

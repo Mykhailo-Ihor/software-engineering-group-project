@@ -45,4 +45,8 @@ public class ProjectService : IProjectService
 
     public Task<Project> CreateProjectForUserAsync(string name, string status, string description, int userId, Role role)
         => _projectRepository.CreateProjectForUserAsync(name, status, description, userId, role);
+    public async Task<ProjectUser> GetProjectUserAsync(int userId, int projectId)
+    {
+        return await _projectRepository.GetProjectUserAsync(userId, projectId);
+    }
 }
