@@ -22,5 +22,9 @@ namespace TaskForge.Application.Services
             => _taskRepository.UnassignUserFromTaskAsync(taskId, userId);
         public Task<bool> DeleteTaskAsync(int taskId)
             => _taskRepository.DeleteTaskAsync(taskId);
+        public Task<TaskEntity> UpdateTaskAsync(TaskEntity task)
+            => _taskRepository.UpdateTaskAsync(task);
+        public Task<TaskEntity> GetTaskByIdAsync(int taskId)
+            => _taskRepository.GetTaskByIdAsync(taskId);
     }
 }

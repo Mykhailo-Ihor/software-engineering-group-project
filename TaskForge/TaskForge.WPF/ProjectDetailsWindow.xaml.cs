@@ -31,6 +31,7 @@ namespace TaskForge.WPF
         private readonly ITaskFilterService _taskFilterService;
         private readonly LoginResult _currentLoginResult;
         private readonly int _projectId;
+
         private List<int> _selectedAssigneeIds = new List<int>();
 
         public ProjectDetailsWindow(
@@ -324,6 +325,93 @@ namespace TaskForge.WPF
             {
                 MessageBox.Show($"Помилка при додаванні користувача: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+        private int _editingTaskId;
+
+        private async void EditTaskButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.Tag == null) return;
+
+            var taskId = (int)button.Tag;
+            _editingTaskId = taskId;
+
+            try
+            {
+                var task = await _taskService.GetTaskByIdAsync(taskId);
+                if (task == null)
+                {
+                    MessageBox.Show("Завдання не знайдено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                EditTaskTitleBox.Text = task.Title;
+                EditTaskDescriptionBox.Text = task.Description;
+                EditTaskDueDateBox.SelectedDate = task.DueDate;
+
+                EditTaskModalOverlay.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при завантаженні завдання: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void EditTaskModalOk_Click(object sender, RoutedEventArgs e)
+        {
+            // Валідація полів
+            if (string.IsNullOrWhiteSpace(EditTaskTitleBox.Text))
+            {
+                MessageBox.Show("Введіть назву завдання.", "Валідація", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (EditTaskDueDateBox.SelectedDate == null)
+            {
+                MessageBox.Show("Оберіть термін виконання.", "Валідація", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var task = await _taskService.GetTaskByIdAsync(_editingTaskId);
+                if (task == null)
+                {
+                    MessageBox.Show("Завдання не знайдено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    EditTaskModalOverlay.Visibility = Visibility.Collapsed;
+                    return;
+                }
+
+                task.Title = EditTaskTitleBox.Text.Trim();
+                task.Description = EditTaskDescriptionBox.Text?.Trim() ?? string.Empty;
+                task.DueDate = EditTaskDueDateBox.SelectedDate.Value;
+
+                await _taskService.UpdateTaskAsync(task);
+
+                EditTaskModalOverlay.Visibility = Visibility.Collapsed;
+                ClearEditTaskFields();
+
+                await LoadProjectDetails();
+
+                MessageBox.Show("Завдання успішно оновлено.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при оновленні завдання: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void EditTaskModalCancel_Click(object sender, RoutedEventArgs e)
+        {
+            EditTaskModalOverlay.Visibility = Visibility.Collapsed;
+            ClearEditTaskFields();
+        }
+
+        private void ClearEditTaskFields()
+        {
+            EditTaskTitleBox.Text = string.Empty;
+            EditTaskDescriptionBox.Text = string.Empty;
+            EditTaskDueDateBox.SelectedDate = null;
+            _editingTaskId = 0;
         }
     }
     public class UserSelectionViewModel

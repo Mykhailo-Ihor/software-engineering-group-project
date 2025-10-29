@@ -126,5 +126,15 @@ namespace TaskForge.Infrastructure.Repositories
 
             return true;
         }
+        public async Task<TaskEntity> UpdateTaskAsync(TaskEntity task)
+        {
+            _context.Tasks.Update(task);
+            await _context.SaveChangesAsync();
+            return task;
+        }
+        public async Task<TaskEntity> GetTaskByIdAsync(int taskId)
+        {
+            return await _context.Tasks.Include(t => t.TaskUsers).FirstOrDefaultAsync(t => t.Id == taskId);
+        }
     }
 }

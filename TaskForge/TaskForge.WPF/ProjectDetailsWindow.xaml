@@ -137,6 +137,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
@@ -167,6 +168,17 @@
                                     </StackPanel>
 
                                     <Button Grid.Column="2"
+                                            Content="Редагувати"
+                                            Tag="{Binding Id}"
+                                            Click="EditTaskButton_Click"
+                                            VerticalAlignment="Center"
+                                            Background="#FFC107"
+                                            Foreground="White"
+                                            BorderThickness="0"
+                                            Padding="10,5"
+                                            Margin="0,0,5,0"/>
+
+                                    <Button Grid.Column="3"
                                             Content="Видалити"
                                             Tag="{Binding Id}"
                                             Click="DeleteTaskButton_Click"
@@ -243,6 +255,29 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="Зберегти" Width="100" Height="35" Margin="0,0,10,0" Background="#4CAF50" Foreground="White" BorderThickness="0" Click="AssignUsersSave_Click"/>
                         <Button Content="Скасувати" Width="100" Height="35" Margin="0,0,10,0" Background="Gray" Foreground="White" BorderThickness="0" Click="AssignUsersCancel_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Edit Task Modal -->
+        <Grid x:Name="EditTaskModalOverlay"
+              Grid.RowSpan="3"
+              Visibility="Collapsed"
+              Background="#80000000"
+              Panel.ZIndex="103">
+            <Border Background="White" CornerRadius="10" Padding="20" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Редагувати завдання" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
+                    <TextBlock Text="Назва завдання:" Margin="0,0,0,5"/>
+                    <TextBox x:Name="EditTaskTitleBox" Margin="0,0,0,10"/>
+                    <TextBlock Text="Опис:" Margin="0,0,0,5"/>
+                    <TextBox x:Name="EditTaskDescriptionBox" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,0,0,10"/>
+                    <TextBlock Text="Термін виконання:" Margin="0,0,0,5"/>
+                    <DatePicker x:Name="EditTaskDueDateBox" Margin="0,0,0,15"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Зберегти" Width="80" Height="35" Margin="0,0,10,0" Background="#4CAF50" Foreground="White" BorderThickness="0" Click="EditTaskModalOk_Click"/>
+                        <Button Content="Скасувати" Width="80" Height="35" Margin="0,0,10,0" Background="Gray" Foreground="White" BorderThickness="0" Click="EditTaskModalCancel_Click"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
