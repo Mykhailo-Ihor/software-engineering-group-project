@@ -177,8 +177,113 @@
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
+                        <Separator Margin="0,15,0,15"/>
+                        <TextBlock Text="Витрати" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
+                            <Button x:Name="AddExpenseButton"
+                                    Content="Додати витрату"
+                                    Height="40"
+                                    Width="150"
+                                    FontSize="14"
+                                    Background="#FF9800"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Click="AddExpenseButton_Click"
+                                    Margin="0,0,10,0">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="5"
+                                                        BorderThickness="0">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#F57C00"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+
+                            <Button x:Name="ViewExpensesButton"
+                                    Content="Переглянути мої витрати"
+                                    Height="40"
+                                    Width="180"
+                                    FontSize="14"
+                                    Background="#9C27B0"
+                                    Foreground="White"
+                                    BorderThickness="0"
+                                    Click="ViewExpensesButton_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="5"
+                                                        BorderThickness="0">
+                                                        <ContentPresenter HorizontalAlignment="Center"
+                                                                    VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Background" Value="#7B1FA2"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </StackPanel>
+
+                        <ListView x:Name="ExpensesListView"
+                                  Margin="0,0,0,0"
+                                  Visibility="Collapsed"
+                                  MaxHeight="300"
+                                  BorderThickness="0"
+                                  Background="GhostWhite"
+                                  HorizontalContentAlignment="Stretch">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="Gainsboro" BorderThickness="0,0,0,1" Padding="10">
+                                        <StackPanel>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontWeight="Bold" FontSize="16" Margin="0,0,5,0">
+                                                    <Run Text="{Binding Amount, StringFormat={}{0:F2}}"/>
+                                                    <Run Text=" "/>
+                                                    <Run Text="{Binding Currency}"/>
+                                                </TextBlock>
+                                                <TextBlock Text="-" Margin="0,0,5,0" FontSize="16"/>
+                                                <TextBlock Text="{Binding Date, StringFormat={}{0:dd.MM.yyyy}}" FontSize="16"/>
+                                            </StackPanel>
+                                            <TextBlock FontSize="12" Foreground="Gray" Margin="0,5,0,0">
+                                                <Run Text="Категорія:" FontWeight="SemiBold"/>
+                                                <Run Text="{Binding Category}"/>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Description}" 
+                                                       TextWrapping="Wrap" 
+                                                       Foreground="DarkGray" 
+                                                       Margin="0,5,0,0"
+                                                       FontSize="12"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
                     </StackPanel>
                 </StackPanel>
+                
+                
 
                 <!-- Екран логіну -->
                 <StackPanel x:Name="LoginPanel"
@@ -260,7 +365,43 @@
                 </StackPanel>
             </Border>
         </Grid>
-        
-        <!--тут були модалки-->
+
+        <!-- Модалка додавання витрати -->
+        <Grid x:Name="ExpenseModalOverlay" 
+              Grid.RowSpan="3"
+              Visibility="Collapsed" 
+              Background="#80000000" 
+              Panel.ZIndex="101">
+            <Border Background="White" 
+                    CornerRadius="10" 
+                    Padding="30" 
+                    Width="400" 
+                    VerticalAlignment="Center" 
+                    HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Додати витрату" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="Сума витрати:" Margin="0,0,0,5"/>
+                    <TextBox x:Name="ExpenseAmountBox" Height="30" Padding="5" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Валюта:" Margin="0,0,0,5"/>
+                    <ComboBox x:Name="ExpenseCurrencyBox" Height="30" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Категорія:" Margin="0,0,0,5"/>
+                    <ComboBox x:Name="ExpenseCategoryBox" Height="30" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Дата:" Margin="0,0,0,5"/>
+                    <DatePicker x:Name="ExpenseDateBox" Height="30" Margin="0,0,0,15"/>
+
+                    <TextBlock Text="Опис:" Margin="0,0,0,5"/>
+                    <TextBox x:Name="ExpenseDescriptionBox" Height="60" Padding="5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Зберегти" Width="80" Height="35" Margin="0,0,10,0" Click="ExpenseModalOk_Click" Background="#FF9800" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                        <Button Content="Скасувати" Width="80" Height="35" Click="ExpenseModalCancel_Click" Background="#9E9E9E" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
