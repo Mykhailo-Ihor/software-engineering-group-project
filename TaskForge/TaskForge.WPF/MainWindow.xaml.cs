@@ -45,6 +45,14 @@ namespace TaskForge.WPF
             _taskService = taskService;
             _expenseService = expenseService;
             InitializeExpenseComboBoxes();
+
+            MainContentPanel.Visibility = Visibility.Collapsed;
+            UserInfoPanel.Visibility = Visibility.Collapsed;
+            LoginPanel.Visibility = Visibility.Visible;
+            LoginButton.Visibility = Visibility.Visible;
+            LogoutButton.Visibility = Visibility.Collapsed;
+            ProjectsListView.Visibility = Visibility.Collapsed;
+            ExpensesListView.Visibility = Visibility.Collapsed;
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -98,14 +106,14 @@ namespace TaskForge.WPF
                 _currentLoginResult = null;
                 UserNameText.Text = string.Empty;
                 UserEmailText.Text = string.Empty;
-                UserIdText.Text = string.Empty;
-
+                MainContentPanel.Visibility = Visibility.Collapsed;
                 UserInfoPanel.Visibility = Visibility.Collapsed;
                 LoginPanel.Visibility = Visibility.Visible;
                 LogoutButton.Visibility = Visibility.Collapsed;
                 LoginButton.Visibility = Visibility.Visible;
                 ProjectsListView.ItemsSource = null;
                 ProjectsListView.Visibility = Visibility.Collapsed;
+                ExpensesListView.Visibility = Visibility.Collapsed;
 
                 LoginButton.IsEnabled = true;
 
@@ -123,17 +131,50 @@ namespace TaskForge.WPF
         {
             var userName = _auth0Service.GetUserName(loginResult) ?? "Невідомо";
             var userEmail = _auth0Service.GetUserEmail(loginResult) ?? "Невідомо";
-            var userId = _auth0Service.GetUserId(loginResult) ?? "Невідомо";
+            var avatarUrl = _auth0Service.GetUserAvatarUrl(loginResult);
 
             UserNameText.Text = userName;
             UserEmailText.Text = userEmail;
-            UserIdText.Text = userId;
-
-            LoginPanel.Visibility = Visibility.Collapsed;
+            if (!string.IsNullOrEmpty(avatarUrl))
+            {
+                UserAvatarBrush.ImageSource = new System.Windows.Media.Imaging.BitmapImage(new Uri(avatarUrl));
+            }
+            else
+            {
+                UserAvatarBrush.ImageSource = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/TaskForge.WPF;component/Resources/avatar_placeholder.png"));
+            }
+            MainContentPanel.Visibility = Visibility.Visible;
             UserInfoPanel.Visibility = Visibility.Visible;
+            LoginPanel.Visibility = Visibility.Collapsed;
             LoginButton.Visibility = Visibility.Collapsed;
             LogoutButton.Visibility = Visibility.Visible;
-            LogoutButton.IsEnabled = true;
+        }
+
+        private async void ProfileButton_Click(object sender, RoutedEventArgs e)
+        {
+            var profileWindow = new ProfileWindow(_currentLoginResult, _auth0Service, _userService);
+            profileWindow.Owner = this;
+            profileWindow.ShowDialog();
+
+            if (_currentLoginResult != null && !_currentLoginResult.IsError)
+            {
+                var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
+                var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
+                if (user != null)
+                {
+                    UserNameText.Text = $"{user.FirstName} {user.LastName}";
+                    UserEmailText.Text = user.Email;
+                    var avatarUrl = _auth0Service.GetUserAvatarUrl(_currentLoginResult);
+                    if (!string.IsNullOrEmpty(avatarUrl))
+                    {
+                        UserAvatarBrush.ImageSource = new System.Windows.Media.Imaging.BitmapImage(new Uri(avatarUrl));
+                    }
+                    else
+                    {
+                        UserAvatarBrush.ImageSource = new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/TaskForge.WPF;component/Resources/avatar_placeholder.png"));
+                    }
+                }
+            }
         }
 
         private void CreateProjectButton_Click(object sender, RoutedEventArgs e)

@@ -50,6 +50,12 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
+
+    public async Task<User?> GetUserByIdAsync(int userId)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
     public async Task<bool> IsUserInProjectAsync(int userId, int projectId)
     {
         return await _context.ProjectUsers.AnyAsync(pu => pu.UserId == userId && pu.ProjectId == projectId);
@@ -66,6 +72,7 @@ public class UserRepository : IUserRepository
         _context.ProjectUsers.Add(projectUser);
         await _context.SaveChangesAsync();
     }
+
     public async Task UpdateUserRoleInProjectAsync(int userId, int projectId, TaskForge.Domain.Enums.Role newRole)
     {
         var projectUser = await _context.ProjectUsers
@@ -76,5 +83,11 @@ public class UserRepository : IUserRepository
             projectUser.Role = newRole;
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task UpdateUserAsync(User user)
+    {
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
     }
 }

@@ -21,6 +21,14 @@ namespace TaskForge.WPF
                 Scope = "openid profile email"
             };
 
+            //var options = new Auth0ClientOptions
+            //{
+            //    Domain = "dev-ki8p3p3wo311vi24.us.auth0.com",
+            //    ClientId = "o9CH63Qr9LfNfY5uKFlaz9Z3NOfUjRVc",
+            //    RedirectUri = "http://localhost:7890/callback",
+            //    PostLogoutRedirectUri = "http://localhost:7890",
+            //};
+
             _auth0Client = new Auth0Client(options);
         }
 
@@ -77,6 +85,22 @@ namespace TaskForge.WPF
         public string GetAccessToken(LoginResult loginResult)
         {
             return loginResult?.AccessToken;
+        }
+
+        public string GetUserAvatarUrl(LoginResult loginResult)
+        {
+            // Try to get the avatar URL from the claims (Google login provides 'picture')
+            return loginResult?.User?.FindFirst(c => c.Type == "picture")?.Value;
+        }
+
+        public string GetUserConnection(LoginResult loginResult)
+        {
+            var sub = GetUserId(loginResult);
+            if (sub != null && sub.StartsWith("google-oauth2|"))
+                return "google-oauth2";
+            if (sub != null && sub.StartsWith("auth0|"))
+                return "Username-Password-Authentication";
+            return "unknown";
         }
     }
 }
