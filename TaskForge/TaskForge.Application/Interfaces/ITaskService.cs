@@ -11,5 +11,7 @@ namespace TaskForge.Application.Interfaces
         Task AssignUserToTaskAsync(int taskId, int userId);
         Task UnassignUserFromTaskAsync(int taskId, int userId);
         Task<bool> DeleteTaskAsync(int taskId);
+        Task<TaskEntity> UpdateTaskAsync(TaskEntity task);
+        Task<TaskEntity> GetTaskByIdAsync(int taskId);
     }
 }
