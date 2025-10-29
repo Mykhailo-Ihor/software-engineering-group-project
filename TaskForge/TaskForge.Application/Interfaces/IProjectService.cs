@@ -37,4 +37,5 @@ public interface IProjectService
     /// <param name="role">The role of the user in the project.</param>
     /// <returns>The created project.</returns>
     Task<Project> CreateProjectForUserAsync(string name, string status, string description, int userId, Role role);
+    Task<ProjectUser> GetProjectUserAsync(int userId, int projectId);
 }

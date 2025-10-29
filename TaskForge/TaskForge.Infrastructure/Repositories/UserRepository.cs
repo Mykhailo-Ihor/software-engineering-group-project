@@ -66,4 +66,15 @@ public class UserRepository : IUserRepository
         _context.ProjectUsers.Add(projectUser);
         await _context.SaveChangesAsync();
     }
+    public async Task UpdateUserRoleInProjectAsync(int userId, int projectId, TaskForge.Domain.Enums.Role newRole)
+    {
+        var projectUser = await _context.ProjectUsers
+            .FirstOrDefaultAsync(pu => pu.UserId == userId && pu.ProjectId == projectId);
+
+        if (projectUser != null)
+        {
+            projectUser.Role = newRole;
+            await _context.SaveChangesAsync();
+        }
+    }
 }

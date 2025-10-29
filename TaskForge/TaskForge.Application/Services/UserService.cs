@@ -25,5 +25,10 @@ namespace TaskForge.Application.Services
             => _userRepository.IsUserInProjectAsync(userId, projectId);
         public Task AddUserToProjectAsync(int userId, int projectId, Role role)
             => _userRepository.AddUserToProjectAsync(userId, projectId, role);
+
+        public async Task UpdateUserRoleInProjectAsync(int userId, int projectId, Role newRole)
+        {
+            await _userRepository.UpdateUserRoleInProjectAsync(userId, projectId, newRole);
+        }
     }
 }

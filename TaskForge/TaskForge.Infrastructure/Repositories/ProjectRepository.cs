@@ -61,4 +61,8 @@ public class ProjectRepository:IProjectRepository
             .ThenInclude(tu => tu.User)
             .ToListAsync();
     }
+    public async Task<ProjectUser> GetProjectUserAsync(int userId, int projectId)
+    {
+        return await _context.ProjectUsers.FirstOrDefaultAsync(pu => pu.UserId == userId && pu.ProjectId == projectId);
+    }
 }
