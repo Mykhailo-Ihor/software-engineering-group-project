@@ -86,5 +86,40 @@ namespace TaskForge.Tests
             // Assert
             Assert.Null(result);
         }
+
+        [Fact]
+        public async Task UpdateUserProfileAsync_WhenUserExists_UpdatesUser()
+        {
+            // Arrange
+            int userId = 42;
+            var user = new User { Id = userId, FirstName = "Old", LastName = "Name", Email = "old@email.com", Auth0UserId = "auth0|42" };
+            _mockUserRepository.Setup(r => r.GetUserByIdAsync(userId)).ReturnsAsync(user);
+            _mockUserRepository.Setup(r => r.UpdateUserAsync(It.IsAny<User>())).Returns(Task.CompletedTask).Verifiable();
+
+            // Act
+            await _userService.UpdateUserProfileAsync(userId, "NewFirst", "NewLast", "new@email.com");
+
+            // Assert
+            _mockUserRepository.Verify(r => r.UpdateUserAsync(It.Is<User>(u =>
+                u.Id == userId &&
+                u.FirstName == "NewFirst" &&
+                u.LastName == "NewLast" &&
+                u.Email == "new@email.com"
+            )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateUserProfileAsync_WhenUserDoesNotExist_DoesNotUpdateUser()
+        {
+            // Arrange
+            int userId = 99;
+            _mockUserRepository.Setup(r => r.GetUserByIdAsync(userId)).ReturnsAsync((User)null);
+
+            // Act
+            await _userService.UpdateUserProfileAsync(userId, "First", "Last", "email@example.com");
+
+            // Assert
+            _mockUserRepository.Verify(r => r.UpdateUserAsync(It.IsAny<User>()), Times.Never);
+        }
     }
 }

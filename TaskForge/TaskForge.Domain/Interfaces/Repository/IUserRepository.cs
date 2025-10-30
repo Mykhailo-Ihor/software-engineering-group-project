@@ -13,5 +13,7 @@ namespace TaskForge.Domain.Interfaces
         Task<bool> IsUserInProjectAsync(int userId, int projectId);
         Task AddUserToProjectAsync(int userId, int projectId, TaskForge.Domain.Enums.Role role);
         Task UpdateUserRoleInProjectAsync(int userId, int projectId, TaskForge.Domain.Enums.Role newRole);
+        Task<User?> GetUserByIdAsync(int userId);
+        Task UpdateUserAsync(User user);
     }
 }

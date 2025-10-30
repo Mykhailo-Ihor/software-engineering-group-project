@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\avatar_placeholder.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Auth0.ManagementApi" Version="7.42.0" />
     <PackageReference Include="Auth0.OidcClient.WPF" Version="4.4.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -42,6 +47,10 @@
     <Folder Include="Behaviors\" />
     <Folder Include="Resources\Styles\" />
     <Folder Include="VIewModels\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\avatar_placeholder.png" />
   </ItemGroup>
 
 </Project>

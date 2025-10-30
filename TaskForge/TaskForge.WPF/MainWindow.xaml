@@ -20,42 +20,32 @@
                    FontWeight="Bold"
                    HorizontalAlignment="Center"
                    Margin="0,20,0,20"/>
-
-        <!-- Контент (центральна частина) -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
-                <!-- Інформація про користувача -->
-                <StackPanel x:Name="UserInfoPanel"
-                            Visibility="Collapsed"
-                            Margin="50,0,50,0">
-                    <Border Background="#E8F5E9" 
-                            BorderBrush="#4CAF50" 
-                            BorderThickness="2" 
-                            CornerRadius="5" 
-                            Padding="20">
-                        <StackPanel>
-                            <TextBlock Text="Ви увійшли!" 
-                                       FontSize="18" 
-                                       FontWeight="Bold" 
-                                       Foreground="#2E7D32"
-                                       Margin="0,0,0,15"/>
 
-                            <StackPanel Orientation="Horizontal" Margin="0,5">
-                                <TextBlock Text="Ім'я: " FontWeight="Bold" Width="80"/>
-                                <TextBlock x:Name="UserNameText"/>
-                            </StackPanel>
+                <StackPanel x:Name="MainContentPanel" Visibility="Collapsed">
+                    <!-- Інформація про користувача -->
+                    <StackPanel x:Name="UserInfoPanel"
+                                Visibility="Collapsed"
+                                Margin="50,0,50,0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 
-                            <StackPanel Orientation="Horizontal" Margin="0,5">
-                                <TextBlock Text="Email: " FontWeight="Bold" Width="80"/>
-                                <TextBlock x:Name="UserEmailText"/>
-                            </StackPanel>
-
-                            <StackPanel Orientation="Horizontal" Margin="0,5">
-                                <TextBlock Text="User ID: " FontWeight="Bold" Width="80"/>
-                                <TextBlock x:Name="UserIdText" TextWrapping="Wrap"/>
+                            <Button x:Name="ProfileButton" Click="ProfileButton_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,20,0">
+                                <StackPanel>
+                                    <Ellipse x:Name="UserAvatarEllipse" Width="64" Height="64" Stroke="#4CAF50" StrokeThickness="2">
+                                        <Ellipse.Fill>
+                                            <ImageBrush x:Name="UserAvatarBrush" ImageSource="/Resources/avatar_placeholder.png" />
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                    <TextBlock x:Name="UserNameText" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                </StackPanel>
+                            </Button>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Email:" FontWeight="Bold" HorizontalAlignment="Left"/>
+                                <TextBlock x:Name="UserEmailText" HorizontalAlignment="Left"/>
                             </StackPanel>
                         </StackPanel>
-                    </Border>
+                    </StackPanel>
 
                     <StackPanel HorizontalAlignment="Stretch" Margin="0,20,0,0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -124,7 +114,7 @@
                                 </Button.Style>
                             </Button>
                         </StackPanel>
-                        
+
                         <ListView x:Name="ProjectsListView"
                                   Margin="0,15,0,0"
                                   Visibility="Collapsed"
@@ -153,7 +143,7 @@
                                                        FontWeight="Bold" 
                                                        FontSize="16" 
                                                        Foreground="#2196F3"
-                                                       TextDecorations="Underline"/>                
+                                                       TextDecorations="Underline"/>
                                                     <Button.Style>
                                                         <Style TargetType="Button">
                                                             <Style.Triggers>
@@ -170,8 +160,6 @@
                                                     <Run Text="{Binding Status}" Foreground="DarkCyan"/>
                                                 </TextBlock>
                                             </StackPanel>
-
-                                            <!--тут була кнопка для додати завдання-->
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
@@ -294,7 +282,6 @@
                                HorizontalAlignment="Center"
                                Margin="0,0,0,20"
                                TextWrapping="Wrap"/>
-
                     <TextBlock Text="Натисніть кнопку нижче для входу або реєстрації" 
                                HorizontalAlignment="Center"
                                Foreground="Gray"
