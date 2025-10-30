@@ -82,7 +82,7 @@ namespace TaskForge.WPF
                 await _userService.AddUserFromAuth0ResponseAsync(firstName, lastName, userEmail, userId);
 
                 ShowUserInfo(_currentLoginResult);
-                
+                LogoutButton.IsEnabled = true;
                 StatusText.Text = "Успішний вхід!";
             }
             catch (Exception ex)
