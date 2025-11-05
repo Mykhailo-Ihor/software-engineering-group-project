@@ -2,11 +2,11 @@ using TaskForge.Domain.Entities;
 using TaskForge.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using TaskForge.Domain.Enums;
-using TaskForge.Domain.Interfaces;  
+using TaskForge.Domain.Interfaces;
 
 namespace TaskForge.Infrastructure.Repositories;
 
-public class ProjectRepository:IProjectRepository
+public class ProjectRepository : IProjectRepository
 {
     private readonly TaskForgeDbContext _context;
 
@@ -46,12 +46,12 @@ public class ProjectRepository:IProjectRepository
             .ToListAsync();
     }
     public async Task<List<Project>> GetProjectsForUserAsync(int userId)
-        {
-            return await _context.ProjectUsers
-                .Where(pu => pu.UserId == userId)
-                .Select(pu => pu.Project)
-                .ToListAsync();
-        }
+    {
+        return await _context.ProjectUsers
+            .Where(pu => pu.UserId == userId)
+            .Select(pu => pu.Project)
+            .ToListAsync();
+    }
 
     public async Task<List<TaskEntity>> GetTasksByProjectIdAsync(int projectId)
     {

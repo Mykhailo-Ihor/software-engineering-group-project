@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TaskForge.Domain.Enums;
 
 namespace TaskForge.Domain.Entities;
 
@@ -23,9 +24,7 @@ public class Password
     [MaxLength(500)]
     public string Note { get; set; }
 
-    [MaxLength(50)]
-    public string Category { get; set; }
-
+    public PasswordCategory Category { get; set; }
     [Required]
     public int UserId { get; set; }
     [ForeignKey(nameof(UserId))]
