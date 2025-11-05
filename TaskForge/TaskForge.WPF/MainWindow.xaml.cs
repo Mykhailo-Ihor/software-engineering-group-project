@@ -52,7 +52,7 @@ namespace TaskForge.WPF
             LoginButton.Visibility = Visibility.Visible;
             LogoutButton.Visibility = Visibility.Collapsed;
             ProjectsListView.Visibility = Visibility.Collapsed;
-            ExpensesListView.Visibility = Visibility.Collapsed;
+            //ExpensesListView.Visibility = Visibility.Collapsed;
         }
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
@@ -113,7 +113,7 @@ namespace TaskForge.WPF
                 LoginButton.Visibility = Visibility.Visible;
                 ProjectsListView.ItemsSource = null;
                 ProjectsListView.Visibility = Visibility.Collapsed;
-                ExpensesListView.Visibility = Visibility.Collapsed;
+                //ExpensesListView.Visibility = Visibility.Collapsed;
 
                 LoginButton.IsEnabled = true;
 
@@ -366,10 +366,10 @@ namespace TaskForge.WPF
                 ExpenseModalOverlay.Visibility = Visibility.Collapsed;
 
                 // Якщо список витрат вже відображається, оновлюємо його
-                if (ExpensesListView.Visibility == Visibility.Visible)
-                {
-                    await LoadUserExpenses();
-                }
+                //if (ExpensesListView.Visibility == Visibility.Visible)
+                //{
+                //    await LoadUserExpenses();
+                //}
             }
             catch (Exception ex)
             {
@@ -384,9 +384,30 @@ namespace TaskForge.WPF
 
         private async void ViewExpensesButton_Click(object sender, RoutedEventArgs e)
         {
-            await LoadUserExpenses();
-        }
+            try
+            {
+                if (_currentLoginResult == null || _currentLoginResult.IsError)
+                {
+                    MessageBox.Show("Будь ласка, увійдіть в систему, щоб переглянути витрати.");
+                    return;
+                }
 
+                // Створюємо та відкриваємо нове вікно, передаючи необхідні сервіси
+                var summaryWindow = new FinancialSummaryWindow(
+                    _expenseService,
+                    _userService,
+                    _auth0Service,
+                    _currentLoginResult
+                );
+
+                summaryWindow.Owner = this; // Встановлюємо головне вікно як власника
+                summaryWindow.ShowDialog(); // Відкриваємо модально
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка відкриття вікна витрат: {ex.Message}", "Помилка");
+            }
+        }
         private async Task LoadUserExpenses()
         {
             try
@@ -406,9 +427,6 @@ namespace TaskForge.WPF
                 }
 
                 var userExpenses = await _expenseService.GetUserExpensesAsync(user.Id);
-
-                ExpensesListView.ItemsSource = userExpenses;
-                ExpensesListView.Visibility = Visibility.Visible;
 
                 if (!userExpenses.Any())
                 {
