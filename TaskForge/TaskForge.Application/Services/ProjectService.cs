@@ -49,4 +49,22 @@ public class ProjectService : IProjectService
     {
         return await _projectRepository.GetProjectUserAsync(userId, projectId);
     }
+    public async Task<Project> GetProjectByIdAsync(int projectId)
+    {
+        return await _projectRepository.GetProjectByIdAsync(projectId);
+    }
+    public async Task<Project> UpdateProjectAsync(int projectId, string name, string description, string status)
+    {
+        var project = await _projectRepository.GetProjectByIdAsync(projectId);
+        if (project == null)
+        {
+            throw new Exception($"Проєкт з ID {projectId} не знайдено.");
+        }
+
+        project.Name = name;
+        project.Description = description;
+        project.Status = status;
+
+        return await _projectRepository.UpdateProjectAsync(project);
+    }
 }
