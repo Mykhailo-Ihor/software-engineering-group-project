@@ -65,4 +65,14 @@ public class ProjectRepository:IProjectRepository
     {
         return await _context.ProjectUsers.FirstOrDefaultAsync(pu => pu.UserId == userId && pu.ProjectId == projectId);
     }
+    public async Task<Project> GetProjectByIdAsync(int projectId)
+    {
+        return await _context.Projects.FindAsync(projectId);
+    }
+    public async Task<Project> UpdateProjectAsync(Project project)
+    {
+        _context.Projects.Update(project);
+        await _context.SaveChangesAsync();
+        return project;
+    }
 }
