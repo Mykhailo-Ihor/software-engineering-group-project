@@ -12,22 +12,22 @@ namespace TaskForge.WPF
 
         public Auth0Service()
         {
-            //var options = new Auth0ClientOptions
-            //{
-            //    Domain = "dev-4o6nraj4dugki1zl.us.auth0.com",
-            //    ClientId = "dbNBZAMnuH3rYesM83BmaK1VTQgeayzL",
-            //    RedirectUri = "http://localhost/callback",
-            //    PostLogoutRedirectUri = "http://localhost",
-            //    Scope = "openid profile email"
-            //};
-
             var options = new Auth0ClientOptions
             {
-                Domain = "dev-ki8p3p3wo311vi24.us.auth0.com",
-                ClientId = "o9CH63Qr9LfNfY5uKFlaz9Z3NOfUjRVc",
-                RedirectUri = "http://localhost:7890/callback",
-                PostLogoutRedirectUri = "http://localhost:7890",
+                Domain = "dev-4o6nraj4dugki1zl.us.auth0.com",
+                ClientId = "dbNBZAMnuH3rYesM83BmaK1VTQgeayzL",
+                RedirectUri = "http://localhost/callback",
+                PostLogoutRedirectUri = "http://localhost",
+                Scope = "openid profile email"
             };
+
+            // var options = new Auth0ClientOptions
+            // {
+            //     Domain = "dev-ki8p3p3wo311vi24.us.auth0.com",
+            //     ClientId = "o9CH63Qr9LfNfY5uKFlaz9Z3NOfUjRVc",
+            //     RedirectUri = "http://localhost:7890/callback",
+            //     PostLogoutRedirectUri = "http://localhost:7890",
+            // };
 
             _auth0Client = new Auth0Client(options);
         }
