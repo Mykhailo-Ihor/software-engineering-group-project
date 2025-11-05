@@ -27,14 +27,16 @@ namespace TaskForge.WPF
         private LoginResult _currentLoginResult;
         private ITaskFilterService _taskFilterService;
         private List<int> _selectedAssigneeIds = new List<int>();
+        private readonly IPasswordService _passwordService;
 
         public MainWindow(
-            Auth0Service auth0Service, 
-            IUserService userService, 
-            IProjectService projectService, 
+            Auth0Service auth0Service,
+            IUserService userService,
+            IProjectService projectService,
             ITaskFilterService filterService,
             ITaskService taskService,
-            IExpenseService expenseService
+            IExpenseService expenseService,
+            IPasswordService passwordService
             )
         {
             InitializeComponent();
@@ -44,7 +46,7 @@ namespace TaskForge.WPF
             _taskFilterService = filterService;
             _taskService = taskService;
             _expenseService = expenseService;
-
+            _passwordService = passwordService;
             MainContentPanel.Visibility = Visibility.Collapsed;
             UserInfoPanel.Visibility = Visibility.Collapsed;
             LoginPanel.Visibility = Visibility.Visible;
@@ -235,8 +237,8 @@ namespace TaskForge.WPF
                 }
                 var currentUserId = user.Id;
                 var userProjects = await _projectService.GetUserProjectsAsync(currentUserId);
-                
-                ProjectsListView.ItemsSource = userProjects; 
+
+                ProjectsListView.ItemsSource = userProjects;
                 ProjectsListView.Visibility = Visibility.Visible;
 
                 if (!userProjects.Any())
@@ -302,6 +304,15 @@ namespace TaskForge.WPF
             {
                 MessageBox.Show($"Помилка відкриття вікна витрат: {ex.Message}", "Помилка");
             }
+        }
+        private void OpenPasswordManagerButton_Click(object sender, RoutedEventArgs e)
+        {
+            var passwordManagerWindow = new PasswordManagerWindow(
+                this._passwordService,
+                this._auth0Service,
+                this._userService,
+                _currentLoginResult);
+            passwordManagerWindow.ShowDialog();
         }
     }
 }
