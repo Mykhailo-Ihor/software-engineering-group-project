@@ -335,5 +335,117 @@ namespace TaskForge.Tests.Application.Services
             var dto = result.First();
             Assert.Equal("Moderator", dto.UserRoleInProject);
         }
+
+        [Fact]
+        public async Task GetProjectByIdAsync_ShouldReturnProject_WhenProjectExists()
+        {
+            // Arrange
+            var projectId = 1;
+            var expectedProject = new Project
+            {
+                Id = projectId,
+                Name = "Test Project",
+                Description = "Test Desc",
+                Status = "Active"
+            };
+
+            _mockProjectRepository
+                .Setup(repo => repo.GetProjectByIdAsync(projectId))
+                .ReturnsAsync(expectedProject);
+
+            // Act
+            var result = await _projectService.GetProjectByIdAsync(projectId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(projectId, result.Id);
+            Assert.Equal(expectedProject.Name, result.Name);
+            _mockProjectRepository.Verify(repo => repo.GetProjectByIdAsync(projectId), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetProjectByIdAsync_ShouldReturnNull_WhenProjectDoesNotExist()
+        {
+            // Arrange
+            var projectId = 99;
+            _mockProjectRepository
+                .Setup(repo => repo.GetProjectByIdAsync(projectId))
+                .ReturnsAsync((Project)null);
+
+            // Act
+            var result = await _projectService.GetProjectByIdAsync(projectId);
+
+            // Assert
+            Assert.Null(result);
+            _mockProjectRepository.Verify(repo => repo.GetProjectByIdAsync(projectId), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateProjectAsync_ShouldUpdateAndReturnProject_WhenProjectExists()
+        {
+            // Arrange
+            var projectId = 1;
+            var originalProject = new Project
+            {
+                Id = projectId,
+                Name = "Original Name",
+                Description = "Original Desc",
+                Status = "Active"
+            };
+
+            var newName = "Updated Name";
+            var newDesc = "Updated Desc";
+            var newStatus = "Completed";
+
+            _mockProjectRepository
+                .Setup(repo => repo.GetProjectByIdAsync(projectId))
+                .ReturnsAsync(originalProject);
+
+            _mockProjectRepository
+                .Setup(repo => repo.UpdateProjectAsync(It.IsAny<Project>()))
+                .ReturnsAsync((Project p) => p); 
+
+            // Act
+            var result = await _projectService.UpdateProjectAsync(projectId, newName, newDesc, newStatus);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(projectId, result.Id);
+            Assert.Equal(newName, result.Name);
+            Assert.Equal(newDesc, result.Description);
+            Assert.Equal(newStatus, result.Status);
+
+            _mockProjectRepository.Verify(repo => repo.GetProjectByIdAsync(projectId), Times.Once);
+            _mockProjectRepository.Verify(repo => repo.UpdateProjectAsync(It.Is<Project>(p =>
+                p.Id == projectId &&
+                p.Name == newName &&
+                p.Description == newDesc &&
+                p.Status == newStatus
+            )), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateProjectAsync_ShouldThrowException_WhenProjectDoesNotExist()
+        {
+            // Arrange
+            var projectId = 99;
+            var newName = "Updated Name";
+            var newDesc = "Updated Desc";
+            var newStatus = "Completed";
+
+            _mockProjectRepository
+                .Setup(repo => repo.GetProjectByIdAsync(projectId))
+                .ReturnsAsync((Project)null);
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<Exception>(() =>
+                _projectService.UpdateProjectAsync(projectId, newName, newDesc, newStatus)
+            );
+
+            Assert.Equal($"Проєкт з ID {projectId} не знайдено.", ex.Message);
+
+            _mockProjectRepository.Verify(repo => repo.GetProjectByIdAsync(projectId), Times.Once);
+            _mockProjectRepository.Verify(repo => repo.UpdateProjectAsync(It.IsAny<Project>()), Times.Never);
+        }
     }
 }
