@@ -14,7 +14,7 @@ using TaskForge.Application.Interfaces;
 
 namespace TaskForge.WPF
 {
-    public partial class App : System.Windows.Application 
+    public partial class App : System.Windows.Application
     {
         private IServiceProvider _serviceProvider;
 
@@ -33,7 +33,9 @@ namespace TaskForge.WPF
             services.AddSingleton<ITaskService, TaskService>();
             services.AddSingleton<IExpenseService, ExpenseService>();
             services.AddSingleton<IExpenseRepository, ExpenseRepository>();
-         
+            services.AddSingleton<IPasswordRepository, PasswordRepository>();
+            services.AddSingleton<IPasswordService, PasswordService>();
+
 
             // Register DbContext
             services.AddDbContext<TaskForgeDbContext>(options =>
@@ -44,6 +46,8 @@ namespace TaskForge.WPF
 
             _serviceProvider = services.BuildServiceProvider();
         }
+
+        public IServiceProvider Services => _serviceProvider;
 
         protected override void OnStartup(StartupEventArgs e)
         {

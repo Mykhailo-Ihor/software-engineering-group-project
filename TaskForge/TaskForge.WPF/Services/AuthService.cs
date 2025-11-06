@@ -21,13 +21,13 @@ namespace TaskForge.WPF
                 Scope = "openid profile email"
             };
 
-            //var options = new Auth0ClientOptions
-            //{
-            //    Domain = "dev-ki8p3p3wo311vi24.us.auth0.com",
-            //    ClientId = "o9CH63Qr9LfNfY5uKFlaz9Z3NOfUjRVc",
-            //    RedirectUri = "http://localhost:7890/callback",
-            //    PostLogoutRedirectUri = "http://localhost:7890",
-            //};
+            // var options = new Auth0ClientOptions
+            // {
+            //     Domain = "dev-ki8p3p3wo311vi24.us.auth0.com",
+            //     ClientId = "o9CH63Qr9LfNfY5uKFlaz9Z3NOfUjRVc",
+            //     RedirectUri = "http://localhost:7890/callback",
+            //     PostLogoutRedirectUri = "http://localhost:7890",
+            // };
 
             _auth0Client = new Auth0Client(options);
         }

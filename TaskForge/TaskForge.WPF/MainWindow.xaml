@@ -168,39 +168,6 @@
                         <Separator Margin="0,15,0,15"/>
                         <TextBlock Text="Витрати" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
-                            <Button x:Name="AddExpenseButton"
-                                    Content="Додати витрату"
-                                    Height="40"
-                                    Width="150"
-                                    FontSize="14"
-                                    Background="#FF9800"
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Click="AddExpenseButton_Click"
-                                    Margin="0,0,10,0">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border Background="{TemplateBinding Background}"
-                                                        CornerRadius="5"
-                                                        BorderThickness="0">
-                                                        <ContentPresenter HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#F57C00"/>
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Button.Style>
-                            </Button>
-
                             <Button x:Name="ViewExpensesButton"
                                     Content="Переглянути мої витрати"
                                     Height="40"
@@ -234,6 +201,38 @@
                             </Button>
                         </StackPanel>
 
+                        <Button x:Name="OpenPasswordManagerButton"
+                                Content="Password Manager"
+                                Height="40"
+                                Width="180"
+                                FontSize="14"
+                                Background="#3F51B5"
+                                Foreground="White"
+                                BorderThickness="0"
+                                Click="OpenPasswordManagerButton_Click"
+                                Margin="0,10,0,0">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}"
+                                                        CornerRadius="5"
+                                                        BorderThickness="0">
+                                                    <ContentPresenter HorizontalAlignment="Center"
+                                                                      VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#303F9F"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
                 
@@ -314,44 +313,6 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="OK" Width="80" Height="35" Margin="0,0,10,0" Click="ProjectModalOk_Click" Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"/>
                         <Button Content="Скасувати" Width="80" Height="35" Click="ProjectModalCancel_Click" Background="#9E9E9E" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-        </Grid>
-
-        <!-- Модалка додавання витрати -->
-        <Grid x:Name="ExpenseModalOverlay" 
-              Grid.RowSpan="3"
-              Visibility="Collapsed" 
-              Background="#80000000" 
-              Panel.ZIndex="101">
-            <Border Background="White" 
-                    CornerRadius="10" 
-                    Padding="30" 
-                    Width="400" 
-                    VerticalAlignment="Center" 
-                    HorizontalAlignment="Center">
-                <StackPanel>
-                    <TextBlock Text="Додати витрату" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
-
-                    <TextBlock Text="Сума витрати:" Margin="0,0,0,5"/>
-                    <TextBox x:Name="ExpenseAmountBox" Height="30" Padding="5" Margin="0,0,0,15"/>
-
-                    <TextBlock Text="Валюта:" Margin="0,0,0,5"/>
-                    <ComboBox x:Name="ExpenseCurrencyBox" Height="30" Margin="0,0,0,15"/>
-
-                    <TextBlock Text="Категорія:" Margin="0,0,0,5"/>
-                    <ComboBox x:Name="ExpenseCategoryBox" Height="30" Margin="0,0,0,15"/>
-
-                    <TextBlock Text="Дата:" Margin="0,0,0,5"/>
-                    <DatePicker x:Name="ExpenseDateBox" Height="30" Margin="0,0,0,15"/>
-
-                    <TextBlock Text="Опис:" Margin="0,0,0,5"/>
-                    <TextBox x:Name="ExpenseDescriptionBox" Height="60" Padding="5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
-
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Зберегти" Width="80" Height="35" Margin="0,0,10,0" Click="ExpenseModalOk_Click" Background="#FF9800" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                        <Button Content="Скасувати" Width="80" Height="35" Click="ExpenseModalCancel_Click" Background="#9E9E9E" Foreground="White" BorderThickness="0" Cursor="Hand"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -30,6 +30,7 @@ namespace TaskForge.WPF
         private readonly Auth0Service _auth0Service;
         private readonly ITaskFilterService _taskFilterService;
         private readonly LoginResult _currentLoginResult;
+        private readonly ProjectDto _projectDto;
         private readonly int _projectId;
 
         private List<int> _selectedAssigneeIds = new List<int>();
@@ -54,6 +55,7 @@ namespace TaskForge.WPF
             _currentLoginResult = currentLoginResult;
             _taskFilterService = taskFilterService;
             ProjectNameText.Text = projectDto.Name;
+            _projectDto = projectDto;
             ProjectDescriptionText.Text = projectDto.Description ?? "Опис відсутній";
             ProjectStatusText.Text = $"Статус: {projectDto.Status} | Ваша роль: {projectDto.UserRoleInProject}";
 
@@ -68,6 +70,7 @@ namespace TaskForge.WPF
             if (projectUser?.Role == TaskForge.Domain.Enums.Role.Moderator)
             {
                 ManageModeratorsButton.Visibility = Visibility.Visible;
+                EditProjectButton.Visibility = Visibility.Visible;
             }
             
             await LoadProjectDetails();
@@ -481,6 +484,56 @@ namespace TaskForge.WPF
             EditTaskDueDateBox.SelectedDate = null;
             _editingTaskId = 0;
         }
+
+        private void EditProjectButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Заповнюємо поля модального вікна поточними даними проєкту
+            EditProjectNameBox.Text = _projectDto.Name;
+            EditProjectDescriptionBox.Text = _projectDto.Description;
+            EditProjectStatusBox.Text = _projectDto.Status;
+
+            EditProjectModalOverlay.Visibility = Visibility.Visible;
+        }
+
+        private async void EditProjectSave_Click(object sender, RoutedEventArgs e)
+        {
+            var newName = EditProjectNameBox.Text.Trim();
+            var newDescription = EditProjectDescriptionBox.Text.Trim();
+            var newStatus = EditProjectStatusBox.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(newName) || string.IsNullOrWhiteSpace(newStatus))
+            {
+                MessageBox.Show("Назва та Статус проєкту не можуть бути порожніми.", "Валідація", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var updatedProject = await _projectService.UpdateProjectAsync(_projectId, newName, newDescription, newStatus);
+
+                // Оновлюємо дані DTO та UI
+                _projectDto.Name = updatedProject.Name;
+                _projectDto.Description = updatedProject.Description;
+                _projectDto.Status = updatedProject.Status;
+
+                ProjectNameText.Text = _projectDto.Name;
+                ProjectDescriptionText.Text = _projectDto.Description ?? "Опис відсутній";
+                ProjectStatusText.Text = $"Статус: {_projectDto.Status} | Ваша роль: {_projectDto.UserRoleInProject}";
+
+                MessageBox.Show("Проєкт успішно оновлено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                EditProjectModalOverlay.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка оновлення проєкту: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void EditProjectCancel_Click(object sender, RoutedEventArgs e)
+        {
+            EditProjectModalOverlay.Visibility = Visibility.Collapsed;
+        }
+
     }
     public class UserSelectionViewModel
     {

@@ -2,11 +2,11 @@ using TaskForge.Domain.Entities;
 using TaskForge.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using TaskForge.Domain.Enums;
-using TaskForge.Domain.Interfaces;  
+using TaskForge.Domain.Interfaces;
 
 namespace TaskForge.Infrastructure.Repositories;
 
-public class ProjectRepository:IProjectRepository
+public class ProjectRepository : IProjectRepository
 {
     private readonly TaskForgeDbContext _context;
 
@@ -46,12 +46,12 @@ public class ProjectRepository:IProjectRepository
             .ToListAsync();
     }
     public async Task<List<Project>> GetProjectsForUserAsync(int userId)
-        {
-            return await _context.ProjectUsers
-                .Where(pu => pu.UserId == userId)
-                .Select(pu => pu.Project)
-                .ToListAsync();
-        }
+    {
+        return await _context.ProjectUsers
+            .Where(pu => pu.UserId == userId)
+            .Select(pu => pu.Project)
+            .ToListAsync();
+    }
 
     public async Task<List<TaskEntity>> GetTasksByProjectIdAsync(int projectId)
     {
@@ -64,5 +64,15 @@ public class ProjectRepository:IProjectRepository
     public async Task<ProjectUser> GetProjectUserAsync(int userId, int projectId)
     {
         return await _context.ProjectUsers.FirstOrDefaultAsync(pu => pu.UserId == userId && pu.ProjectId == projectId);
+    }
+    public async Task<Project> GetProjectByIdAsync(int projectId)
+    {
+        return await _context.Projects.FindAsync(projectId);
+    }
+    public async Task<Project> UpdateProjectAsync(Project project)
+    {
+        _context.Projects.Update(project);
+        await _context.SaveChangesAsync();
+        return project;
     }
 }

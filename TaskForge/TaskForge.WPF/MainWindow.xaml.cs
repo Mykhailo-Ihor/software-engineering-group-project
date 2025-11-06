@@ -27,14 +27,16 @@ namespace TaskForge.WPF
         private LoginResult _currentLoginResult;
         private ITaskFilterService _taskFilterService;
         private List<int> _selectedAssigneeIds = new List<int>();
+        private readonly IPasswordService _passwordService;
 
         public MainWindow(
-            Auth0Service auth0Service, 
-            IUserService userService, 
-            IProjectService projectService, 
+            Auth0Service auth0Service,
+            IUserService userService,
+            IProjectService projectService,
             ITaskFilterService filterService,
             ITaskService taskService,
-            IExpenseService expenseService
+            IExpenseService expenseService,
+            IPasswordService passwordService
             )
         {
             InitializeComponent();
@@ -44,8 +46,7 @@ namespace TaskForge.WPF
             _taskFilterService = filterService;
             _taskService = taskService;
             _expenseService = expenseService;
-            InitializeExpenseComboBoxes();
-
+            _passwordService = passwordService;
             MainContentPanel.Visibility = Visibility.Collapsed;
             UserInfoPanel.Visibility = Visibility.Collapsed;
             LoginPanel.Visibility = Visibility.Visible;
@@ -236,8 +237,8 @@ namespace TaskForge.WPF
                 }
                 var currentUserId = user.Id;
                 var userProjects = await _projectService.GetUserProjectsAsync(currentUserId);
-                
-                ProjectsListView.ItemsSource = userProjects; 
+
+                ProjectsListView.ItemsSource = userProjects;
                 ProjectsListView.Visibility = Visibility.Visible;
 
                 if (!userProjects.Any())
@@ -278,110 +279,6 @@ namespace TaskForge.WPF
             );
             detailsWindow.ShowDialog();
         }
-
-        private void InitializeExpenseComboBoxes()
-        {
-            // Заповнюємо валюти
-            ExpenseCurrencyBox.ItemsSource = Enum.GetValues(typeof(Currency));
-            ExpenseCurrencyBox.SelectedIndex = 0;
-
-            // Заповнюємо категорії
-            ExpenseCategoryBox.ItemsSource = Enum.GetValues(typeof(ExpenceCategory));
-            ExpenseCategoryBox.SelectedIndex = 0;
-        }
-
-        private void AddExpenseButton_Click(object sender, RoutedEventArgs e)
-        {
-            ExpenseModalOverlay.Visibility = Visibility.Visible;
-            ExpenseAmountBox.Text = string.Empty;
-            ExpenseCurrencyBox.SelectedIndex = 0;
-            ExpenseCategoryBox.SelectedIndex = 0;
-            ExpenseDateBox.SelectedDate = DateTime.Today;
-            ExpenseDescriptionBox.Text = string.Empty;
-        }
-
-        private async void ExpenseModalOk_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // Валідація
-                if (string.IsNullOrWhiteSpace(ExpenseAmountBox.Text))
-                {
-                    MessageBox.Show("Будь ласка, введіть суму витрати.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                if (!decimal.TryParse(ExpenseAmountBox.Text, out decimal amount) || amount <= 0)
-                {
-                    MessageBox.Show("Будь ласка, введіть коректну суму (число більше 0).", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                if (ExpenseCurrencyBox.SelectedItem == null)
-                {
-                    MessageBox.Show("Будь ласка, виберіть валюту.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                if (ExpenseCategoryBox.SelectedItem == null)
-                {
-                    MessageBox.Show("Будь ласка, виберіть категорію.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                if (!ExpenseDateBox.SelectedDate.HasValue)
-                {
-                    MessageBox.Show("Будь ласка, виберіть дату витрати.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
-
-                // Отримання поточного користувача
-                if (_currentLoginResult == null)
-                {
-                    MessageBox.Show("Будь ласка, увійдіть в систему.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    ExpenseModalOverlay.Visibility = Visibility.Collapsed;
-                    return;
-                }
-
-                var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
-                var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
-                if (user == null)
-                {
-                    MessageBox.Show("Не вдалося знайти ваші дані в системі.");
-                    ExpenseModalOverlay.Visibility = Visibility.Collapsed;
-                    return;
-                }
-
-                // Отримання значень з ComboBox'ів напряму як enum
-                var currency = (Currency)ExpenseCurrencyBox.SelectedItem;
-                var category = (ExpenceCategory)ExpenseCategoryBox.SelectedItem;
-
-                var date = ExpenseDateBox.SelectedDate.Value;
-                var description = ExpenseDescriptionBox.Text.Trim();
-
-                // Створення витрати
-                await _expenseService.CreateExpenseAsync(amount, currency, category, date, description, user.Id);
-
-                MessageBox.Show("Витрату успішно додано!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-                ExpenseModalOverlay.Visibility = Visibility.Collapsed;
-
-                // Якщо список витрат вже відображається, оновлюємо його
-                //if (ExpensesListView.Visibility == Visibility.Visible)
-                //{
-                //    await LoadUserExpenses();
-                //}
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Помилка при додаванні витрати: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void ExpenseModalCancel_Click(object sender, RoutedEventArgs e)
-        {
-            ExpenseModalOverlay.Visibility = Visibility.Collapsed;
-        }
-
         private async void ViewExpensesButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -408,35 +305,14 @@ namespace TaskForge.WPF
                 MessageBox.Show($"Помилка відкриття вікна витрат: {ex.Message}", "Помилка");
             }
         }
-        private async Task LoadUserExpenses()
+        private void OpenPasswordManagerButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                if (_currentLoginResult == null || _currentLoginResult.IsError)
-                {
-                    MessageBox.Show("Будь ласка, увійдіть в систему, щоб переглянути витрати.");
-                    return;
-                }
-
-                var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
-                var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
-                if (user == null)
-                {
-                    MessageBox.Show("Не вдалося знайти ваші дані в системі.");
-                    return;
-                }
-
-                var userExpenses = await _expenseService.GetUserExpensesAsync(user.Id);
-
-                if (!userExpenses.Any())
-                {
-                    MessageBox.Show("У вас ще немає записів про витрати. Спробуйте додати нову витрату!");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Помилка завантаження витрат: {ex.Message}");
-            }
+            var passwordManagerWindow = new PasswordManagerWindow(
+                this._passwordService,
+                this._auth0Service,
+                this._userService,
+                _currentLoginResult);
+            passwordManagerWindow.ShowDialog();
         }
     }
 }
