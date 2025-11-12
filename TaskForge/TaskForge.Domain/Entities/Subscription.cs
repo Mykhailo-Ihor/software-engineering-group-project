@@ -19,7 +19,7 @@ public class Subscription
 
     [Required]
     [MaxLength(3)]
-    public string Currency { get; set; }
+    public Currency Currency { get; set; }
 
     [Required]
     public DateTime BillingDate { get; set; }

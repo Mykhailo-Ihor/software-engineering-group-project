@@ -25,6 +25,7 @@ namespace TaskForge.WPF.ViewModels
         private readonly IExpenseService _expenseService;
         private readonly ITaskFilterService _taskFilterService;
         private readonly IPasswordService _passwordService;
+        private readonly ISubscriptionService _subscriptionService;
         private LoginResult _currentLoginResult;
 
         // Visibility Properties
@@ -161,15 +162,17 @@ namespace TaskForge.WPF.ViewModels
         public ICommand OpenProjectDetailsCommand { get; }
         public ICommand ViewExpensesCommand { get; }
         public ICommand OpenPasswordManagerCommand { get; }
+        public ICommand OpenSubscriptionManagerCommand { get; }
 
         public MainWindowViewModel(
             Auth0Service auth0Service,
             IUserService userService,
-    IProjectService projectService,
-      ITaskFilterService filterService,
- ITaskService taskService,
-         IExpenseService expenseService,
-          IPasswordService passwordService)
+            IProjectService projectService,
+            ITaskFilterService filterService,
+            ITaskService taskService,
+            IExpenseService expenseService,
+            IPasswordService passwordService,
+            ISubscriptionService subscriptionService)
         {
             _auth0Service = auth0Service ?? throw new ArgumentNullException(nameof(auth0Service));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -178,6 +181,7 @@ namespace TaskForge.WPF.ViewModels
             _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
             _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
             _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
+            _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
 
             // Initialize properties
             _projects = new ObservableCollection<ProjectDto>();
@@ -207,7 +211,8 @@ namespace TaskForge.WPF.ViewModels
             ViewProjectsCommand = new AsyncRelayCommand(OnViewProjectsAsync);
             OpenProjectDetailsCommand = new AsyncRelayCommand(OnOpenProjectDetailsAsync);
             ViewExpensesCommand = new RelayCommand(OnViewExpenses);
-            OpenPasswordManagerCommand = new RelayCommand(OnOpenPasswordManager);
+            OpenPasswordManagerCommand = new RelayCommand(OnOpenPasswordManager); 
+            OpenSubscriptionManagerCommand = new RelayCommand(OnOpenSubscriptionManager);
         }
 
         private async Task OnLoginAsync()
@@ -215,20 +220,20 @@ namespace TaskForge.WPF.ViewModels
             try
             {
                 IsLoginButtonEnabled = false;
-                StatusText = "Відкриття браузера для входу...";
+                StatusText = "Г‚ВіГ¤ГЄГ°ГЁГІГІГї ГЎГ°Г ГіГ§ГҐГ°Г  Г¤Г«Гї ГўГµГ®Г¤Гі...";
 
                 _currentLoginResult = await _auth0Service.LoginAsync();
 
                 if (_currentLoginResult.IsError)
                 {
-                    StatusText = $"Помилка: {_currentLoginResult.Error}";
+                    StatusText = $"ГЏГ®Г¬ГЁГ«ГЄГ : {_currentLoginResult.Error}";
                     IsLoginButtonEnabled = true;
                     return;
                 }
 
-                var userName = _auth0Service.GetUserName(_currentLoginResult) ?? "Невідомо";
-                var userEmail = _auth0Service.GetUserEmail(_currentLoginResult) ?? "Невідомо";
-                var userId = _auth0Service.GetUserId(_currentLoginResult) ?? "Невідомо";
+                var userName = _auth0Service.GetUserName(_currentLoginResult) ?? "ГЌГҐГўВіГ¤Г®Г¬Г®";
+                var userEmail = _auth0Service.GetUserEmail(_currentLoginResult) ?? "ГЌГҐГўВіГ¤Г®Г¬Г®";
+                var userId = _auth0Service.GetUserId(_currentLoginResult) ?? "ГЌГҐГўВіГ¤Г®Г¬Г®";
 
                 var nameParts = userName.Split(' ', 2);
                 var firstName = nameParts.Length > 0 ? nameParts[0] : "";
@@ -238,11 +243,11 @@ namespace TaskForge.WPF.ViewModels
 
                 ShowUserInfo(_currentLoginResult);
                 IsLogoutButtonEnabled = true;
-                StatusText = "Успішний вхід!";
+                StatusText = "Г“Г±ГЇВіГёГ­ГЁГ© ГўГµВіГ¤!";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка при вході: {ex.Message}", "Помилка",
+                MessageBox.Show($"ГЏГ®Г¬ГЁГ«ГЄГ  ГЇГ°ГЁ ГўГµГ®Г¤Ві: {ex.Message}", "ГЏГ®Г¬ГЁГ«ГЄГ ",
               MessageBoxButton.OK, MessageBoxImage.Error);
                 IsLoginButtonEnabled = true;
                 StatusText = "";
@@ -254,7 +259,7 @@ namespace TaskForge.WPF.ViewModels
             try
             {
                 IsLogoutButtonEnabled = false;
-                StatusText = "Вихід...";
+                StatusText = "Г‚ГЁГµВіГ¤...";
 
                 await _auth0Service.LogoutAsync();
 
@@ -271,11 +276,11 @@ namespace TaskForge.WPF.ViewModels
 
                 IsLoginButtonEnabled = true;
 
-                StatusText = "Ви вийшли з системи";
+                StatusText = "Г‚ГЁ ГўГЁГ©ГёГ«ГЁ Г§ Г±ГЁГ±ГІГҐГ¬ГЁ";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка при виході: {ex.Message}", "Помилка",
+                MessageBox.Show($"ГЏГ®Г¬ГЁГ«ГЄГ  ГЇГ°ГЁ ГўГЁГµГ®Г¤Ві: {ex.Message}", "ГЏГ®Г¬ГЁГ«ГЄГ ",
                MessageBoxButton.OK, MessageBoxImage.Error);
                 IsLogoutButtonEnabled = true;
             }
@@ -283,8 +288,8 @@ namespace TaskForge.WPF.ViewModels
 
         private void ShowUserInfo(LoginResult loginResult)
         {
-            var userName = _auth0Service.GetUserName(loginResult) ?? "Невідомо";
-            var userEmail = _auth0Service.GetUserEmail(loginResult) ?? "Невідомо";
+            var userName = _auth0Service.GetUserName(loginResult) ?? "ГЌГҐГўВіГ¤Г®Г¬Г®";
+            var userEmail = _auth0Service.GetUserEmail(loginResult) ?? "ГЌГҐГўВіГ¤Г®Г¬Г®";
             var avatarUrl = _auth0Service.GetUserAvatarUrl(loginResult);
 
             UserName = userName;
@@ -353,13 +358,13 @@ namespace TaskForge.WPF.ViewModels
 
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(status))
             {
-                MessageBox.Show("Будь ласка, заповніть всі обов'язкові поля.");
+                MessageBox.Show("ГЃГіГ¤Гј Г«Г Г±ГЄГ , Г§Г ГЇГ®ГўГ­ВіГІГј ГўГ±Ві Г®ГЎГ®Гў'ГїГ§ГЄГ®ГўВі ГЇГ®Г«Гї.");
                 return;
             }
 
             if (_currentLoginResult == null)
             {
-                MessageBox.Show("Будь ласка, увійдіть, щоб створити проект.");
+                MessageBox.Show("ГЃГіГ¤Гј Г«Г Г±ГЄГ , ГіГўВіГ©Г¤ВіГІГј, Г№Г®ГЎ Г±ГІГўГ®Г°ГЁГІГЁ ГЇГ°Г®ГҐГЄГІ.");
                 IsProjectModalVisible = false;
                 return;
             }
@@ -368,13 +373,13 @@ namespace TaskForge.WPF.ViewModels
             var user = await _userService.GetUserByAuth0IdAsync(userId);
             if (user == null)
             {
-                MessageBox.Show("Користувача не знайдено в базі даних.");
+                MessageBox.Show("ГЉГ®Г°ГЁГ±ГІГіГўГ Г·Г  Г­ГҐ Г§Г­Г Г©Г¤ГҐГ­Г® Гў ГЎГ Г§Ві Г¤Г Г­ГЁГµ.");
                 IsProjectModalVisible = false;
                 return;
             }
 
             await _projectService.CreateProjectForUserAsync(name, status, description, user.Id, Role.Moderator);
-            MessageBox.Show($"Проект '{name}' створено!", "Успіх");
+            MessageBox.Show($"ГЏГ°Г®ГҐГЄГІ '{name}' Г±ГІГўГ®Г°ГҐГ­Г®!", "Г“Г±ГЇВіГµ");
             IsProjectModalVisible = false;
         }
 
@@ -389,7 +394,7 @@ namespace TaskForge.WPF.ViewModels
             {
                 if (_currentLoginResult == null || _currentLoginResult.IsError)
                 {
-                    MessageBox.Show("Будь ласка, увійдіть в систему, щоб переглянути проєкти.");
+                    MessageBox.Show("ГЃГіГ¤Гј Г«Г Г±ГЄГ , ГіГўВіГ©Г¤ВіГІГј Гў Г±ГЁГ±ГІГҐГ¬Гі, Г№Г®ГЎ ГЇГҐГ°ГҐГЈГ«ГїГ­ГіГІГЁ ГЇГ°Г®ВєГЄГІГЁ.");
                     return;
                 }
 
@@ -397,7 +402,7 @@ namespace TaskForge.WPF.ViewModels
                 var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
                 if (user == null)
                 {
-                    MessageBox.Show("Не вдалося знайти ваші дані в системі.");
+                    MessageBox.Show("ГЌГҐ ГўГ¤Г Г«Г®Г±Гї Г§Г­Г Г©ГІГЁ ГўГ ГёВі Г¤Г Г­Ві Гў Г±ГЁГ±ГІГҐГ¬Ві.");
                     return;
                 }
 
@@ -409,12 +414,12 @@ namespace TaskForge.WPF.ViewModels
 
                 if (!userProjects.Any())
                 {
-                    MessageBox.Show("У вас ще немає жодного проєкту. Спробуйте створити новий!");
+                    MessageBox.Show("Г“ ГўГ Г± Г№ГҐ Г­ГҐГ¬Г Вє Г¦Г®Г¤Г­Г®ГЈГ® ГЇГ°Г®ВєГЄГІГі. Г‘ГЇГ°Г®ГЎГіГ©ГІГҐ Г±ГІГўГ®Г°ГЁГІГЁ Г­Г®ГўГЁГ©!");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка завантаження проєктів: {ex.Message}");
+                MessageBox.Show($"ГЏГ®Г¬ГЁГ«ГЄГ  Г§Г ГўГ Г­ГІГ Г¦ГҐГ­Г­Гї ГЇГ°Г®ВєГЄГІВіГў: {ex.Message}");
             }
         }
 
@@ -426,21 +431,20 @@ namespace TaskForge.WPF.ViewModels
 
             if (selectedProject == null)
             {
-                MessageBox.Show("Не вдалося знайти проект");
+                MessageBox.Show("ГЌГҐ ГўГ¤Г Г«Г®Г±Гї Г§Г­Г Г©ГІГЁ ГЇГ°Г®ГҐГЄГІ");
                 return;
             }
 
             var detailsWindow = new ProjectDetailsWindow(
-             projectId,
-            selectedProject,
-            _projectService,
-            _taskService,
-            _userService,
-            _auth0Service,
-            _currentLoginResult,
-            _taskFilterService
-            );
-
+                projectId,
+                selectedProject,
+                _projectService,
+                _taskService,
+                _userService,
+                _auth0Service,
+                _currentLoginResult,
+                _taskFilterService
+              );
             detailsWindow.ShowDialog();
 
             await OnViewProjectsAsync();
@@ -452,16 +456,16 @@ namespace TaskForge.WPF.ViewModels
             {
                 if (_currentLoginResult == null || _currentLoginResult.IsError)
                 {
-                    MessageBox.Show("Будь ласка, увійдіть в систему, щоб переглянути витрати.");
+                    MessageBox.Show("ГЃГіГ¤Гј Г«Г Г±ГЄГ , ГіГўВіГ©Г¤ВіГІГј Гў Г±ГЁГ±ГІГҐГ¬Гі, Г№Г®ГЎ ГЇГҐГ°ГҐГЈГ«ГїГ­ГіГІГЁ ГўГЁГІГ°Г ГІГЁ.");
                     return;
                 }
 
                 var summaryWindow = new FinancialSummaryWindow(
-             _expenseService,
-                           _userService,
-                  _auth0Service,
-               _currentLoginResult
-              );
+                    _expenseService,
+                    _userService,
+                    _auth0Service,
+                    _currentLoginResult
+                );
 
                 var mainWindow = SysApp.Current.Windows.OfType<MainWindow>().FirstOrDefault();
                 if (mainWindow != null)
@@ -472,7 +476,7 @@ namespace TaskForge.WPF.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка відкриття вікна витрат: {ex.Message}", "Помилка");
+                MessageBox.Show($"ГЏГ®Г¬ГЁГ«ГЄГ  ГўВіГ¤ГЄГ°ГЁГІГІГї ГўВіГЄГ­Г  ГўГЁГІГ°Г ГІ: {ex.Message}", "ГЏГ®Г¬ГЁГ«ГЄГ ");
             }
         }
 
@@ -484,6 +488,36 @@ namespace TaskForge.WPF.ViewModels
              _userService,
             _currentLoginResult);
             passwordManagerWindow.ShowDialog();
+        }
+
+        private void OnOpenSubscriptionManager()
+        {
+            try
+            {
+                if (_currentLoginResult == null || _currentLoginResult.IsError)
+                {
+                    MessageBox.Show("ГЃГіГ¤Гј Г«Г Г±ГЄГ , ГіГўВіГ©Г¤ВіГІГј Гў Г±ГЁГ±ГІГҐГ¬Гі, Г№Г®ГЎ ГЄГҐГ°ГіГўГ ГІГЁ ГЇВіГ¤ГЇГЁГ±ГЄГ Г¬ГЁ.");
+                    return;
+                }
+
+                var subscriptionWindow = new SubscriptionSummaryWindow(
+                    _subscriptionService,
+                    _userService,
+                    _auth0Service,
+                    _currentLoginResult
+                );
+
+                var mainWindow = SysApp.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+                if (mainWindow != null)
+                {
+                    subscriptionWindow.Owner = mainWindow;
+                }
+                subscriptionWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"ГЏГ®Г¬ГЁГ«ГЄГ  ГўВіГ¤ГЄГ°ГЁГІГІГї ГўВіГЄГ­Г  ГЇВіГ¤ГЇГЁГ±Г®ГЄ: {ex.Message}", "ГЏГ®Г¬ГЁГ«ГЄГ ");
+            }
         }
     }
 }

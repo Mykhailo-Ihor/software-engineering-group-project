@@ -1,16 +1,17 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using TaskForge.Infrastructure.Repositories;
-using TaskForge.Infrastructure.Data;
+using TaskForge.Application.Interfaces;
 using TaskForge.Application.Services;
 using TaskForge.Domain.Interfaces;
-using TaskForge.Application.Interfaces;
+using TaskForge.Domain.Interfaces.Repository;
+using TaskForge.Infrastructure.Data;
+using TaskForge.Infrastructure.Repositories;
 
 namespace TaskForge.WPF
 {
@@ -35,7 +36,8 @@ namespace TaskForge.WPF
             services.AddSingleton<IExpenseRepository, ExpenseRepository>();
             services.AddSingleton<IPasswordRepository, PasswordRepository>();
             services.AddSingleton<IPasswordService, PasswordService>();
-
+            services.AddSingleton<ISubscriptionRepository, SubscriptionRepository>();
+            services.AddSingleton<ISubscriptionService, SubscriptionService>();
 
             // Register DbContext
             services.AddDbContext<TaskForgeDbContext>(options =>
