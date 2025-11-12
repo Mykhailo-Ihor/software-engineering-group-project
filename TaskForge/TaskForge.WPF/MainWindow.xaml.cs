@@ -27,19 +27,21 @@ namespace TaskForge.WPF
             ITaskFilterService filterService,
             ITaskService taskService,
             IExpenseService expenseService,
-            IPasswordService passwordService
+            IPasswordService passwordService,
+            ISubscriptionService subscriptionService
          )
         {
             InitializeComponent();
             DataContext = new MainWindowViewModel(
-           auth0Service,
-           userService,
-           projectService,
-           filterService,
-           taskService,
-           expenseService,
-           passwordService
-                 );
+                auth0Service,
+                userService,
+                projectService,
+                filterService,
+                taskService,
+                expenseService,
+                passwordService,
+                subscriptionService
+            );
         }
     }
 }

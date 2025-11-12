@@ -25,6 +25,7 @@ namespace TaskForge.WPF.ViewModels
         private readonly IExpenseService _expenseService;
         private readonly ITaskFilterService _taskFilterService;
         private readonly IPasswordService _passwordService;
+        private readonly ISubscriptionService _subscriptionService;
         private LoginResult _currentLoginResult;
 
         // Visibility Properties
@@ -161,15 +162,17 @@ namespace TaskForge.WPF.ViewModels
         public ICommand OpenProjectDetailsCommand { get; }
         public ICommand ViewExpensesCommand { get; }
         public ICommand OpenPasswordManagerCommand { get; }
+        public ICommand OpenSubscriptionManagerCommand { get; }
 
         public MainWindowViewModel(
             Auth0Service auth0Service,
             IUserService userService,
-    IProjectService projectService,
-      ITaskFilterService filterService,
- ITaskService taskService,
-         IExpenseService expenseService,
-          IPasswordService passwordService)
+            IProjectService projectService,
+            ITaskFilterService filterService,
+            ITaskService taskService,
+            IExpenseService expenseService,
+            IPasswordService passwordService,
+            ISubscriptionService subscriptionService)
         {
             _auth0Service = auth0Service ?? throw new ArgumentNullException(nameof(auth0Service));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
@@ -178,6 +181,7 @@ namespace TaskForge.WPF.ViewModels
             _taskService = taskService ?? throw new ArgumentNullException(nameof(taskService));
             _expenseService = expenseService ?? throw new ArgumentNullException(nameof(expenseService));
             _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
+            _subscriptionService = subscriptionService ?? throw new ArgumentNullException(nameof(subscriptionService));
 
             // Initialize properties
             _projects = new ObservableCollection<ProjectDto>();
@@ -207,7 +211,8 @@ namespace TaskForge.WPF.ViewModels
             ViewProjectsCommand = new AsyncRelayCommand(OnViewProjectsAsync);
             OpenProjectDetailsCommand = new RelayCommand(OnOpenProjectDetails);
             ViewExpensesCommand = new RelayCommand(OnViewExpenses);
-            OpenPasswordManagerCommand = new RelayCommand(OnOpenPasswordManager);
+            OpenPasswordManagerCommand = new RelayCommand(OnOpenPasswordManager); 
+            OpenSubscriptionManagerCommand = new RelayCommand(OnOpenSubscriptionManager);
         }
 
         private async Task OnLoginAsync()
@@ -431,14 +436,14 @@ namespace TaskForge.WPF.ViewModels
             }
 
             var detailsWindow = new ProjectDetailsWindow(
-             projectId,
+                projectId,
                 selectedProject,
-                   _projectService,
-            _taskService,
-                   _userService,
-           _auth0Service,
-               _currentLoginResult,
-                          _taskFilterService
+                _projectService,
+                _taskService,
+                _userService,
+                _auth0Service,
+                _currentLoginResult,
+                _taskFilterService
               );
             detailsWindow.ShowDialog();
         }
@@ -454,11 +459,11 @@ namespace TaskForge.WPF.ViewModels
                 }
 
                 var summaryWindow = new FinancialSummaryWindow(
-             _expenseService,
-                           _userService,
-                  _auth0Service,
-               _currentLoginResult
-              );
+                    _expenseService,
+                    _userService,
+                    _auth0Service,
+                    _currentLoginResult
+                );
 
                 var mainWindow = SysApp.Current.Windows.OfType<MainWindow>().FirstOrDefault();
                 if (mainWindow != null)
@@ -481,6 +486,36 @@ namespace TaskForge.WPF.ViewModels
              _userService,
             _currentLoginResult);
             passwordManagerWindow.ShowDialog();
+        }
+
+        private void OnOpenSubscriptionManager()
+        {
+            try
+            {
+                if (_currentLoginResult == null || _currentLoginResult.IsError)
+                {
+                    MessageBox.Show("Будь ласка, увійдіть в систему, щоб керувати підписками.");
+                    return;
+                }
+
+                var subscriptionWindow = new SubscriptionSummaryWindow(
+                    _subscriptionService,
+                    _userService,
+                    _auth0Service,
+                    _currentLoginResult
+                );
+
+                var mainWindow = SysApp.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+                if (mainWindow != null)
+                {
+                    subscriptionWindow.Owner = mainWindow;
+                }
+                subscriptionWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка відкриття вікна підписок: {ex.Message}", "Помилка");
+            }
         }
     }
 }
