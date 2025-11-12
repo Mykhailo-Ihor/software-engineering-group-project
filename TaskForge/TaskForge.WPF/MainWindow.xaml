@@ -6,6 +6,9 @@
         xmlns:local="clr-namespace:TaskForge.WPF"
         mc:Ignorable="d"
         Title="TaskForge" Height="600" Width="900">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -15,34 +18,34 @@
 
         <!-- Заголовок -->
         <TextBlock Grid.Row="0" 
-                   Text="TaskForge" 
-                   FontSize="24" 
-                   FontWeight="Bold"
-                   HorizontalAlignment="Center"
-                   Margin="0,20,0,20"/>
+       Text="TaskForge" 
+        FontSize="24" 
+         FontWeight="Bold"
+            HorizontalAlignment="Center"
+   Margin="0,20,0,20"/>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel>
 
-                <StackPanel x:Name="MainContentPanel" Visibility="Collapsed">
+                <StackPanel x:Name="MainContentPanel" Visibility="{Binding IsMainContentVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                     <!-- Інформація про користувача -->
                     <StackPanel x:Name="UserInfoPanel"
-                                Visibility="Collapsed"
-                                Margin="50,0,50,0">
+       Visibility="{Binding IsUserInfoVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+  Margin="50,0,50,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
 
-                            <Button x:Name="ProfileButton" Click="ProfileButton_Click" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,20,0">
+                            <Button x:Name="ProfileButton" Command="{Binding ProfileCommand}" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,20,0">
                                 <StackPanel>
                                     <Ellipse x:Name="UserAvatarEllipse" Width="64" Height="64" Stroke="#4CAF50" StrokeThickness="2">
                                         <Ellipse.Fill>
-                                            <ImageBrush x:Name="UserAvatarBrush" ImageSource="/Resources/avatar_placeholder.png" />
+                                            <ImageBrush ImageSource="{Binding UserAvatar}" />
                                         </Ellipse.Fill>
                                     </Ellipse>
-                                    <TextBlock x:Name="UserNameText" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                                    <TextBlock Text="{Binding UserName}" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                                 </StackPanel>
                             </Button>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="Email:" FontWeight="Bold" HorizontalAlignment="Left"/>
-                                <TextBlock x:Name="UserEmailText" HorizontalAlignment="Left"/>
+                                <TextBlock Text="{Binding UserEmail}" HorizontalAlignment="Left"/>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
@@ -50,25 +53,25 @@
                     <StackPanel HorizontalAlignment="Stretch" Margin="0,20,0,0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                             <Button x:Name="CreateProjectButton"
-                                    Content="Створити проект"
-                                    Height="40"
-                                    Width="150"
-                                    FontSize="14"
-                                    Background="#2196F3"
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Click="CreateProjectButton_Click"
-                                    Margin="0,0,10,0">
+              Content="Створити проект"
+       Height="40"
+       Width="150"
+      FontSize="14"
+ Background="#2196F3"
+     Foreground="White"
+    BorderThickness="0"
+          Command="{Binding CreateProjectCommand}"
+           Margin="0,0,10,0">
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="Button">
                                                     <Border Background="{TemplateBinding Background}"
-                                                        CornerRadius="5"
-                                                        BorderThickness="0">
+             CornerRadius="5"
+       BorderThickness="0">
                                                         <ContentPresenter HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"/>
+               VerticalAlignment="Center"/>
                                                     </Border>
                                                 </ControlTemplate>
                                             </Setter.Value>
@@ -83,24 +86,24 @@
                             </Button>
 
                             <Button x:Name="ViewProjectsButton"
-                                    Content="Переглянути мої проекти"
-                                    Height="40"
-                                    Width="180"
-                                    FontSize="14"
-                                    Background="#009688"
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Click="ViewProjectsButton_Click">
+     Content="Переглянути мої проекти"
+           Height="40"
+     Width="180"
+           FontSize="14"
+Background="#009688"
+   Foreground="White"
+               BorderThickness="0"
+          Command="{Binding ViewProjectsCommand}">
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="Button">
                                                     <Border Background="{TemplateBinding Background}"
-                                                        CornerRadius="5"
-                                                        BorderThickness="0">
+          CornerRadius="5"
+  BorderThickness="0">
                                                         <ContentPresenter HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"/>
+       VerticalAlignment="Center"/>
                                                     </Border>
                                                 </ControlTemplate>
                                             </Setter.Value>
@@ -116,12 +119,13 @@
                         </StackPanel>
 
                         <ListView x:Name="ProjectsListView"
-                                  Margin="0,15,0,0"
-                                  Visibility="Collapsed"
-                                  MaxHeight="400"
-                                  BorderThickness="0"
-                                  Background="GhostWhite"
-                                  HorizontalContentAlignment="Stretch">
+                   Margin="0,15,0,0"
+      Visibility="{Binding IsProjectsListVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+ ItemsSource="{Binding Projects}"
+    MaxHeight="400"
+    BorderThickness="0"
+     Background="GhostWhite"
+  HorizontalContentAlignment="Stretch">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
                                     <Border BorderBrush="Gainsboro" BorderThickness="0,0,0,1" Padding="10">
@@ -133,17 +137,17 @@
 
                                             <StackPanel Grid.Column="0" Margin="0,0,15,0">
                                                 <Button Background="Transparent" 
-                                                    BorderThickness="0" 
-                                                    Cursor="Hand"
-                                                    HorizontalAlignment="Left"
-                                                    Padding="0"
-                                                    Click="ProjectName_Click"
-                                                    Tag="{Binding Id}">
+   BorderThickness="0" 
+           Cursor="Hand"
+         HorizontalAlignment="Left"
+    Padding="0"
+     Command="{Binding DataContext.OpenProjectDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+    CommandParameter="{Binding Id}">
                                                     <TextBlock Text="{Binding Name}" 
-                                                       FontWeight="Bold" 
-                                                       FontSize="16" 
-                                                       Foreground="#2196F3"
-                                                       TextDecorations="Underline"/>
+             FontWeight="Bold" 
+      FontSize="16" 
+         Foreground="#2196F3"
+       TextDecorations="Underline"/>
                                                     <Button.Style>
                                                         <Style TargetType="Button">
                                                             <Style.Triggers>
@@ -156,8 +160,8 @@
                                                 </Button>
                                                 <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="Gray" Margin="0,5,0,5"/>
                                                 <TextBlock FontSize="12">
-                                                    <Run Text="Статус:" FontWeight="SemiBold"/>
-                                                    <Run Text="{Binding Status}" Foreground="DarkCyan"/>
+        <Run Text="Статус:" FontWeight="SemiBold"/>
+      <Run Text="{Binding Status}" Foreground="DarkCyan"/>
                                                 </TextBlock>
                                             </StackPanel>
                                         </Grid>
@@ -169,24 +173,24 @@
                         <TextBlock Text="Витрати" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
                             <Button x:Name="ViewExpensesButton"
-                                    Content="Переглянути мої витрати"
-                                    Height="40"
-                                    Width="180"
-                                    FontSize="14"
-                                    Background="#9C27B0"
-                                    Foreground="White"
-                                    BorderThickness="0"
-                                    Click="ViewExpensesButton_Click">
+        Content="Переглянути мої витрати"
+   Height="40"
+         Width="180"
+       FontSize="14"
+             Background="#9C27B0"
+                   Foreground="White"
+               BorderThickness="0"
+         Command="{Binding ViewExpensesCommand}">
                                 <Button.Style>
                                     <Style TargetType="Button">
                                         <Setter Property="Template">
                                             <Setter.Value>
                                                 <ControlTemplate TargetType="Button">
                                                     <Border Background="{TemplateBinding Background}"
-                                                        CornerRadius="5"
-                                                        BorderThickness="0">
+  CornerRadius="5"
+    BorderThickness="0">
                                                         <ContentPresenter HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"/>
+     VerticalAlignment="Center"/>
                                                     </Border>
                                                 </ControlTemplate>
                                             </Setter.Value>
@@ -202,25 +206,25 @@
                         </StackPanel>
 
                         <Button x:Name="OpenPasswordManagerButton"
-                                Content="Password Manager"
-                                Height="40"
-                                Width="180"
-                                FontSize="14"
-                                Background="#3F51B5"
-                                Foreground="White"
-                                BorderThickness="0"
-                                Click="OpenPasswordManagerButton_Click"
-                                Margin="0,10,0,0">
+         Content="Password Manager"
+     Height="40"
+   Width="180"
+        FontSize="14"
+         Background="#3F51B5"
+             Foreground="White"
+  BorderThickness="0"
+     Command="{Binding OpenPasswordManagerCommand}"
+      Margin="0,10,0,0">
                             <Button.Style>
                                 <Style TargetType="Button">
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="Button">
                                                 <Border Background="{TemplateBinding Background}"
-                                                        CornerRadius="5"
-                                                        BorderThickness="0">
+      CornerRadius="5"
+    BorderThickness="0">
                                                     <ContentPresenter HorizontalAlignment="Center"
-                                                                      VerticalAlignment="Center"/>
+      VerticalAlignment="Center"/>
                                                 </Border>
                                             </ControlTemplate>
                                         </Setter.Value>
@@ -235,24 +239,25 @@
                         </Button>
                     </StackPanel>
                 </StackPanel>
-                
-                
+
+
 
                 <!-- Екран логіну -->
                 <StackPanel x:Name="LoginPanel"
-                            VerticalAlignment="Center"
-                            Margin="50">
+       Visibility="{Binding IsLoginPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+     VerticalAlignment="Center"
+    Margin="50">
                     <TextBlock Text="Увійдіть за допомогою Auth0" 
-                               FontSize="16" 
-                               HorizontalAlignment="Center"
-                               Margin="0,0,0,20"
-                               TextWrapping="Wrap"/>
+        FontSize="16" 
+    HorizontalAlignment="Center"
+         Margin="0,0,0,20"
+  TextWrapping="Wrap"/>
                     <TextBlock Text="Натисніть кнопку нижче для входу або реєстрації" 
-                               HorizontalAlignment="Center"
-                               Foreground="Gray"
-                               TextWrapping="Wrap"
-                               TextAlignment="Center"
-                               Margin="0,0,0,10"/>
+            HorizontalAlignment="Center"
+    Foreground="Gray"
+       TextWrapping="Wrap"
+ TextAlignment="Center"
+  Margin="0,0,0,10"/>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
@@ -260,59 +265,62 @@
         <!-- Кнопки внизу -->
         <StackPanel Grid.Row="2" Margin="50,20,50,20">
             <Button x:Name="LoginButton"
-                    Content="Увійти / Зареєструватися"
-                    Height="45"
-                    FontSize="16"
-                    Background="#4CAF50"
-                    Foreground="White"
-                    BorderThickness="0"
-                    Cursor="Hand"
-                    Click="LoginButton_Click"/>
+        Content="Увійти / Зареєструватися"
+     Height="45"
+  FontSize="16"
+   Background="#4CAF50"
+ Foreground="White"
+           BorderThickness="0"
+          Cursor="Hand"
+   Command="{Binding LoginCommand}"
+         IsEnabled="{Binding IsLoginButtonEnabled}"
+            Visibility="{Binding IsLoginButtonVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
             <Button x:Name="LogoutButton"
-                    Content="Вийти"
-                    Height="40"
-                    FontSize="14"
-                    Background="#F44336"
-                    Foreground="White"
-                    BorderThickness="0"
-                    Cursor="Hand"
-                    Click="LogoutButton_Click"
-                    Visibility="Collapsed"
-                    Margin="0,10,0,0"/>
+    Content="Вийти"
+ Height="40"
+          FontSize="14"
+      Background="#F44336"
+             Foreground="White"
+         BorderThickness="0"
+     Cursor="Hand"
+        Command="{Binding LogoutCommand}"
+        IsEnabled="{Binding IsLogoutButtonEnabled}"
+     Visibility="{Binding IsLogoutButtonVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+             Margin="0,10,0,0"/>
 
             <TextBlock x:Name="StatusText"
-                       Text=""
-                       HorizontalAlignment="Center"
-                       Margin="0,10,0,0"
-                       Foreground="Gray"
-                       TextWrapping="Wrap"
-                       TextAlignment="Center"/>
+  Text="{Binding StatusText}"
+         HorizontalAlignment="Center"
+       Margin="0,10,0,0"
+           Foreground="Gray"
+   TextWrapping="Wrap"
+   TextAlignment="Center"/>
         </StackPanel>
 
         <!-- Модальні вікна -->
         <Grid x:Name="ProjectModalOverlay" 
-              Grid.RowSpan="3"
-              Visibility="Collapsed" 
-              Background="#80000000" 
+      Grid.RowSpan="3"
+       Visibility="{Binding IsProjectModalVisible, Converter={StaticResource BoolToVisibilityConverter}}" 
+           Background="#80000000" 
               Panel.ZIndex="100">
             <Border Background="White" 
-                    CornerRadius="10" 
-                    Padding="30" 
-                    Width="400" 
-                    VerticalAlignment="Center" 
-                    HorizontalAlignment="Center">
+      CornerRadius="10" 
+             Padding="30" 
+       Width="400" 
+ VerticalAlignment="Center" 
+            HorizontalAlignment="Center">
                 <StackPanel>
                     <TextBlock Text="Створити проект" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
                     <TextBlock Text="Назва проекту:" Margin="0,0,0,5"/>
-                    <TextBox x:Name="ProjectNameBox" Height="30" Padding="5" Margin="0,0,0,15"/>
+                    <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,0,0,15"/>
                     <TextBlock Text="Статус проекту:" Margin="0,0,0,5"/>
-                    <TextBox x:Name="ProjectStatusBox" Height="30" Padding="5" Text="Active" Margin="0,0,0,15"/>
+                    <TextBox Text="{Binding ProjectStatus, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,0,0,15"/>
                     <TextBlock Text="Опис проекту:" Margin="0,0,0,5"/>
-                    <TextBox x:Name="ProjectDescriptionBox" Height="80" Padding="5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
+                    <TextBox Text="{Binding ProjectDescription, UpdateSourceTrigger=PropertyChanged}" Height="80" Padding="5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="OK" Width="80" Height="35" Margin="0,0,10,0" Click="ProjectModalOk_Click" Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                        <Button Content="Скасувати" Width="80" Height="35" Click="ProjectModalCancel_Click" Background="#9E9E9E" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                        <Button Content="OK" Width="80" Height="35" Margin="0,0,10,0" Command="{Binding SaveProjectCommand}" Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelProjectCommand}" Background="#9E9E9E" Foreground="White" BorderThickness="0" Cursor="Hand"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
