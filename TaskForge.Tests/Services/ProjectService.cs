@@ -447,5 +447,47 @@ namespace TaskForge.Tests.Application.Services
             _mockProjectRepository.Verify(repo => repo.GetProjectByIdAsync(projectId), Times.Once);
             _mockProjectRepository.Verify(repo => repo.UpdateProjectAsync(It.IsAny<Project>()), Times.Never);
         }
+
+        [Fact]
+        public async Task GetProjectUsersAsync_ShouldReturnUsers_WhenCalled()
+        {
+            // Arrange
+            var projectId = 1;
+            var projectUsersList = new List<ProjectUser>
+            {
+                new ProjectUser { Id = 1, UserId = 10, ProjectId = projectId, Role = Role.Moderator },
+                new ProjectUser { Id = 2, UserId = 11, ProjectId = projectId, Role = Role.Member }
+            };
+
+            _mockProjectRepository
+                .Setup(repo => repo.GetProjectUsersAsync(projectId))
+                .ReturnsAsync(projectUsersList);
+
+            // Act
+            var result = await _projectService.GetProjectUsersAsync(projectId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Equal(10, result.First().UserId);
+            _mockProjectRepository.Verify(repo => repo.GetProjectUsersAsync(projectId), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteProjectAsync_ShouldCallRepositoryDelete_WhenCalled()
+        {
+            // Arrange
+            var projectId = 5;
+            _mockProjectRepository
+                .Setup(repo => repo.DeleteProjectAsync(projectId))
+                .Returns(Task.CompletedTask); // Налаштовуємо мок на void метод
+
+            // Act
+            await _projectService.DeleteProjectAsync(projectId);
+
+            // Assert
+            // Перевіряємо, що метод DeleteProjectAsync репозиторію був викликаний рівно один раз
+            _mockProjectRepository.Verify(repo => repo.DeleteProjectAsync(projectId), Times.Once);
+        }
     }
 }
