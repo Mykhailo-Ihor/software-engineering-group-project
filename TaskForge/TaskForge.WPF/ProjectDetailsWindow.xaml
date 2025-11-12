@@ -24,50 +24,61 @@ Width="800"
         <Border Grid.Row="0" Background="#2196F3" Padding="20">
             <StackPanel>
                 <TextBlock Text="{Binding ProjectName}" 
-  FontSize="24" 
-          FontWeight="Bold" 
-Foreground="White"/>
+                           FontSize="24" 
+                           FontWeight="Bold" 
+                           Foreground="White"/>
                 <TextBlock Text="{Binding ProjectDescription}" 
-     FontSize="14" 
-    Foreground="White" 
-        Margin="0,5,0,0"
-       TextWrapping="Wrap"/>
+                           FontSize="14" 
+                           Foreground="White" 
+                           Margin="0,5,0,0"
+                           TextWrapping="Wrap"/>
                 <TextBlock Text="{Binding ProjectStatus}" 
-   FontSize="12" 
-           Foreground="White" 
-            Margin="0,5,0,0"/>
+                           FontSize="12" 
+                           Foreground="White" 
+                           Margin="0,5,0,0"/>
                 <StackPanel Orientation="Horizontal">
                     <Button Content="Додати користувача до проекту"
-           Width="220"
-         Height="30"
-            Margin="0,10,0,0"
-   Background="#4CAF50"
-                Foreground="White"
-           BorderThickness="0"
-   Command="{Binding AddUserToProjectCommand}"/>
+                            Width="220"
+                            Height="30"
+                            Margin="0,10,0,0"
+                            Background="#4CAF50"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Command="{Binding AddUserToProjectCommand}"/>
 
                     <Button Content="Призначити модератора"
-Width="180"
-   Height="30"
-   Margin="10,10,0,0"
-   Background="#FF9800"
-        Foreground="White"
-         BorderThickness="0"
-   Command="{Binding ManageModeratorsCommand}"
-        Visibility="{Binding IsManageModeratorsVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            Width="180"
+                            Height="30"
+                            Margin="10,10,0,0"
+                            Background="#7439bd"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Command="{Binding ManageModeratorsCommand}"
+                            Visibility="{Binding IsManageModeratorsVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                     <Button Content="Редагувати проєкт"
-            Width="180"
-            Height="30"
-  Margin="10,10,0,0"
-              Background="#f44336"
-    Foreground="White"
-                 BorderThickness="0"
-          Command="{Binding EditProjectCommand}"
-          Visibility="{Binding IsEditProjectVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                            Width="180"
+                            Height="30"
+                            Margin="10,10,0,0"
+                            Background="#8e39bd"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Command="{Binding EditProjectCommand}"
+                            Visibility="{Binding IsEditProjectVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                    <Button Content="Покинути проєкт"
+                            Width="180"
+                            Height="30"
+                            Margin="10,10,0,0"
+                            Background="#E53935"
+                            Foreground="White"
+                            BorderThickness="0"
+                            Command="{Binding LeaveProjectCommand}"/>
                 </StackPanel>
             </StackPanel>
         </Border>
+
+
 
         <!-- Контент -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -272,9 +283,9 @@ SelectedValue="{Binding SelectedProjectId}"
         </Grid>
 
         <Grid Visibility="{Binding IsEditProjectModalVisible, Converter={StaticResource BoolToVisibilityConverter}}" 
-       Grid.RowSpan="3"
-      Background="#80000000" 
-    Panel.ZIndex="202">
+              Grid.RowSpan="3"
+              Background="#80000000" 
+              Panel.ZIndex="202">
             <Border Background="White" CornerRadius="10" Padding="20" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
                     <TextBlock Text="Налаштування проєкту" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
@@ -288,10 +299,47 @@ SelectedValue="{Binding SelectedProjectId}"
                     <TextBlock Text="Статус проєкту:" Margin="0,0,0,5"/>
                     <TextBox Text="{Binding EditProjectStatus, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,20" Height="30" Padding="5"/>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Зберегти" Width="80" Height="35" Margin="0,0,10,0" Background="#4CAF50" Foreground="White" BorderThickness="0" Command="{Binding SaveEditProjectCommand}"/>
-                        <Button Content="Скасувати" Width="80" Height="35" Margin="0,0,10,0" Background="Gray" Foreground="White" BorderThickness="0" Command="{Binding CancelEditProjectCommand}"/>
-                    </StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0" 
+                                    Content="Зберегти" 
+                                    Height="35" 
+                                    Margin="0,0,5,0" 
+                                    Background="#4CAF50" 
+                                    Foreground="White" 
+                                    BorderThickness="0" 
+                                    Command="{Binding SaveEditProjectCommand}"/>
+
+                            <Button Grid.Column="1" 
+                                    Content="Скасувати" 
+                                    Height="35" 
+                                    Margin="5,0,0,0" 
+                                    Background="Gray" 
+                                    Foreground="White" 
+                                    BorderThickness="0" 
+                                    Command="{Binding CancelEditProjectCommand}"/>
+                        </Grid>
+
+                        <Button Grid.Row="1" 
+                                Content="Видалити проект"
+                                Height="35"
+                                Background="#D32F2F" 
+                                Foreground="White" 
+                                BorderThickness="0"
+                                Command="{Binding DeleteProjectCommand}"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,15,0,0"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>
@@ -318,11 +366,41 @@ SelectedValue="{Binding SelectedProjectId}"
             </Border>
         </Grid>
 
+        <Grid Visibility="{Binding IsLeaveProjectModalVisible, Converter={StaticResource BoolToVisibilityConverter}}" 
+              Grid.RowSpan="2"
+              Background="#80000000" 
+              Panel.ZIndex="203" HorizontalAlignment="Left" Width="800">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="48*"/>
+                <ColumnDefinition Width="39*"/>
+                <ColumnDefinition Width="313*"/>
+            </Grid.ColumnDefinitions>
+            <Border Background="White" CornerRadius="10" Padding="20" Width="400" VerticalAlignment="Center" HorizontalAlignment="Left" Grid.Column="2" Margin="26,0,0,0">
+                <StackPanel>
+                    <TextBlock Text="Передача прав модератора" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <TextBlock Text="Ви - останній модератор. Щоб покинути проект, виберіть хоча б одного користувача, якому будуть передані права модератора:" TextWrapping="Wrap" Margin="0,0,0,15"/>
+
+                    <ListView ItemsSource="{Binding UsersToPromote}" MaxHeight="300">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding FullName}" IsChecked="{Binding IsSelected}"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                        <Button Content="Зберегти і вийти" Width="140" Height="35" Margin="0,0,10,0" Background="#4CAF50" Foreground="White" BorderThickness="0" Command="{Binding SaveAndLeaveProjectCommand}"/>
+                        <Button Content="Скасувати" Width="100" Height="35" Margin="0,0,10,0" Background="Gray" Foreground="White" BorderThickness="0" Command="{Binding CancelLeaveProjectCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
         <!-- Edit Task Modal -->
         <Grid Visibility="{Binding IsEditTaskModalVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-        Grid.RowSpan="3"
-   Background="#80000000"
-    Panel.ZIndex="103">
+              Grid.RowSpan="3"
+              Background="#80000000"
+              Panel.ZIndex="103">
             <Border Background="White" CornerRadius="10" Padding="20" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
                     <TextBlock Text="Редагувати завдання" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>

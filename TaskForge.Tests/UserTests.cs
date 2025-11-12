@@ -121,5 +121,23 @@ namespace TaskForge.Tests
             // Assert
             _mockUserRepository.Verify(r => r.UpdateUserAsync(It.IsAny<User>()), Times.Never);
         }
+
+        [Fact]
+        public async Task RemoveUserFromProjectAsync_ShouldCallRepositoryRemove_WhenCalled()
+        {
+            // Arrange
+            int userId = 1;
+            int projectId = 10;
+
+            _mockUserRepository
+                .Setup(r => r.RemoveUserFromProjectAsync(userId, projectId))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            await _userService.RemoveUserFromProjectAsync(userId, projectId);
+
+            // Assert
+            _mockUserRepository.Verify(r => r.RemoveUserFromProjectAsync(userId, projectId), Times.Once);
+        }
     }
 }

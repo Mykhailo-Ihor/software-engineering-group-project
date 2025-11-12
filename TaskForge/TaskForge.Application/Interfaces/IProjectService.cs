@@ -40,4 +40,6 @@ public interface IProjectService
     Task<ProjectUser> GetProjectUserAsync(int userId, int projectId);
     Task<Project> GetProjectByIdAsync(int projectId);
     Task<Project> UpdateProjectAsync(int projectId, string name, string desription, string status);
+    Task<List<ProjectUser>> GetProjectUsersAsync(int projectId);
+    Task DeleteProjectAsync(int projectId);
 }

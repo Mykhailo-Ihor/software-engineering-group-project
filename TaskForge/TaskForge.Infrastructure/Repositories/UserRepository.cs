@@ -90,4 +90,15 @@ public class UserRepository : IUserRepository
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
     }
+    public async Task RemoveUserFromProjectAsync(int userId, int projectId)
+    {
+        var projectUser = await _context.ProjectUsers
+            .FirstOrDefaultAsync(pu => pu.UserId == userId && pu.ProjectId == projectId);
+
+        if (projectUser != null)
+        {
+            _context.ProjectUsers.Remove(projectUser);
+            await _context.SaveChangesAsync();
+        }
+    }
 }
