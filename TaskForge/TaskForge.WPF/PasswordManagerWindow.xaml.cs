@@ -1,21 +1,19 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows;
-using Duende.IdentityModel.OidcClient; // Added for LoginResult type
+using System.Windows.Controls;
+using Duende.IdentityModel.OidcClient;
 using TaskForge.Application.Interfaces;
 using TaskForge.Domain.Entities;
 using TaskForge.Domain.Enums;
 namespace TaskForge.WPF
 {
-    /// <summary>
-    /// Interaction logic for PasswordManagerWindow.
-    /// </summary>
     public partial class PasswordManagerWindow : Window
     {
         private readonly IPasswordService passwordService;
         private readonly Auth0Service auth0Service;
         private readonly IUserService userService;
-        private readonly LoginResult? currentLoginResult; // Ensure nullable type is used
+        private readonly LoginResult? currentLoginResult;
         private List<Password> passwords = new List<Password>();
 
         public PasswordManagerWindow(IPasswordService passwordService, Auth0Service auth0Service, IUserService userService, LoginResult? loginResult)
@@ -27,11 +25,9 @@ namespace TaskForge.WPF
             this.currentLoginResult = loginResult;
             this.LoadPasswords();
 
-            // Populate AddCategoryComboBox and EditCategoryComboBox with PasswordCategory enum values
             this.AddCategoryComboBox.ItemsSource = Enum.GetValues(typeof(PasswordCategory));
             this.EditCategoryComboBox.ItemsSource = Enum.GetValues(typeof(PasswordCategory));
 
-            // Set default selected index for ComboBoxes
             this.AddCategoryComboBox.SelectedIndex = 0;
             this.EditCategoryComboBox.SelectedIndex = 0;
         }
@@ -40,13 +36,11 @@ namespace TaskForge.WPF
         {
             try
             {
-                // Validate and decode Base64 string
                 var encryptedBytes = System.Convert.FromBase64String(encryptedText);
                 return System.Text.Encoding.UTF8.GetString(encryptedBytes);
             }
             catch (FormatException)
             {
-                // Return the original string if it's not valid Base64
                 return encryptedText;
             }
         }
@@ -55,7 +49,7 @@ namespace TaskForge.WPF
         {
             if (this.currentLoginResult == null || this.currentLoginResult.IsError)
             {
-                MessageBox.Show("Please log in to view passwords.", "Authentication Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Будь ласка, увійдіть, щоб переглянути паролі.", "Потрібна автентифікація", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -64,13 +58,12 @@ namespace TaskForge.WPF
 
             if (user == null)
             {
-                MessageBox.Show("User not found in the system.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Користувача не знайдено в системі.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
             this.passwords = await this.passwordService.GetPasswordsByUserIdAsync(user.Id);
 
-            // Decrypt passwords for display, but do not overwrite the encrypted values in the database
             var decryptedPasswords = new List<Password>();
             foreach (var password in this.passwords)
             {
@@ -91,7 +84,6 @@ namespace TaskForge.WPF
 
         private void AddPasswordButton_Click(object sender, RoutedEventArgs e)
         {
-            // Reset fields for Add Password modal
             this.AddUrlTextBox.Text = string.Empty;
             this.AddLoginTextBox.Text = string.Empty;
             this.AddPasswordEncryptedBox.Password = string.Empty;
@@ -105,12 +97,10 @@ namespace TaskForge.WPF
         {
             if (this.PasswordListView.SelectedItem is Password selectedPassword)
             {
-                // Populate fields for Edit Password modal
                 this.EditUrlTextBox.Text = selectedPassword.Url;
                 this.EditLoginTextBox.Text = selectedPassword.Login;
                 this.EditPasswordEncryptedBox.Password = selectedPassword.PasswordEncrypted;
                 this.EditNoteTextBox.Text = selectedPassword.Note;
-                // Update ComboBox bindings to directly use PasswordCategory enum
                 this.EditCategoryComboBox.SelectedValue = selectedPassword.Category;
 
                 this.EditPasswordModalOverlay.Visibility = Visibility.Visible;
@@ -130,7 +120,7 @@ namespace TaskForge.WPF
         {
             if (this.currentLoginResult == null || this.currentLoginResult.IsError)
             {
-                MessageBox.Show("Please log in to save passwords.", "Authentication Required", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Будь ласка, увійдіть, щоб зберегти паролі.", "Потрібна автентифікація", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -139,7 +129,7 @@ namespace TaskForge.WPF
 
             if (user == null)
             {
-                MessageBox.Show("User not found in the system.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Користувача не знайдено в системі.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -149,7 +139,6 @@ namespace TaskForge.WPF
                 Login = this.AddLoginTextBox.Text,
                 PasswordEncrypted = this.AddPasswordEncryptedBox.Password,
                 Note = this.AddNoteTextBox.Text,
-                // Update parsing logic to directly use PasswordCategory enum
                 Category = this.AddCategoryComboBox.SelectedValue is PasswordCategory addCategory ? addCategory : PasswordCategory.Other,
                 UserId = user.Id,
             };
@@ -182,6 +171,22 @@ namespace TaskForge.WPF
                 await this.passwordService.UpdatePasswordAsync(selectedPassword);
                 this.EditPasswordModalOverlay.Visibility = Visibility.Collapsed;
                 this.LoadPasswords();
+            }
+        }
+
+        private void CopyPasswordButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is string password)
+            {
+                try
+                {
+                    System.Windows.Clipboard.SetText(password);
+                    MessageBox.Show("Пароль скопійовано в буфер обміну!", "Пароль скопійовано", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (System.Exception ex)
+                {
+                    MessageBox.Show($"Не вдалося скопіювати пароль: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }
