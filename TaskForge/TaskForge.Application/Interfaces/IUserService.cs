@@ -16,5 +16,6 @@ namespace TaskForge.Application.Interfaces
         Task AddUserToProjectAsync(int userId, int projectId, Role role);
         Task UpdateUserRoleInProjectAsync(int userId, int projectId, Role newRole);
         Task UpdateUserProfileAsync(int userId, string firstName, string lastName, string email);
+        Task RemoveUserFromProjectAsync(int userId, int projectId);
     }
 }

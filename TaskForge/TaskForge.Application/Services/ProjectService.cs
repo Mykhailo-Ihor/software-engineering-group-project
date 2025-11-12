@@ -67,4 +67,12 @@ public class ProjectService : IProjectService
 
         return await _projectRepository.UpdateProjectAsync(project);
     }
+    public async Task<List<ProjectUser>> GetProjectUsersAsync(int projectId)
+    {
+        return await _projectRepository.GetProjectUsersAsync(projectId);
+    }
+    public Task DeleteProjectAsync(int projectId)
+    {
+        return _projectRepository.DeleteProjectAsync(projectId);
+    }
 }

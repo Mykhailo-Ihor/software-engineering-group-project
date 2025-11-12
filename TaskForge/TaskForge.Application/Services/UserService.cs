@@ -72,5 +72,7 @@ namespace TaskForge.Application.Services
             user.Email = email;
             await _userRepository.UpdateUserAsync(user);
         }
+        public Task RemoveUserFromProjectAsync(int userId, int projectId)
+            => _userRepository.RemoveUserFromProjectAsync(userId, projectId);
     }
 }

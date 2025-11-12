@@ -3,7 +3,9 @@ using TaskForge.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using TaskForge.Domain.Enums;
 using TaskForge.Domain.Interfaces;
-
+using System.Collections.Generic; 
+using System.Linq; 
+using System.Threading.Tasks; 
 namespace TaskForge.Infrastructure.Repositories;
 
 public class ProjectRepository : IProjectRepository
@@ -74,5 +76,21 @@ public class ProjectRepository : IProjectRepository
         _context.Projects.Update(project);
         await _context.SaveChangesAsync();
         return project;
+    }
+    public async Task<List<ProjectUser>> GetProjectUsersAsync(int projectId)
+    {
+        return await _context.ProjectUsers
+            .Where(pu => pu.ProjectId == projectId)
+            .Include(pu => pu.User)
+            .ToListAsync();
+    }
+    public async Task DeleteProjectAsync(int projectId)
+    {
+        var project = await _context.Projects.FindAsync(projectId);
+        if (project != null)
+        {
+            _context.Projects.Remove(project);
+            await _context.SaveChangesAsync();
+        }
     }
 }
