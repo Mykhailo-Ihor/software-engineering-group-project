@@ -15,6 +15,7 @@ namespace TaskForge.WPF
         private readonly IUserService userService;
         private readonly LoginResult? currentLoginResult;
         private List<Password> passwords = new List<Password>();
+        private List<Common.PasswordDisplayItem> passwordDisplayItems = new List<Common.PasswordDisplayItem>();
 
         public PasswordManagerWindow(IPasswordService passwordService, Auth0Service auth0Service, IUserService userService, LoginResult? loginResult)
         {
@@ -64,22 +65,26 @@ namespace TaskForge.WPF
 
             this.passwords = await this.passwordService.GetPasswordsByUserIdAsync(user.Id);
 
-            var decryptedPasswords = new List<Password>();
+            this.passwordDisplayItems = new List<Common.PasswordDisplayItem>();
             foreach (var password in this.passwords)
             {
-                decryptedPasswords.Add(new Password
+                this.passwordDisplayItems.Add(new Common.PasswordDisplayItem
                 {
-                    Id = password.Id,
-                    Url = password.Url,
-                    Login = password.Login,
-                    PasswordEncrypted = this.DecryptPassword(password.PasswordEncrypted),
-                    Note = password.Note,
-                    Category = password.Category,
-                    UserId = password.UserId
+                    Password = new Password
+                    {
+                        Id = password.Id,
+                        Url = password.Url,
+                        Login = password.Login,
+                        PasswordEncrypted = this.DecryptPassword(password.PasswordEncrypted),
+                        Note = password.Note,
+                        Category = password.Category,
+                        UserId = password.UserId
+                    },
+                    IsRevealed = false
                 });
             }
 
-            this.PasswordListView.ItemsSource = decryptedPasswords;
+            this.PasswordListView.ItemsSource = this.passwordDisplayItems;
         }
 
         private void AddPasswordButton_Click(object sender, RoutedEventArgs e)
@@ -187,6 +192,16 @@ namespace TaskForge.WPF
                 {
                     MessageBox.Show($"Не вдалося скопіювати пароль: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
+            }
+        }
+
+        private void ShowHidePasswordButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is Common.PasswordDisplayItem item)
+            {
+                item.IsRevealed = !item.IsRevealed;
+                // Refresh the ListView to update the display
+                this.PasswordListView.Items.Refresh();
             }
         }
     }
