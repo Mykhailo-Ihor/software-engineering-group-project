@@ -205,7 +205,7 @@ namespace TaskForge.WPF.ViewModels
             SaveProjectCommand = new AsyncRelayCommand(OnSaveProjectAsync);
             CancelProjectCommand = new RelayCommand(OnCancelProject);
             ViewProjectsCommand = new AsyncRelayCommand(OnViewProjectsAsync);
-            OpenProjectDetailsCommand = new RelayCommand(OnOpenProjectDetails);
+            OpenProjectDetailsCommand = new AsyncRelayCommand(OnOpenProjectDetailsAsync);
             ViewExpensesCommand = new RelayCommand(OnViewExpenses);
             OpenPasswordManagerCommand = new RelayCommand(OnOpenPasswordManager);
         }
@@ -418,7 +418,7 @@ namespace TaskForge.WPF.ViewModels
             }
         }
 
-        private void OnOpenProjectDetails(object parameter)
+        private async Task OnOpenProjectDetailsAsync(object parameter)
         {
             if (parameter is not int projectId) return;
 
@@ -432,15 +432,18 @@ namespace TaskForge.WPF.ViewModels
 
             var detailsWindow = new ProjectDetailsWindow(
              projectId,
-                selectedProject,
-                   _projectService,
+            selectedProject,
+            _projectService,
             _taskService,
-                   _userService,
-           _auth0Service,
-               _currentLoginResult,
-                          _taskFilterService
-              );
+            _userService,
+            _auth0Service,
+            _currentLoginResult,
+            _taskFilterService
+            );
+
             detailsWindow.ShowDialog();
+
+            await OnViewProjectsAsync();
         }
 
         private void OnViewExpenses()

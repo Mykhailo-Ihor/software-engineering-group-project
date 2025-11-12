@@ -15,5 +15,7 @@ namespace TaskForge.Domain.Interfaces
         Task UpdateUserRoleInProjectAsync(int userId, int projectId, TaskForge.Domain.Enums.Role newRole);
         Task<User?> GetUserByIdAsync(int userId);
         Task UpdateUserAsync(User user);
+        Task RemoveUserFromProjectAsync(int userId, int projectId);
+
     }
 }

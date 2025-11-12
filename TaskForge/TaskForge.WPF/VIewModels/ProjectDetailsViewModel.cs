@@ -28,6 +28,7 @@ namespace TaskForge.WPF.ViewModels
         private readonly int _projectId;
         private int _editingTaskId;
         private List<int> _selectedAssigneeIds = new List<int>();
+        private int _currentUserId;
 
         // Project Info Properties
         private string _projectName;
@@ -248,6 +249,20 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _editProjectStatus, value);
         }
 
+        private bool _isLeaveProjectModalVisible;
+        public bool IsLeaveProjectModalVisible
+        {
+            get => _isLeaveProjectModalVisible;
+            set => SetProperty(ref _isLeaveProjectModalVisible, value);
+        }
+
+        private ObservableCollection<PromoteUserViewModel> _usersToPromote;
+        public ObservableCollection<PromoteUserViewModel> UsersToPromote
+        {
+            get => _usersToPromote;
+            set => SetProperty(ref _usersToPromote, value);
+        }
+
         // Commands
         public ICommand LoadedCommand { get; }
         public ICommand CloseCommand { get; }
@@ -271,16 +286,20 @@ namespace TaskForge.WPF.ViewModels
         public ICommand EditProjectCommand { get; }
         public ICommand SaveEditProjectCommand { get; }
         public ICommand CancelEditProjectCommand { get; }
+        public ICommand LeaveProjectCommand { get; }
+        public ICommand SaveAndLeaveProjectCommand { get; }
+        public ICommand CancelLeaveProjectCommand { get; }
+        public ICommand DeleteProjectCommand { get; }
 
         public ProjectDetailsViewModel(
             int projectId,
-         ProjectDto projectDto,
+            ProjectDto projectDto,
             IProjectService projectService,
-     ITaskService taskService,
-      IUserService userService,
-     Auth0Service auth0Service,
-    LoginResult currentLoginResult,
-     ITaskFilterService taskFilterService)
+            ITaskService taskService,
+            IUserService userService,
+            Auth0Service auth0Service,
+            LoginResult currentLoginResult,
+            ITaskFilterService taskFilterService)
         {
             _projectId = projectId;
             _projectDto = projectDto ?? throw new ArgumentNullException(nameof(projectDto));
@@ -311,6 +330,7 @@ namespace TaskForge.WPF.ViewModels
             _editProjectName = string.Empty;
             _editProjectDescription = string.Empty;
             _editProjectStatus = string.Empty;
+            _usersToPromote = new ObservableCollection<PromoteUserViewModel>();
 
             // Initialize commands
             LoadedCommand = new AsyncRelayCommand(OnLoadedAsync);
@@ -335,12 +355,17 @@ namespace TaskForge.WPF.ViewModels
             EditProjectCommand = new RelayCommand(OnEditProject);
             SaveEditProjectCommand = new AsyncRelayCommand(OnSaveEditProjectAsync);
             CancelEditProjectCommand = new RelayCommand(OnCancelEditProject);
+            LeaveProjectCommand = new AsyncRelayCommand(OnLeaveProjectAsync);
+            SaveAndLeaveProjectCommand = new AsyncRelayCommand(OnSaveAndLeaveProjectAsync);
+            CancelLeaveProjectCommand = new RelayCommand(OnCancelLeaveProject);
+            DeleteProjectCommand = new AsyncRelayCommand(OnDeleteProjectAsync);
         }
 
         private async Task OnLoadedAsync()
         {
             var auth0Id = _auth0Service.GetUserId(_currentLoginResult);
             var currentUser = await _userService.GetUserByAuth0IdAsync(auth0Id);
+            _currentUserId = currentUser.Id;
             var projectUser = await _projectService.GetProjectUserAsync(currentUser.Id, _projectId);
 
             if (projectUser?.Role == Role.Moderator)
@@ -780,6 +805,141 @@ namespace TaskForge.WPF.ViewModels
         {
             IsEditProjectModalVisible = false;
         }
+
+        private async Task OnLeaveProjectAsync()
+        {
+            var confirmation = MessageBox.Show(
+                "Ви впевнені, що хочете покинути цей проект?",
+                "Підтвердження виходу",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirmation == MessageBoxResult.No)
+                return;
+
+            try
+            {
+                var projectUsers = await _projectService.GetProjectUsersAsync(_projectId);
+                var currentUserProjectEntry = projectUsers.FirstOrDefault(pu => pu.UserId == _currentUserId);
+
+                if (currentUserProjectEntry == null) return;
+
+                if (currentUserProjectEntry.Role == Role.Member)
+                {
+                    await _userService.RemoveUserFromProjectAsync(_currentUserId, _projectId);
+                    MessageBox.Show("Ви успішно покинули проект.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                    OnClose(); 
+                    return;
+                }
+
+                var otherModerators = projectUsers.Count(pu => pu.Role == Role.Moderator && pu.UserId != _currentUserId);
+
+                if (otherModerators > 0)
+                {
+                    await _userService.RemoveUserFromProjectAsync(_currentUserId, _projectId);
+                    MessageBox.Show("Ви успішно покинули проект.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                    OnClose(); 
+                    return;
+                }
+
+                var otherUsers = projectUsers
+                    .Where(pu => pu.UserId != _currentUserId)
+                    .Select(pu => new PromoteUserViewModel
+                    {
+                        Id = pu.UserId,
+                        FullName = $"{pu.User.FirstName} {pu.User.LastName}",
+                        IsSelected = false
+                    })
+                    .ToList();
+
+                if (!otherUsers.Any())
+                {
+                    await _userService.RemoveUserFromProjectAsync(_currentUserId, _projectId);
+                    MessageBox.Show("Ви успішно покинули проект (ви були останнім учасником).", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                    OnClose();
+                    return;
+                }
+
+                UsersToPromote = new ObservableCollection<PromoteUserViewModel>(otherUsers);
+                IsLeaveProjectModalVisible = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при виході з проекту: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task OnSaveAndLeaveProjectAsync()
+        {
+            var selectedUsers = UsersToPromote.Where(u => u.IsSelected).ToList();
+            if (!selectedUsers.Any())
+            {
+                MessageBox.Show("Ви повинні обрати хоча б одного користувача, щоб зробити його модератором.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                foreach (var user in selectedUsers)
+                {
+                    await _userService.UpdateUserRoleInProjectAsync(user.Id, _projectId, Role.Moderator);
+                }
+
+
+                await _userService.RemoveUserFromProjectAsync(_currentUserId, _projectId);
+
+                MessageBox.Show("Ви успішно передали права модератора та покинули проект.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                IsLeaveProjectModalVisible = false;
+                OnClose(); 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при збереженні: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OnCancelLeaveProject()
+        {
+            IsLeaveProjectModalVisible = false;
+            UsersToPromote.Clear();
+        }
+
+        private async Task OnDeleteProjectAsync()
+        {
+            var confirm1 = MessageBox.Show(
+                "Ви дійсно хочете видалити цей проект? Ця дія незворотня і видалить всі пов'язані з ним завдання.",
+                "Підтвердження видалення",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm1 == MessageBoxResult.No)
+                return;
+
+            var confirm2 = MessageBox.Show(
+                "ВИ ВПЕВНЕНІ? Проект буде видалено НАЗАВЖДИ.",
+                "Остаточне підтвердження",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Stop);
+
+            if (confirm2 == MessageBoxResult.No)
+                return;
+
+            try
+            {
+                await _projectService.DeleteProjectAsync(_projectId);
+
+                MessageBox.Show("Проект успішно видалено.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                IsEditProjectModalVisible = false;
+                OnClose(); 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка під час видалення проекту: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
     }
 
     public class UserSelectionViewModel
@@ -801,5 +961,17 @@ namespace TaskForge.WPF.ViewModels
     {
         public int Id { get; set; }
         public string Username { get; set; }
+    }
+
+    public class PromoteUserViewModel : ViewModelBase
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set => SetProperty(ref _isSelected, value);
+        }
     }
 }

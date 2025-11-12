@@ -1,5 +1,7 @@
 ﻿using TaskForge.Domain.Entities;
 using TaskForge.Domain.Enums;
+using System.Collections.Generic; 
+using System.Threading.Tasks;
 
 namespace TaskForge.Domain.Interfaces;
 
@@ -17,7 +19,8 @@ public interface IProjectRepository
     Task<List<Project>> GetProjectsForUserAsync(int userId);
     Task<List<TaskEntity>> GetTasksByProjectIdAsync(int projectId);
     Task<ProjectUser> GetProjectUserAsync(int userId, int projectId);
-
+    Task<List<ProjectUser>> GetProjectUsersAsync(int projectId);
     Task<Project> GetProjectByIdAsync(int projectId);
     Task<Project> UpdateProjectAsync(Project project);
+    Task DeleteProjectAsync(int projectId);
 }
