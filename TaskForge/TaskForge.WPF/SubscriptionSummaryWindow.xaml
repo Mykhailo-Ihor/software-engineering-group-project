@@ -86,9 +86,6 @@
                                             <Run FontWeight="SemiBold" Text="Сплатити:"/>
                                             <Run Text="{Binding BillingDate, StringFormat='{}{0:dd/MM/yyyy}'}"/>
                                         </TextBlock>
-                                        <Border Background="#E3F2FD" CornerRadius="5" Padding="5,2">
-                                            <TextBlock Text="{Binding RecurrenceInterval}" Foreground="#1E88E5" FontSize="10" FontWeight="Medium"/>
-                                        </Border>
                                     </StackPanel>
                                     <TextBlock Text="Активне сповіщення" FontSize="10" FontWeight="Bold" Foreground="#388E3C" Margin="0,5,0,0"
                                                Visibility="{Binding Notify, Converter={StaticResource BoolToVisibilityConverter}}"/>
