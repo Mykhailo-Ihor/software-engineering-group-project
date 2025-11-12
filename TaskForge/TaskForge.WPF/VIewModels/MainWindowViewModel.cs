@@ -211,7 +211,7 @@ namespace TaskForge.WPF.ViewModels
             ViewProjectsCommand = new AsyncRelayCommand(OnViewProjectsAsync);
             OpenProjectDetailsCommand = new AsyncRelayCommand(OnOpenProjectDetailsAsync);
             ViewExpensesCommand = new RelayCommand(OnViewExpenses);
-            OpenPasswordManagerCommand = new RelayCommand(OnOpenPasswordManager); 
+            OpenPasswordManagerCommand = new RelayCommand(OnOpenPasswordManager);
             OpenSubscriptionManagerCommand = new RelayCommand(OnOpenSubscriptionManager);
         }
 
@@ -220,20 +220,20 @@ namespace TaskForge.WPF.ViewModels
             try
             {
                 IsLoginButtonEnabled = false;
-                StatusText = "Â³äêðèòòÿ áðàóçåðà äëÿ âõîäó...";
+                StatusText = "Відкриття браузера для входу...";
 
                 _currentLoginResult = await _auth0Service.LoginAsync();
 
                 if (_currentLoginResult.IsError)
                 {
-                    StatusText = $"Ïîìèëêà: {_currentLoginResult.Error}";
+                    StatusText = $"Помилка: {_currentLoginResult.Error}";
                     IsLoginButtonEnabled = true;
                     return;
                 }
 
-                var userName = _auth0Service.GetUserName(_currentLoginResult) ?? "Íåâ³äîìî";
-                var userEmail = _auth0Service.GetUserEmail(_currentLoginResult) ?? "Íåâ³äîìî";
-                var userId = _auth0Service.GetUserId(_currentLoginResult) ?? "Íåâ³äîìî";
+                var userName = _auth0Service.GetUserName(_currentLoginResult) ?? "Невідомо";
+                var userEmail = _auth0Service.GetUserEmail(_currentLoginResult) ?? "Невідомо";
+                var userId = _auth0Service.GetUserId(_currentLoginResult) ?? "Невідомо";
 
                 var nameParts = userName.Split(' ', 2);
                 var firstName = nameParts.Length > 0 ? nameParts[0] : "";
@@ -243,11 +243,11 @@ namespace TaskForge.WPF.ViewModels
 
                 ShowUserInfo(_currentLoginResult);
                 IsLogoutButtonEnabled = true;
-                StatusText = "Óñï³øíèé âõ³ä!";
+                StatusText = "Успішний вхід!";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ïîìèëêà ïðè âõîä³: {ex.Message}", "Ïîìèëêà",
+                MessageBox.Show($"Помилка при вході: {ex.Message}", "Помилка входу",
               MessageBoxButton.OK, MessageBoxImage.Error);
                 IsLoginButtonEnabled = true;
                 StatusText = "";
@@ -259,7 +259,7 @@ namespace TaskForge.WPF.ViewModels
             try
             {
                 IsLogoutButtonEnabled = false;
-                StatusText = "Âèõ³ä...";
+                StatusText = "Вихід...";
 
                 await _auth0Service.LogoutAsync();
 
@@ -276,11 +276,11 @@ namespace TaskForge.WPF.ViewModels
 
                 IsLoginButtonEnabled = true;
 
-                StatusText = "Âè âèéøëè ç ñèñòåìè";
+                StatusText = "Ви вийшли з системи";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ïîìèëêà ïðè âèõîä³: {ex.Message}", "Ïîìèëêà",
+                MessageBox.Show($"Помилка при виході: {ex.Message}", "Помилка виходу",
                MessageBoxButton.OK, MessageBoxImage.Error);
                 IsLogoutButtonEnabled = true;
             }
@@ -288,8 +288,8 @@ namespace TaskForge.WPF.ViewModels
 
         private void ShowUserInfo(LoginResult loginResult)
         {
-            var userName = _auth0Service.GetUserName(loginResult) ?? "Íåâ³äîìî";
-            var userEmail = _auth0Service.GetUserEmail(loginResult) ?? "Íåâ³äîìî";
+            var userName = _auth0Service.GetUserName(loginResult) ?? "Невідомо";
+            var userEmail = _auth0Service.GetUserEmail(loginResult) ?? "Невідомо";
             var avatarUrl = _auth0Service.GetUserAvatarUrl(loginResult);
 
             UserName = userName;
@@ -358,13 +358,13 @@ namespace TaskForge.WPF.ViewModels
 
             if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(status))
             {
-                MessageBox.Show("Áóäü ëàñêà, çàïîâí³òü âñ³ îáîâ'ÿçêîâ³ ïîëÿ.");
+                MessageBox.Show("Будь ласка, заповніть всі обов'язкові поля.");
                 return;
             }
 
             if (_currentLoginResult == null)
             {
-                MessageBox.Show("Áóäü ëàñêà, óâ³éä³òü, ùîá ñòâîðèòè ïðîåêò.");
+                MessageBox.Show("Будь ласка, увійдіть, щоб створити проект.");
                 IsProjectModalVisible = false;
                 return;
             }
@@ -373,13 +373,13 @@ namespace TaskForge.WPF.ViewModels
             var user = await _userService.GetUserByAuth0IdAsync(userId);
             if (user == null)
             {
-                MessageBox.Show("Êîðèñòóâà÷à íå çíàéäåíî â áàç³ äàíèõ.");
+                MessageBox.Show("Користувача не знайдено в базі даних.");
                 IsProjectModalVisible = false;
                 return;
             }
 
             await _projectService.CreateProjectForUserAsync(name, status, description, user.Id, Role.Moderator);
-            MessageBox.Show($"Ïðîåêò '{name}' ñòâîðåíî!", "Óñï³õ");
+            MessageBox.Show($"Проект '{name}' створено!", "Успіх");
             IsProjectModalVisible = false;
         }
 
@@ -394,7 +394,7 @@ namespace TaskForge.WPF.ViewModels
             {
                 if (_currentLoginResult == null || _currentLoginResult.IsError)
                 {
-                    MessageBox.Show("Áóäü ëàñêà, óâ³éä³òü â ñèñòåìó, ùîá ïåðåãëÿíóòè ïðîºêòè.");
+                    MessageBox.Show("Будь ласка, увійдіть, щоб переглянути проекти.");
                     return;
                 }
 
@@ -402,7 +402,7 @@ namespace TaskForge.WPF.ViewModels
                 var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
                 if (user == null)
                 {
-                    MessageBox.Show("Íå âäàëîñÿ çíàéòè âàø³ äàí³ â ñèñòåì³.");
+                    MessageBox.Show("Не вдалося знайти ваші дані в системі.");
                     return;
                 }
 
@@ -414,12 +414,12 @@ namespace TaskForge.WPF.ViewModels
 
                 if (!userProjects.Any())
                 {
-                    MessageBox.Show("Ó âàñ ùå íåìàº æîäíîãî ïðîºêòó. Ñïðîáóéòå ñòâîðèòè íîâèé!");
+                    MessageBox.Show("У вас ще немає жодного проекту. Спробуйте створити новий!");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ïîìèëêà çàâàíòàæåííÿ ïðîºêò³â: {ex.Message}");
+                MessageBox.Show($"Помилка завантаження проектів: {ex.Message}");
             }
         }
 
@@ -431,7 +431,7 @@ namespace TaskForge.WPF.ViewModels
 
             if (selectedProject == null)
             {
-                MessageBox.Show("Íå âäàëîñÿ çíàéòè ïðîåêò");
+                MessageBox.Show("Не вдалося знайти проект");
                 return;
             }
 
@@ -456,7 +456,7 @@ namespace TaskForge.WPF.ViewModels
             {
                 if (_currentLoginResult == null || _currentLoginResult.IsError)
                 {
-                    MessageBox.Show("Áóäü ëàñêà, óâ³éä³òü â ñèñòåìó, ùîá ïåðåãëÿíóòè âèòðàòè.");
+                    MessageBox.Show("Будь ласка, увійдіть в систему, щоб переглянути витрати.");
                     return;
                 }
 
@@ -476,7 +476,7 @@ namespace TaskForge.WPF.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ïîìèëêà â³äêðèòòÿ â³êíà âèòðàò: {ex.Message}", "Ïîìèëêà");
+                MessageBox.Show($"Помилка відкриття вікна витрат: {ex.Message}", "Помилка");
             }
         }
 
@@ -496,7 +496,7 @@ namespace TaskForge.WPF.ViewModels
             {
                 if (_currentLoginResult == null || _currentLoginResult.IsError)
                 {
-                    MessageBox.Show("Áóäü ëàñêà, óâ³éä³òü â ñèñòåìó, ùîá êåðóâàòè ï³äïèñêàìè.");
+                    MessageBox.Show("Будь ласка, увійдіть в систему, щоб керувати підписками.");
                     return;
                 }
 
@@ -516,7 +516,7 @@ namespace TaskForge.WPF.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ïîìèëêà â³äêðèòòÿ â³êíà ï³äïèñîê: {ex.Message}", "Ïîìèëêà");
+                MessageBox.Show($"Помилка відкриття вікна підписок: {ex.Message}", "Помилка6    ");
             }
         }
     }
