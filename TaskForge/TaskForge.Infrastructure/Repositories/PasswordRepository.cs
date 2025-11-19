@@ -58,6 +58,9 @@ public class PasswordRepository : IPasswordRepository
         var existingPassword = await _context.Passwords.FindAsync(password.Id);
         if (existingPassword != null)
         {
+            // Encrypt the password before updating
+            password.PasswordEncrypted = EncryptPassword(password.PasswordEncrypted);
+            
             _context.Entry(existingPassword).CurrentValues.SetValues(password);
             await _context.SaveChangesAsync();
         }
