@@ -263,6 +263,20 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _usersToPromote, value);
         }
 
+        private bool _isKickUserModalVisible;
+        public bool IsKickUserModalVisible
+        {
+            get => _isKickUserModalVisible;
+            set => SetProperty(ref _isKickUserModalVisible, value);
+        }
+
+        private ObservableCollection<UserDto> _usersToKickList;
+        public ObservableCollection<UserDto> UsersToKickList
+        {
+            get => _usersToKickList;
+            set => SetProperty(ref _usersToKickList, value);
+        }
+
         // Commands
         public ICommand LoadedCommand { get; }
         public ICommand CloseCommand { get; }
@@ -290,6 +304,9 @@ namespace TaskForge.WPF.ViewModels
         public ICommand SaveAndLeaveProjectCommand { get; }
         public ICommand CancelLeaveProjectCommand { get; }
         public ICommand DeleteProjectCommand { get; }
+        public ICommand OpenKickUserModalCommand { get; }
+        public ICommand KickUserCommand { get; } 
+        public ICommand CloseKickUserModalCommand { get; }
 
         public ProjectDetailsViewModel(
             int projectId,
@@ -332,6 +349,7 @@ namespace TaskForge.WPF.ViewModels
             _editProjectStatus = string.Empty;
             _usersToPromote = new ObservableCollection<PromoteUserViewModel>();
 
+
             // Initialize commands
             LoadedCommand = new AsyncRelayCommand(OnLoadedAsync);
             CloseCommand = new RelayCommand(OnClose);
@@ -359,6 +377,9 @@ namespace TaskForge.WPF.ViewModels
             SaveAndLeaveProjectCommand = new AsyncRelayCommand(OnSaveAndLeaveProjectAsync);
             CancelLeaveProjectCommand = new RelayCommand(OnCancelLeaveProject);
             DeleteProjectCommand = new AsyncRelayCommand(OnDeleteProjectAsync);
+            OpenKickUserModalCommand = new AsyncRelayCommand(OnOpenKickUserModalAsync);
+            KickUserCommand = new AsyncRelayCommand(OnKickUserAsync);
+            CloseKickUserModalCommand = new RelayCommand(OnCloseKickUserModal);
         }
 
         private async Task OnLoadedAsync()
@@ -939,7 +960,79 @@ namespace TaskForge.WPF.ViewModels
             }
         }
 
+        private async Task OnOpenKickUserModalAsync()
+        {
+            try
+            {
+                // Отримуємо всіх користувачів проекту
+                var users = await _userService.GetUsersByProjectIdAsync(_projectId);
 
+                // Фільтруємо: виключаємо поточного користувача (себе вигнати не можна)
+                // Модератор може вигнати іншого модератора, тому перевірку ролі тут не робимо, 
+                // лише перевірку ID, щоб не видалити самого себе.
+                var kickableUsers = users.Where(u => u.Id != _currentUserId).ToList();
+
+                if (!kickableUsers.Any())
+                {
+                    MessageBox.Show("У цьому проекті немає інших учасників, яких можна вигнати.", "Інформація", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                UsersToKickList = new ObservableCollection<UserDto>(kickableUsers);
+                IsKickUserModalVisible = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка завантаження списку учасників: {ex.Message}", "Помилка");
+            }
+        }
+
+        private async Task OnKickUserAsync(object parameter)
+        {
+            if (parameter is not int userIdToKick) return;
+
+            var userToKick = UsersToKickList.FirstOrDefault(u => u.Id == userIdToKick);
+            string userName = userToKick != null ? $"{userToKick.FirstName} {userToKick.LastName}" : "користувача";
+
+            var result = MessageBox.Show(
+                $"Ви впевнені, що хочете вигнати {userName} з проекту? Цю дію не можна скасувати.",
+                "Підтвердження вигнання",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    await _userService.RemoveUserFromProjectAsync(userIdToKick, _projectId);
+
+                    MessageBox.Show("Користувача успішно вигнано з проекту.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                    var userToRemove = UsersToKickList.FirstOrDefault(u => u.Id == userIdToKick);
+                    if (userToRemove != null)
+                    {
+                        UsersToKickList.Remove(userToRemove);
+                    }
+
+                    await LoadProjectUsersForFilterAsync();
+                    await LoadProjectDetailsAsync();
+
+                    if (!UsersToKickList.Any())
+                    {
+                        IsKickUserModalVisible = false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Помилка при видаленні користувача: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void OnCloseKickUserModal()
+        {
+            IsKickUserModalVisible = false;
+        }
     }
 
     public class UserSelectionViewModel

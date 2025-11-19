@@ -56,6 +56,16 @@ Width="800"
                             Command="{Binding ManageModeratorsCommand}"
                             Visibility="{Binding IsManageModeratorsVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
+                    <Button Content="Вигнати учасника"
+                            Width="180"
+                            Height="30"
+                            Margin="10,10,0,0"
+                            Background="#C62828" 
+                            Foreground="White"
+                            BorderThickness="0"
+                            Command="{Binding OpenKickUserModalCommand}"
+                            Visibility="{Binding IsManageModeratorsVisible, Converter={StaticResource BoolToVisibilityConverter}}"/>    
+
                     <Button Content="Редагувати проєкт"
                             Width="180"
                             Height="30"
@@ -256,10 +266,10 @@ Width="800"
                     <TextBlock Text="Створити нове завдання" FontSize="20" FontWeight="Bold" Margin="0,0,0,20"/>
                     <TextBlock Text="Проект:" Margin="0,0,0,5"/>
                     <ComboBox ItemsSource="{Binding UserProjects}" 
-SelectedValue="{Binding SelectedProjectId}"
-        Margin="0,0,0,10" 
-       DisplayMemberPath="Name" 
-   SelectedValuePath="Id"/>
+                              SelectedValue="{Binding SelectedProjectId}"
+                              Margin="0,0,0,10" 
+                              DisplayMemberPath="Name" 
+                              SelectedValuePath="Id"/>
                     <TextBlock Text="Назва завдання:" Margin="0,0,0,5"/>
                     <TextBox Text="{Binding TaskTitle, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
                     <TextBlock Text="Опис:" Margin="0,0,0,5"/>
@@ -268,12 +278,12 @@ SelectedValue="{Binding SelectedProjectId}"
                     <DatePicker SelectedDate="{Binding TaskDueDate}" Margin="0,0,0,15"/>
                     <TextBlock Text="{Binding SelectedAssigneesText}" Margin="0,0,0,5" Foreground="Gray"/>
                     <Button Content="Призначити виконавців" 
-      Command="{Binding AssignUsersCommand}"
-          Margin="0,0,0,20"
-        Width="360" Height="35"
-        Background="#2196F3"
-        Foreground="White"
-      BorderThickness="0"/>
+                             Command="{Binding AssignUsersCommand}"
+                             Margin="0,0,0,20"
+                             Width="360" Height="35"
+                             Background="#2196F3"
+                             Foreground="White"
+                             BorderThickness="0"/> 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="Створити" Width="80" Height="35" Margin="0,0,10,0" Background="#4CAF50" Foreground="White" BorderThickness="0" Command="{Binding SaveTaskCommand}"/>
                         <Button Content="Скасувати" Width="80" Height="35" Margin="0,0,10,0" Background="Gray" Foreground="White" BorderThickness="0" Command="{Binding CancelTaskCommand}"/>
@@ -438,9 +448,9 @@ SelectedValue="{Binding SelectedProjectId}"
 
         <!-- Modal for managing moderators -->
         <Grid Visibility="{Binding IsManageModeratorsModalVisible, Converter={StaticResource BoolToVisibilityConverter}}" 
-       Grid.RowSpan="2"
-          Background="#80000000" 
-       Panel.ZIndex="201">
+                Grid.RowSpan="2"
+                Background="#80000000" 
+                Panel.ZIndex="201">
             <Border Background="White" CornerRadius="10" Padding="20" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
                     <TextBlock Text="Керування модераторами" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
@@ -459,5 +469,90 @@ SelectedValue="{Binding SelectedProjectId}"
                 </StackPanel>
             </Border>
         </Grid>
+
+        <Grid Visibility="{Binding IsKickUserModalVisible, Converter={StaticResource BoolToVisibilityConverter}}" 
+      Grid.RowSpan="2"
+      Background="#80000000" 
+      Panel.ZIndex="205">
+            <Border Background="White" CornerRadius="10" Padding="20" Width="450" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <StackPanel>
+                    <TextBlock Text="Вигнати учасника з проекту" FontSize="18" FontWeight="Bold" Margin="0,0,0,5" Foreground="#C62828"/>
+                    <TextBlock Text="Оберіть користувача для видалення:" Margin="0,0,0,15" Foreground="Gray"/>
+
+                    <ListView ItemsSource="{Binding UsersToKickList}" MaxHeight="300" BorderThickness="1" BorderBrush="#EEEEEE">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="5" BorderThickness="0,0,0,1" BorderBrush="#EEEEEE">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                            <TextBlock FontWeight="SemiBold">
+                                        <Run Text="{Binding FirstName}"/>
+                                        <Run Text=" "/>
+                                        <Run Text="{Binding LastName}"/>
+                                            </TextBlock>
+                                            <TextBlock Text="{Binding Email}" FontSize="10" Foreground="Gray"/>
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1"
+                                        Content="Вигнати"
+                                        Background="#E53935"
+                                        Foreground="White"
+                                        BorderThickness="0"
+                                        FontSize="12"
+                                        Padding="10,5"
+                                        Margin="10,0,0,0"
+                                        Command="{Binding DataContext.KickUserCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                        CommandParameter="{Binding Id}">
+                                            <Button.Style>
+                                                <Style TargetType="Button">
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                    <Style.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter Property="Background" Value="#B71C1C"/>
+                                                        </Trigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                        <Button Content="Закрити" Width="100" Height="35" Background="Gray" Foreground="White" BorderThickness="0" Command="{Binding CloseKickUserModalCommand}">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+
     </Grid>
 </Window>
