@@ -16,6 +16,12 @@ namespace TaskForge.WPF.ViewModels
         private readonly Duende.IdentityModel.OidcClient.LoginResult _loginResult;
         private UserDto? _currentUser;
 
+        public UserDto? CurrentUser
+        {
+            get => _currentUser;
+            set => SetProperty(ref _currentUser, value);
+        }
+
         private string _firstName = string.Empty;
         public string FirstName
         {
@@ -84,105 +90,14 @@ namespace TaskForge.WPF.ViewModels
 
             _profileAvatar = new BitmapImage(new Uri("pack://application:,,,/TaskForge.WPF;component/Resources/avatar_placeholder.png"));
 
-            LoadedCommand = new AsyncRelayCommand(LoadUserProfileAsync);
-            SaveCommand = new AsyncRelayCommand(SaveUserProfileAsync, CanSave);
+            LoadedCommand = new Commands.Profile.LoadProfileCommand(this, _userService, _auth0Service, _loginResult);
+            SaveCommand = new Commands.Profile.SaveProfileCommand(this, _userService, _auth0Service, _loginResult);
             CloseCommand = new RelayCommand(() => CloseRequested?.Invoke());
         }
 
-        private async Task LoadUserProfileAsync()
+        public void RequestClose()
         {
-            try
-            {
-                var auth0Id = _auth0Service.GetUserId(_loginResult);
-                _currentUser = await _userService.GetUserByAuth0IdAsync(auth0Id);
-
-                if (_currentUser != null)
-                {
-                    FirstName = _currentUser.FirstName ?? string.Empty;
-                    LastName = _currentUser.LastName ?? string.Empty;
-                    Email = _currentUser.Email ?? string.Empty;
-                }
-
-                var avatarUrl = _auth0Service.GetUserAvatarUrl(_loginResult);
-                if (!string.IsNullOrEmpty(avatarUrl))
-                {
-                    ProfileAvatar = new BitmapImage(new Uri(avatarUrl));
-                }
-
-                var connection = _auth0Service.GetUserConnection(_loginResult);
-                if (connection == "google-oauth2")
-                {
-                    IsFieldsEnabled = false;
-                    SaveButtonVisibility = Visibility.Collapsed;
-                    ProfileInfoText = "Інформація профіля недоступна.";
-                    ProfileInfoVisibility = Visibility.Visible;
-                }
-                else if (connection == "Username-Password-Authentication")
-                {
-                    IsFieldsEnabled = true;
-                    SaveButtonVisibility = Visibility.Visible;
-                    ProfileInfoVisibility = Visibility.Collapsed;
-                }
-            }
-            catch (Exception ex)
-            {
-                ProfileInfoText = $"Помилка завантаження профілю: {ex.Message}";
-                ProfileInfoVisibility = Visibility.Visible;
-            }
-        }
-
-        private bool CanSave()
-        {
-            return IsFieldsEnabled && !string.IsNullOrWhiteSpace(FirstName) &&
-                   !string.IsNullOrWhiteSpace(LastName) && !string.IsNullOrWhiteSpace(Email);
-        }
-
-        private async Task SaveUserProfileAsync()
-        {
-            if (_currentUser == null)
-            {
-                ShowError("Користувача не знайдено.", "Помилка");
-                return;
-            }
-
-            var firstName = FirstName?.Trim();
-            var lastName = LastName?.Trim();
-            var email = Email?.Trim();
-
-            if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(lastName) || string.IsNullOrWhiteSpace(email))
-            {
-                ShowError("Будь ласка заповніть всі поля.", "Попередження");
-                return;
-            }
-
-            try
-            {
-                await _userService.UpdateUserProfileAsync(_currentUser.Id, firstName, lastName, email);
-
-                var connection = _auth0Service.GetUserConnection(_loginResult);
-                if (connection == "Username-Password-Authentication")
-                {
-                    var auth0Api = new Auth0ManagementApiController();
-                    await auth0Api.UpdateAuth0UserProfileAsync(_currentUser.Auth0UserId, firstName, lastName, email);
-                }
-
-                ShowSuccess("Профіль успішно оновлено!.", "Успіх!");
-                CloseRequested?.Invoke();
-            }
-            catch (Exception ex)
-            {
-                ShowError($"Помилка збереження профілю: {ex.Message}", "Помилка");
-            }
-        }
-
-        private void ShowError(string message, string title)
-        {
-            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        private void ShowSuccess(string message, string title)
-        {
-            MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            CloseRequested?.Invoke();
         }
 
         public event Action? CloseRequested;
