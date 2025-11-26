@@ -13,6 +13,7 @@ using TaskForge.Domain.Entities;
 using TaskForge.Domain.Enums;
 using TaskForge.WPF.Commands;
 using SysApp = System.Windows.Application;
+using TaskForge.WPF.Commands.ProjectDetails;
 
 namespace TaskForge.WPF.ViewModels
 {
@@ -29,6 +30,13 @@ namespace TaskForge.WPF.ViewModels
         private int _editingTaskId;
         private List<int> _selectedAssigneeIds = new List<int>();
         private int _currentUserId;
+
+        public List<int> SelectedAssigneeIds => _selectedAssigneeIds;
+        public int EditingTaskId
+        {
+            get => _editingTaskId;
+            set => _editingTaskId = value;
+        }
 
         // Project Info Properties
         private string _projectName;
@@ -349,19 +357,18 @@ namespace TaskForge.WPF.ViewModels
             _editProjectStatus = string.Empty;
             _usersToPromote = new ObservableCollection<PromoteUserViewModel>();
 
-
             // Initialize commands
             LoadedCommand = new AsyncRelayCommand(OnLoadedAsync);
             CloseCommand = new RelayCommand(OnClose);
             ClearFilterCommand = new AsyncRelayCommand(OnClearFilterAsync);
             AddTaskCommand = new AsyncRelayCommand(OnAddTaskAsync);
-            SaveTaskCommand = new AsyncRelayCommand(OnSaveTaskAsync);
+            SaveTaskCommand = new SaveTaskCommand(this, _taskService);
             CancelTaskCommand = new RelayCommand(OnCancelTask);
             AssignUsersCommand = new AsyncRelayCommand(OnAssignUsersAsync);
             SaveAssignUsersCommand = new RelayCommand(OnSaveAssignUsers);
             CancelAssignUsersCommand = new RelayCommand(OnCancelAssignUsers);
             EditTaskCommand = new AsyncRelayCommand(OnEditTaskAsync);
-            SaveEditTaskCommand = new AsyncRelayCommand(OnSaveEditTaskAsync);
+            SaveEditTaskCommand = new SaveEditTaskCommand(this, _taskService);
             CancelEditTaskCommand = new RelayCommand(OnCancelEditTask);
             DeleteTaskCommand = new AsyncRelayCommand(OnDeleteTaskAsync);
             AddUserToProjectCommand = new RelayCommand(OnAddUserToProject);
@@ -378,7 +385,7 @@ namespace TaskForge.WPF.ViewModels
             CancelLeaveProjectCommand = new RelayCommand(OnCancelLeaveProject);
             DeleteProjectCommand = new AsyncRelayCommand(OnDeleteProjectAsync);
             OpenKickUserModalCommand = new AsyncRelayCommand(OnOpenKickUserModalAsync);
-            KickUserCommand = new AsyncRelayCommand(OnKickUserAsync);
+            KickUserCommand = new KickUserCommand(this, _userService, _projectId);
             CloseKickUserModalCommand = new RelayCommand(OnCloseKickUserModal);
         }
 
@@ -522,45 +529,6 @@ namespace TaskForge.WPF.ViewModels
             IsAssignUsersModalVisible = false;
         }
 
-        private async Task OnSaveTaskAsync()
-        {
-            if (SelectedProjectId == 0)
-            {
-                MessageBox.Show("Будь ласка, виберіть проект.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(TaskTitle))
-            {
-                MessageBox.Show("Будь ласка, введіть назву завдання.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            try
-            {
-                var newTask = await _taskService.CreateTaskAsync(
-       TaskTitle,
-                TaskDescription,
-                TaskDueDate,
-         SelectedProjectId
-          );
-
-                foreach (var userId in _selectedAssigneeIds)
-                {
-                    await _taskService.AssignUserToTaskAsync(newTask.Id, userId);
-                }
-
-                MessageBox.Show($"Завдання '{newTask.Title}' успішно створено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-                IsTaskModalVisible = false;
-
-                await LoadProjectDetailsAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Помилка створення завдання: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         private void OnCancelTask()
         {
             IsTaskModalVisible = false;
@@ -590,43 +558,6 @@ namespace TaskForge.WPF.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"Помилка при завантаженні завдання: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async Task OnSaveEditTaskAsync()
-        {
-            if (string.IsNullOrWhiteSpace(EditTaskTitle))
-            {
-                MessageBox.Show("Введіть назву завдання.", "Валідація", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            try
-            {
-                var task = await _taskService.GetTaskByIdAsync(_editingTaskId);
-                if (task == null)
-                {
-                    MessageBox.Show("Завдання не знайдено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    IsEditTaskModalVisible = false;
-                    return;
-                }
-
-                task.Title = EditTaskTitle.Trim();
-                task.Description = EditTaskDescription?.Trim() ?? string.Empty;
-                task.DueDate = EditTaskDueDate;
-
-                await _taskService.UpdateTaskAsync(task);
-
-                IsEditTaskModalVisible = false;
-                ClearEditTaskFields();
-
-                await LoadProjectDetailsAsync();
-
-                MessageBox.Show("Завдання успішно оновлено.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Помилка при оновленні завдання: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -837,7 +768,7 @@ namespace TaskForge.WPF.ViewModels
 
             if (confirmation == MessageBoxResult.No)
                 return;
-
+            
             try
             {
                 var projectUsers = await _projectService.GetProjectUsersAsync(_projectId);
@@ -984,48 +915,6 @@ namespace TaskForge.WPF.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"Помилка завантаження списку учасників: {ex.Message}", "Помилка");
-            }
-        }
-
-        private async Task OnKickUserAsync(object parameter)
-        {
-            if (parameter is not int userIdToKick) return;
-
-            var userToKick = UsersToKickList.FirstOrDefault(u => u.Id == userIdToKick);
-            string userName = userToKick != null ? $"{userToKick.FirstName} {userToKick.LastName}" : "користувача";
-
-            var result = MessageBox.Show(
-                $"Ви впевнені, що хочете вигнати {userName} з проекту? Цю дію не можна скасувати.",
-                "Підтвердження вигнання",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                try
-                {
-                    await _userService.RemoveUserFromProjectAsync(userIdToKick, _projectId);
-
-                    MessageBox.Show("Користувача успішно вигнано з проекту.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    var userToRemove = UsersToKickList.FirstOrDefault(u => u.Id == userIdToKick);
-                    if (userToRemove != null)
-                    {
-                        UsersToKickList.Remove(userToRemove);
-                    }
-
-                    await LoadProjectUsersForFilterAsync();
-                    await LoadProjectDetailsAsync();
-
-                    if (!UsersToKickList.Any())
-                    {
-                        IsKickUserModalVisible = false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Помилка при видаленні користувача: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
             }
         }
 
