@@ -1,6 +1,5 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -9,6 +8,7 @@ using TaskForge.Application.Interfaces;
 using TaskForge.Domain.Entities;
 using TaskForge.Domain.Enums;
 using TaskForge.WPF.Commands;
+using TaskForge.WPF.Commands.PasswordManager;
 using TaskForge.WPF.Common;
 
 namespace TaskForge.WPF.ViewModels
@@ -52,17 +52,23 @@ namespace TaskForge.WPF.ViewModels
             _passwords = new ObservableCollection<PasswordDisplayItem>();
             _categories = new ObservableCollection<PasswordCategory>(Enum.GetValues<PasswordCategory>());
 
-            // Initialize commands
-            LoadPasswordsCommand = new AsyncRelayCommand(LoadPasswordsAsync);
-            OpenAddCommand = new RelayCommand(OpenAddModal);
-            CancelCommand = new RelayCommand(CancelAdd);
-            SaveAddCommand = new AsyncRelayCommand(SaveNewPasswordAsync);
-            OpenEditCommand = new RelayCommand(OpenEditModal);
-            SaveEditCommand = new AsyncRelayCommand(SaveEditedPasswordAsync);
+            // Initialize commands with external command classes
+            LoadPasswordsCommand = new LoadPasswordsCommand(
+ this, _passwordService, _userService, _auth0Service, _currentLoginResult);
+       
+   SaveAddCommand = new AddPasswordCommand(
+      this, _passwordService, _userService, _auth0Service, _currentLoginResult);
+            
+        DeleteCommand = new DeletePasswordCommand(this, _passwordService);
+
+  // Initialize simple UI commands
+     OpenAddCommand = new RelayCommand(OpenAddModal);
+          CancelCommand = new RelayCommand(CancelAdd);
+    OpenEditCommand = new RelayCommand(OpenEditModal);
+    SaveEditCommand = new AsyncRelayCommand(SaveEditedPasswordAsync);
             CancelEditCommand = new RelayCommand(CancelEdit);
-            DeleteCommand = new AsyncRelayCommand(DeletePasswordAsync);
-            CopyPasswordCommand = new RelayCommand(CopyPassword);
-            ToggleVisibilityCommand = new RelayCommand(ToggleVisibility);
+   CopyPasswordCommand = new RelayCommand(CopyPassword);
+     ToggleVisibilityCommand = new RelayCommand(ToggleVisibility);
         }
 
         #region Properties
@@ -155,45 +161,6 @@ namespace TaskForge.WPF.ViewModels
 
         #region Command Implementations
 
-        public async Task LoadPasswordsAsync()
-        {
-            if (_currentLoginResult == null || _currentLoginResult.IsError)
-            {
-                MessageBox.Show("Будь ласка, увійдіть, щоб переглянути паролі.", "Потрібна автентифікація", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
-            var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
-
-            if (user == null)
-            {
-                MessageBox.Show("Користувача не знайдено в системі.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            var passwords = await _passwordService.GetPasswordsByUserIdAsync(user.Id);
-
-            Passwords.Clear();
-            foreach (var password in passwords)
-            {
-                Passwords.Add(new PasswordDisplayItem
-                {
-                    Password = new Password
-                    {
-                        Id = password.Id,
-                        Url = password.Url,
-                        Login = password.Login,
-                        PasswordEncrypted = DecryptPassword(password.PasswordEncrypted),
-                        Note = password.Note,
-                        Category = password.Category,
-                        UserId = password.UserId
-                    },
-                    IsRevealed = false
-                });
-            }
-        }
-
         private void OpenAddModal(object parameter)
         {
             // Clear all fields
@@ -209,38 +176,6 @@ namespace TaskForge.WPF.ViewModels
         private void CancelAdd(object parameter)
         {
             IsAddModalVisible = false;
-        }
-
-        private async Task SaveNewPasswordAsync(object parameter)
-        {
-            if (_currentLoginResult == null || _currentLoginResult.IsError)
-            {
-                MessageBox.Show("Будь ласка, увійдіть, щоб зберегти паролі.", "Потрібна автентифікація", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
-            var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
-
-            if (user == null)
-            {
-                MessageBox.Show("Користувача не знайдено в системі.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            var password = new Password
-            {
-                Url = Url,
-                Login = Login,
-                PasswordEncrypted = PasswordText,
-                Note = Note,
-                Category = SelectedCategory,
-                UserId = user.Id
-            };
-
-            await _passwordService.AddPasswordAsync(password);
-            IsAddModalVisible = false;
-            await LoadPasswordsAsync();
         }
 
         private void OpenEditModal(object parameter)
@@ -273,26 +208,17 @@ namespace TaskForge.WPF.ViewModels
 
             await _passwordService.UpdatePasswordAsync(SelectedItem.Password);
             IsEditModalVisible = false;
-            await LoadPasswordsAsync();
+   
+ // Reload passwords by executing LoadPasswordsCommand
+  if (LoadPasswordsCommand.CanExecute(null))
+  {
+       await ((AsyncRelayCommand)LoadPasswordsCommand).ExecuteAsync(null);
+       }
         }
 
         private void CancelEdit(object parameter)
         {
             IsEditModalVisible = false;
-        }
-
-        private async Task DeletePasswordAsync(object parameter)
-        {
-            if (parameter is int passwordId)
-            {
-                await _passwordService.DeletePasswordAsync(passwordId);
-                await LoadPasswordsAsync();
-            }
-            else if (parameter is PasswordDisplayItem item && item.Password != null)
-            {
-                await _passwordService.DeletePasswordAsync(item.Password.Id);
-                await LoadPasswordsAsync();
-            }
         }
 
         private void CopyPassword(object parameter)
@@ -323,7 +249,12 @@ namespace TaskForge.WPF.ViewModels
 
         #region Helper Methods
 
-        private string DecryptPassword(string encryptedText)
+        /// <summary>
+        /// Decrypts the encrypted password text
+        /// </summary>
+        /// <param name="encryptedText">The Base64 encoded password</param>
+        /// <returns>The decrypted password string</returns>
+        public string DecryptPassword(string encryptedText)
         {
             try
             {
