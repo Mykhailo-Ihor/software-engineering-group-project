@@ -5,168 +5,150 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TaskForge.WPF"
         mc:Ignorable="d"
-        Title="TaskForge" Height="600" Width="900">
+        Title="TaskForge" Height="600" Width="900"
+        Background="#222531"
+        WindowStartupLocation="CenterScreen">
+
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style x:Key="HeaderButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="10,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.7"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="60"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Заголовок -->
-        <TextBlock Grid.Row="0" 
-            Text="TaskForge" 
-            FontSize="24" 
-            FontWeight="Bold"
-            HorizontalAlignment="Center"
-            Margin="0,20,0,20"/>
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel>
+        <Border Grid.Row="0" Background="#323645" Padding="20,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="/Resources/icon_.png" Width="30" Height="30" Margin="0,0,10,0"/>
+
+                    <TextBlock Text="TaskForge" 
+                               FontSize="20" 
+                               FontWeight="Normal" 
+                               VerticalAlignment="Center"
+                               Foreground="White"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsUserInfoVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                    <Button Command="{Binding ProfileCommand}" Style="{StaticResource HeaderButtonStyle}" ToolTip="Профіль">
+                        <Ellipse Width="32" Height="32" Stroke="White" StrokeThickness="1">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="{Binding UserAvatar}" Stretch="UniformToFill"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                    </Button>
+
+                    <Button Command="{Binding LogoutCommand}" Style="{StaticResource HeaderButtonStyle}" ToolTip="Вийти">
+                        <Path Data="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" 
+                              Fill="White" 
+                              Width="24" 
+                              Height="24" 
+                              Stretch="Uniform"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0,20,0,0">
 
                 <StackPanel x:Name="MainContentPanel" Visibility="{Binding IsMainContentVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-                    <!-- Інформація про користувача -->
-                    <StackPanel x:Name="UserInfoPanel"
-                        Visibility="{Binding IsUserInfoVisible, 
-                        Converter={StaticResource BoolToVisibilityConverter}}"
-                        Margin="50,0,50,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button x:Name="ProfileButton" Command="{Binding ProfileCommand}" Background="Transparent" BorderThickness="0" Cursor="Hand" Margin="0,0,20,0">
-                                <StackPanel>
-                                    <Ellipse x:Name="UserAvatarEllipse" Width="64" Height="64" Stroke="#4CAF50" StrokeThickness="2">
-                                        <Ellipse.Fill>
-                                            <ImageBrush ImageSource="{Binding UserAvatar}" />
-                                        </Ellipse.Fill>
-                                    </Ellipse>
-                                    <TextBlock Text="{Binding UserName}" FontWeight="Bold" FontSize="16" HorizontalAlignment="Center" Margin="0,5,0,0"/>
-                                </StackPanel>
-                            </Button>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Email:" FontWeight="Bold" HorizontalAlignment="Left"/>
-                                <TextBlock Text="{Binding UserEmail}" HorizontalAlignment="Left"/>
-                            </StackPanel>
-                        </StackPanel>
+
+                    <StackPanel Margin="50,0,50,20">
+                        <TextBlock Text="Welcome back," FontSize="18" Foreground="White" Opacity="0.8"/>
+                        <TextBlock Text="{Binding UserName}" FontSize="24" FontWeight="Bold" Foreground="White"/>
                     </StackPanel>
 
-                    <StackPanel HorizontalAlignment="Stretch" Margin="0,20,0,0">
+                    <StackPanel HorizontalAlignment="Stretch" Margin="0,10,0,0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button x:Name="CreateProjectButton"
-                                Content="Створити проект"
-                                Height="40"
-                                Width="150"
-                                FontSize="14"
-                                Background="#2196F3"
-                                Foreground="White"
-                                BorderThickness="0"
-                                Command="{Binding CreateProjectCommand}"
-                                Margin="0,0,10,0">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border 
-                                                        Background="{TemplateBinding Background}"
-                                                        CornerRadius="5"
-                                                        BorderThickness="0">
-                                                        <ContentPresenter 
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#1976D2"/>
-                                            </Trigger>
-                                        </Style.Triggers>
+                            <Button Content="Створити проект"
+                                    Height="40" Width="150" FontSize="14"
+                                    Background="#2196F3" Foreground="White" BorderThickness="0"
+                                    Command="{Binding CreateProjectCommand}" Margin="0,0,10,0">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="5"/>
                                     </Style>
-                                </Button.Style>
+                                </Button.Resources>
                             </Button>
 
-                            <Button x:Name="ViewProjectsButton"
-                                Content="Переглянути мої проекти"
-                                Height="40"
-                                Width="180"
-                                FontSize="14"
-                                Background="#009688"
-                                Foreground="White"
-                                BorderThickness="0"
-                                Command="{Binding ViewProjectsCommand}">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border
-                                                        Background="{TemplateBinding Background}"
-                                                        CornerRadius="5"
-                                                        BorderThickness="0">
-                                                        <ContentPresenter
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#00796B"/>
-                                            </Trigger>
-                                        </Style.Triggers>
+                            <Button Content="Мої проекти"
+                                    Height="40" Width="180" FontSize="14"
+                                    Background="#009688" Foreground="White" BorderThickness="0"
+                                    Command="{Binding ViewProjectsCommand}">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="5"/>
                                     </Style>
-                                </Button.Style>
+                                </Button.Resources>
                             </Button>
                         </StackPanel>
 
                         <ListView x:Name="ProjectsListView"
-                            Margin="0,15,0,0"
-                            Visibility="{Binding IsProjectsListVisible, 
-                            Converter={StaticResource BoolToVisibilityConverter}}"
-                            ItemsSource="{Binding Projects}"
-                            MaxHeight="400"
-                            BorderThickness="0"
-                            Background="GhostWhite"
-                            HorizontalContentAlignment="Stretch">
+                                  Margin="50,20,50,0"
+                                  Visibility="{Binding IsProjectsListVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                  ItemsSource="{Binding Projects}"
+                                  MaxHeight="400"
+                                  BorderThickness="0"
+                                  Background="Transparent"
+                                  HorizontalContentAlignment="Stretch">
                             <ListView.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderBrush="Gainsboro" BorderThickness="0,0,0,1" Padding="10">
+                                    <Border Background="#2B2F3E" CornerRadius="8" Margin="0,0,0,10" Padding="15">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0" Margin="0,0,15,0">
-                                                <Button Background="Transparent" 
-                                                    BorderThickness="0" 
-                                                    Cursor="Hand"
-                                                    HorizontalAlignment="Left"
-                                                    Padding="0"
-                                                    Command="{Binding DataContext.OpenProjectDetailsCommand, 
-                                                    RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding Id}">
-                                                    <TextBlock Text="{Binding Name}" 
-                                                        FontWeight="Bold" 
-                                                        FontSize="16" 
-                                                        Foreground="#2196F3"
-                                                        TextDecorations="Underline"/>
-                                                    <Button.Style>
-                                                        <Style TargetType="Button">
-                                                            <Style.Triggers>
-                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter Property="Opacity" Value="0.7"/>
-                                                                </Trigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Button.Style>
+                                            <StackPanel Grid.Column="0">
+                                                <Button Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                                        HorizontalAlignment="Left" Padding="0"
+                                                        Command="{Binding DataContext.OpenProjectDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding Id}">
+                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#64B5F6"/>
                                                 </Button>
-                                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="Gray" Margin="0,5,0,5"/>
-                                                <TextBlock FontSize="12">
+                                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#B0BEC5" Margin="0,5,0,5"/>
+                                                <TextBlock FontSize="12" Foreground="#90A4AE">
                                                     <Run Text="Статус:" FontWeight="SemiBold"/>
-                                                    <Run Text="{Binding Status}" Foreground="DarkCyan"/>
+                                                    <Run Text="{Binding Status}" Foreground="#80CBC4"/>
                                                 </TextBlock>
                                             </StackPanel>
                                         </Grid>
@@ -174,197 +156,92 @@
                                 </DataTemplate>
                             </ListView.ItemTemplate>
                         </ListView>
-                        <Separator Margin="0,15,0,15"/>
-                        <TextBlock Text="Витрати" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
-                            <Button
-                                x:Name="ViewExpensesButton"
-                                Content="Переглянути мої витрати"
-                                Height="40"
-                                Width="180"
-                                FontSize="14"
-                                Background="#9C27B0"
-                                Foreground="White"
-                                BorderThickness="0"
-                                Command="{Binding ViewExpensesCommand}">
-                                <Button.Style>
-                                    <Style TargetType="Button">
-                                        <Setter Property="Template">
-                                            <Setter.Value>
-                                                <ControlTemplate TargetType="Button">
-                                                    <Border
-                                                        Background="{TemplateBinding Background}"
-                                                        CornerRadius="5"
-                                                        BorderThickness="0">
-                                                        <ContentPresenter
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center"/>
-                                                    </Border>
-                                                </ControlTemplate>
-                                            </Setter.Value>
-                                        </Setter>
-                                        <Style.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#7B1FA2"/>
-                                            </Trigger>
-                                        </Style.Triggers>
+
+                        <Separator Margin="50,20,50,20" Background="#404457"/>
+
+                        <TextBlock Text="Швидкий доступ" FontSize="16" FontWeight="Bold" Margin="50,0,0,10"/>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+                            <Button Content="Витрати" Height="40" Width="150" Margin="5"
+                                    Background="#9C27B0" Foreground="White" BorderThickness="0"
+                                    Command="{Binding ViewExpensesCommand}">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="5"/>
                                     </Style>
-                                </Button.Style>
+                                </Button.Resources>
+                            </Button>
+
+                            <Button Content="Паролі" Height="40" Width="150" Margin="5"
+                                    Background="#3F51B5" Foreground="White" BorderThickness="0"
+                                    Command="{Binding OpenPasswordManagerCommand}">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="5"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
+
+                            <Button Content="Підписки" Height="40" Width="150" Margin="5"
+                                    Background="#3F51B5" Foreground="White" BorderThickness="0"
+                                    Command="{Binding OpenSubscriptionManagerCommand}">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="5"/>
+                                    </Style>
+                                </Button.Resources>
                             </Button>
                         </StackPanel>
-
-                        <Button x:Name="OpenPasswordManagerButton"
-                            Content="Password Manager"
-                            Height="40"
-                            Width="180"
-                            FontSize="14"
-                            Background="#3F51B5"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Command="{Binding OpenPasswordManagerCommand}"
-                            Margin="0,10,0,0">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border
-                                                    Background="{TemplateBinding Background}"
-                                                    CornerRadius="5"
-                                                    BorderThickness="0">
-                                                    <ContentPresenter
-                                                        HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#303F9F"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
-                        <Button
-                            x:Name="OpenSubscriptionManagerButton"
-                            Content="Переглянути підписки"
-                            Height="40"
-                            Width="180"
-                            FontSize="14"
-                            Background="#3F51B5"
-                            Foreground="White"
-                            BorderThickness="0"
-                            Command="{Binding OpenSubscriptionManagerCommand}"
-                            Margin="0,10,0,0">
-                            <Button.Style>
-                                <Style TargetType="Button">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="Button">
-                                                <Border 
-                                                    Background="{TemplateBinding Background}"
-                                                    CornerRadius="5"
-                                                    BorderThickness="0">
-                                                    <ContentPresenter
-                                                        HorizontalAlignment="Center"
-                                                        VerticalAlignment="Center"/>
-                                                </Border>
-                                            </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#303F9F"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-                        </Button>
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Екран логіну -->
-                <StackPanel 
-                    x:Name="LoginPanel"
-                    Visibility="{Binding IsLoginPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                    VerticalAlignment="Center"
-                    Margin="50">
-                    <TextBlock
-                        Text="Увійдіть за допомогою Auth0" 
-                        FontSize="16" 
-                        HorizontalAlignment="Center"
-                        Margin="0,0,0,20"
-                        TextWrapping="Wrap"/>
-                    <TextBlock
-                        Text="Натисніть кнопку нижче для входу або реєстрації" 
-                        HorizontalAlignment="Center"
-                        Foreground="Gray"
-                        TextWrapping="Wrap"
-                        TextAlignment="Center"
-                        Margin="0,0,0,10"/>
+                <StackPanel x:Name="LoginPanel"
+                            Visibility="{Binding IsLoginPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                            VerticalAlignment="Center"
+                            Margin="50">
+                    <TextBlock Text="Увійдіть за допомогою Auth0" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                    <Button x:Name="LoginButton"
+                            Content="Увійти / Зареєструватися"
+                            Height="45" Width="250" FontSize="16"
+                            Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"
+                            Command="{Binding LoginCommand}"
+                            IsEnabled="{Binding IsLoginButtonEnabled}">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="5"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Кнопки внизу -->
-        <StackPanel Grid.Row="2" Margin="50,20,50,20">
-            <Button
-                x:Name="LoginButton"
-                Content="Увійти / Зареєструватися"
-                Height="45"
-                FontSize="16"
-                Background="#4CAF50"
-                Foreground="White"
-                BorderThickness="0"
-                Cursor="Hand"
-                Command="{Binding LoginCommand}"
-                IsEnabled="{Binding IsLoginButtonEnabled}"
-                Visibility="{Binding IsLoginButtonVisible,
-                Converter={StaticResource BoolToVisibilityConverter}}"/>
+        <TextBlock Grid.Row="2" x:Name="StatusText"
+                   Text="{Binding StatusText}"
+                   HorizontalAlignment="Center"
+                   Margin="10"
+                   Foreground="Gray"/>
 
-            <Button x:Name="LogoutButton"
-                Content="Вийти"
-                Height="40"
-                FontSize="14"
-                Background="#F44336"
-                Foreground="White"
-                BorderThickness="0"
-                Cursor="Hand"
-                Command="{Binding LogoutCommand}"
-                IsEnabled="{Binding IsLogoutButtonEnabled}"
-                Visibility="{Binding IsLogoutButtonVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                Margin="0,10,0,0"/>
-
-            <TextBlock x:Name="StatusText"
-                Text="{Binding StatusText}"
-                HorizontalAlignment="Center"
-                Margin="0,10,0,0"
-                Foreground="Gray"
-                TextWrapping="Wrap"
-                TextAlignment="Center"/>
-        </StackPanel>
-
-        <!-- Модальні вікна -->
         <Grid x:Name="ProjectModalOverlay" 
             Grid.RowSpan="3"
             Visibility="{Binding IsProjectModalVisible, Converter={StaticResource BoolToVisibilityConverter}}" 
-            Background="#80000000" 
+            Background="#CC000000" 
             Panel.ZIndex="100">
-            <Border Background="White" 
+            <Border Background="#323645" 
                 CornerRadius="10" 
                 Padding="30" 
                 Width="400" 
                 VerticalAlignment="Center" 
                 HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Створити проект" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center"/>
-                    <TextBlock Text="Назва проекту:" Margin="0,0,0,5"/>
+                    <TextBlock Text="Створити проект" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="White"/>
+
+                    <TextBlock Text="Назва проекту:" Margin="0,0,0,5" Foreground="#B0BEC5"/>
                     <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,0,0,15"/>
-                    <TextBlock Text="Статус проекту:" Margin="0,0,0,5"/>
+                    <TextBlock Text="Статус проекту:" Margin="0,0,0,5" Foreground="#B0BEC5"/>
                     <TextBox Text="{Binding ProjectStatus, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,0,0,15"/>
-                    <TextBlock Text="Опис проекту:" Margin="0,0,0,5"/>
+
+                    <TextBlock Text="Опис проекту:" Margin="0,0,0,5" Foreground="#B0BEC5"/>
                     <TextBox Text="{Binding ProjectDescription, UpdateSourceTrigger=PropertyChanged}" Height="80" Padding="5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="OK" Width="80" Height="35" Margin="0,0,10,0" Command="{Binding SaveProjectCommand}" Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"/>
@@ -373,5 +250,6 @@
                 </StackPanel>
             </Border>
         </Grid>
+
     </Grid>
 </Window>
