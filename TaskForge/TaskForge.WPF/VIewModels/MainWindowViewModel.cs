@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using TaskForge.Application.DTOs;
 using TaskForge.Application.Interfaces;
 using TaskForge.Application.Services;
-using TaskForge.Domain.Enums;
+using TaskForge.Domain.Entities;
 using TaskForge.Domain.Enums;
 using TaskForge.WPF.Commands;
 using TaskForge.WPF.Common;
@@ -34,7 +34,6 @@ namespace TaskForge.WPF.ViewModels
         private LoginResult _currentLoginResult;
         private int _currentUserId;
 
-        // Visibility Properties
         private bool _isMainContentVisible;
         public bool IsMainContentVisible
         {
@@ -77,7 +76,6 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _isProjectsListVisible, value);
         }
 
-        // User Info Properties
         private string _userName;
         public string UserName
         {
@@ -120,7 +118,6 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _isLogoutButtonEnabled, value);
         }
 
-        // Project Modal Properties
         private bool _isProjectModalVisible;
         public bool IsProjectModalVisible
         {
@@ -148,6 +145,44 @@ namespace TaskForge.WPF.ViewModels
             get => _projectDescription;
             set => SetProperty(ref _projectDescription, value);
         }
+
+        private bool _isAddPasswordModalVisible;
+        public bool IsAddPasswordModalVisible
+        {
+            get => _isAddPasswordModalVisible;
+            set => SetProperty(ref _isAddPasswordModalVisible, value);
+        }
+
+        private string _addPasswordUrl;
+        public string AddPasswordUrl
+        {
+            get => _addPasswordUrl;
+            set => SetProperty(ref _addPasswordUrl, value);
+        }
+
+        private string _addPasswordLogin;
+        public string AddPasswordLogin
+        {
+            get => _addPasswordLogin;
+            set => SetProperty(ref _addPasswordLogin, value);
+        }
+
+        private string _addPasswordNote;
+        public string AddPasswordNote
+        {
+            get => _addPasswordNote;
+            set => SetProperty(ref _addPasswordNote, value);
+        }
+
+        private PasswordCategory _addPasswordCategory;
+        public PasswordCategory AddPasswordCategory
+        {
+            get => _addPasswordCategory;
+            set => SetProperty(ref _addPasswordCategory, value);
+        }
+
+        // Список категорій для ComboBox
+        public IEnumerable<PasswordCategory> PasswordCategories => Enum.GetValues(typeof(PasswordCategory)).Cast<PasswordCategory>();
 
         // Projects List
         private ObservableCollection<ProjectDto> _projects;
@@ -294,7 +329,9 @@ namespace TaskForge.WPF.ViewModels
         public ICommand OpenPasswordManagerCommand { get; }
         public ICommand OpenSubscriptionManagerCommand { get; }
         public ICommand CopyPasswordCommand { get; }
-
+        public ICommand OpenAddPasswordModalCommand { get; }
+        public ICommand SaveAddPasswordCommand { get; }
+        public ICommand CancelAddPasswordCommand { get; }
         public MainWindowViewModel(
             Auth0Service auth0Service,
             IUserService userService,
@@ -352,6 +389,9 @@ namespace TaskForge.WPF.ViewModels
             RecentPasswords = new ObservableCollection<PasswordDisplayItem>();
             DashboardPieChartSeries = new SeriesCollection();
             _expenseService.ExpensesChanged += OnExpensesChanged;
+            OpenAddPasswordModalCommand = new RelayCommand(OnOpenAddPasswordModal);
+            SaveAddPasswordCommand = new AsyncRelayCommand(OnSaveAddPasswordAsync);
+            CancelAddPasswordCommand = new RelayCommand(OnCancelAddPassword);
         }
 
         private async Task OnLoginAsync()
@@ -539,6 +579,14 @@ namespace TaskForge.WPF.ViewModels
             }
 
             await _projectService.CreateProjectForUserAsync(name, status, description, user.Id, Role.Moderator);
+
+            await LoadProjectsWidgetDataAsync(user.Id);
+
+            if (IsProjectsListVisible)
+            {
+                await OnViewProjectsAsync();
+            }
+
             MessageBox.Show($"Проект '{name}' створено!", "Успіх");
             IsProjectModalVisible = false;
         }
@@ -711,6 +759,71 @@ namespace TaskForge.WPF.ViewModels
             catch (FormatException)
             {
                 return encryptedText;
+            }
+        }
+
+        private void OnOpenAddPasswordModal()
+        {
+            AddPasswordUrl = string.Empty;
+            AddPasswordLogin = string.Empty;
+            AddPasswordNote = string.Empty;
+            AddPasswordCategory = PasswordCategory.Other;
+
+            IsAddPasswordModalVisible = true;
+        }
+
+        private void OnCancelAddPassword()
+        {
+            IsAddPasswordModalVisible = false;
+        }
+
+        private async Task OnSaveAddPasswordAsync(object? parameter)
+        {
+            var passwordBox = parameter as System.Windows.Controls.PasswordBox;
+            var passwordClearText = passwordBox?.Password;
+
+            if (string.IsNullOrWhiteSpace(AddPasswordUrl) ||
+                string.IsNullOrWhiteSpace(AddPasswordLogin) ||
+                string.IsNullOrWhiteSpace(passwordClearText))
+            {
+                MessageBox.Show("Будь ласка, заповніть URL, Логін та Пароль.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                if (_currentLoginResult == null) return;
+                var userId = _auth0Service.GetUserId(_currentLoginResult);
+                var user = await _userService.GetUserByAuth0IdAsync(userId);
+
+                if (user == null)
+                {
+                    MessageBox.Show("Користувача не знайдено.", "Помилка");
+                    return;
+                }
+
+                var newPassword = new Password
+                {
+                    Url = AddPasswordUrl,
+                    Login = AddPasswordLogin,
+                    PasswordEncrypted = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(passwordClearText)),
+                    Note = AddPasswordNote,
+                    Category = AddPasswordCategory,
+                    UserId = user.Id
+                };
+
+                await _passwordService.AddPasswordAsync(newPassword);
+
+                MessageBox.Show("Пароль успішно додано!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                IsAddPasswordModalVisible = false;
+                if (passwordBox != null) passwordBox.Password = string.Empty;
+
+                await LoadPasswordsWidgetDataAsync(user.Id);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при збереженні: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

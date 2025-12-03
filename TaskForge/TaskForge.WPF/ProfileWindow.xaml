@@ -6,7 +6,7 @@
         xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:local="clr-namespace:TaskForge.WPF"
         mc:Ignorable="d"
-        Title="Your Profile" Height="700" Width="1000"
+        Title="Your Profile" Height="1080" Width="1920"
         Background="#222531"
         WindowStartupLocation="CenterOwner">
 
