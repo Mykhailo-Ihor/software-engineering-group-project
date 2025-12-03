@@ -350,10 +350,27 @@
                         </Button.Resources>
                     </Button>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelTaskCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Створити" Width="80" Height="35" Command="{Binding SaveTaskCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
-                    </StackPanel>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" 
+                                Content="Скасувати" 
+                                Height="35" 
+                                Command="{Binding CancelTaskCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#78909C" Foreground="White" BorderThickness="0"/>
+
+                        <Button Grid.Column="2" 
+                                Content="Зберегти" 
+                                Height="35" 
+                                Command="{Binding SaveTaskCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#26A69A" Foreground="White" BorderThickness="0"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>
@@ -375,7 +392,7 @@
 
                     <TextBlock Text="{Binding SelectedAssigneesText}" Foreground="#90A4AE" Margin="0,0,0,5"/>
                     <Button Content="Вибрати виконавців" Command="{Binding AssignUsersCommand}" 
-                            Height="30" Background="#2196F3" Foreground="White" BorderThickness="0" Margin="0,0,0,20">
+                            Height="30" Background="#26A69A" Foreground="White" BorderThickness="0" Margin="0,0,0,20">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="3"/>
@@ -383,10 +400,27 @@
                         </Button.Resources>
                     </Button>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelEditTaskCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Зберегти" Width="80" Height="35" Command="{Binding SaveEditTaskCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
-                    </StackPanel>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" 
+                                Content="Скасувати" 
+                                Height="35" 
+                                Command="{Binding CancelEditTaskCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#78909C" Foreground="White" BorderThickness="0"/>
+
+                        <Button Grid.Column="2" 
+                                Content="Зберегти" 
+                                Height="35" 
+                                Command="{Binding SaveEditTaskCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#26A69A" Foreground="White" BorderThickness="0"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>
@@ -403,10 +437,27 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Скасувати" Width="80" Height="30" Command="{Binding CancelAssignUsersCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Зберегти" Width="80" Height="30" Command="{Binding SaveAssignUsersCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
-                    </StackPanel>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" 
+                                Content="Скасувати" 
+                                Height="35" 
+                                Command="{Binding CancelAssignUsersCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#78909C" Foreground="White" BorderThickness="0"/>
+
+                        <Button Grid.Column="2" 
+                                Content="Зберегти" 
+                                Height="35" 
+                                Command="{Binding SaveAssignUsersCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#26A69A" Foreground="White" BorderThickness="0"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>
@@ -418,10 +469,27 @@
                     <TextBlock Text="Додати користувача до проекту" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
                     <TextBlock Text="Email користувача" Foreground="#B0BEC5"/>
                     <TextBox Text="{Binding AddUserEmail, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,20"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelAddUserCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Додати" Width="80" Height="35" Command="{Binding SaveAddUserCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
-                    </StackPanel>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" 
+                                Content="Скасувати" 
+                                Height="35" 
+                                Command="{Binding CancelAddUserCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#78909C" Foreground="White" BorderThickness="0"/>
+
+                        <Button Grid.Column="2" 
+                                Content="Зберегти" 
+                                Height="35" 
+                                Command="{Binding SaveAddUserCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#26A69A" Foreground="White" BorderThickness="0"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>
@@ -439,10 +507,27 @@
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelModeratorsCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Зберегти" Width="80" Height="35" Command="{Binding SaveModeratorsCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
-                    </StackPanel>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" 
+                                Content="Скасувати" 
+                                Height="35" 
+                                Command="{Binding CancelModeratorsCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#78909C" Foreground="White" BorderThickness="0"/>   
+
+                        <Button Grid.Column="2" 
+                                Content="Зберегти" 
+                                Height="35" 
+                                Command="{Binding SaveModeratorsCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#26A69A" Foreground="White" BorderThickness="0"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>
@@ -469,7 +554,7 @@
                                         </StackPanel>
                                         <Button Grid.Column="1" Content="Вигнати" Margin="100,0,0,0"
                                                 Command="{Binding DataContext.KickUserCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                CommandParameter="{Binding Id}"
+                                                CommandParameter="{Binding Id}" 
                                                 Background="#EF5350" Foreground="White" BorderThickness="0" Height="25" Width="60">
                                             <Button.Resources>
                                                 <Style TargetType="Border">
@@ -483,7 +568,7 @@
                         </ListView.ItemTemplate>
                     </ListView>
 
-                    <Button Content="Скасувати" Width="100" Height="35" Command="{Binding CloseKickUserModalCommand}" 
+                    <Button Content="Скасувати" Width="100" Height="35" Command="{Binding CloseKickUserModalCommand}"  Style="{StaticResource ActionButtonStyle}"
                             Background="#78909C" Foreground="White" BorderThickness="0" HorizontalAlignment="Right" Margin="0,15,0,0"/>
                 </StackPanel>
             </Border>
@@ -504,15 +589,31 @@
                     <TextBlock Text="Статус" Foreground="#B0BEC5"/>
                     <TextBox Text="{Binding EditProjectStatus, UpdateSourceTrigger=PropertyChanged}"  Margin="0,5,0,20"/>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
-                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelEditProjectCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Зберегти" Width="80" Height="35" Command="{Binding SaveEditProjectCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
-                    </StackPanel>
+                    <Button Content="Видалити проект" Command="{Binding DeleteProjectCommand}" Style="{StaticResource ActionButtonStyle}" Background="#C62828" Foreground="White" BorderThickness="0" Height="35" Margin="0,10,0,0"/>
 
-                    <Button Content="Видалити проект" Command="{Binding DeleteProjectCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="35" Margin="0,10,0,0"/>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0" 
+                                Content="Скасувати" 
+                                Height="35" 
+                                Command="{Binding CancelEditProjectCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#78909C" Foreground="White" BorderThickness="0"/>
+
+                        <Button Grid.Column="2" 
+                                Content="Зберегти" 
+                                Height="35" 
+                                Command="{Binding SaveEditProjectCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#26A69A" Foreground="White" BorderThickness="0"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>
-
     </Grid>
 </Window>
