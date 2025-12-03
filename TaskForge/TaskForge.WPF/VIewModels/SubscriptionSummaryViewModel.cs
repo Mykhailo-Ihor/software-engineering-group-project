@@ -28,7 +28,23 @@ namespace TaskForge.WPF.ViewModels
         public ObservableCollection<SubscriptionRecordDto> Subscriptions
         {
             get => _subscriptions;
-            set => SetProperty(ref _subscriptions, value);
+            set {
+                SetProperty(ref _subscriptions, value);
+            }
+        }
+
+        private decimal _totalMonthlyCost;
+        public decimal TotalMonthlyCost
+        {
+            get => _totalMonthlyCost;
+            set => SetProperty(ref _totalMonthlyCost, value);
+        }
+
+        private decimal _totalYearlyCost;
+        public decimal TotalYearlyCost
+        {
+            get => _totalYearlyCost;
+            set => SetProperty(ref _totalYearlyCost, value);
         }
 
         private bool _isSubscriptionsListVisible;
@@ -190,6 +206,99 @@ namespace TaskForge.WPF.ViewModels
             DeleteSubscriptionCommand = new AsyncRelayCommand(OnDeleteSubscriptionAsync);
         }
 
+        #region Currency Conversion
+
+        private decimal ConvertToUah(decimal amount, string currencyStr)
+        {
+            if (!Enum.TryParse(currencyStr, out Currency currency))
+            {
+                return amount;
+            }
+
+            return currency switch
+            {
+                Currency.UAH => amount,
+                Currency.USD => amount * 42.3342m,
+                Currency.EUR => amount * 49.1839m,
+                Currency.GBP => amount * 55.9150m,
+                Currency.JPY => amount * 2.7136m,
+                Currency.CAD => amount * 30.2301m,
+                Currency.AUD => amount * 27.7458m,
+                _ => amount
+            };
+        }
+
+        #endregion
+
+        #region Cost Calculation
+
+        private void RecalculateTotals()
+        {
+            if (Subscriptions == null || !Subscriptions.Any())
+            {
+                TotalMonthlyCost = 0;
+                TotalYearlyCost = 0;
+                return;
+            }
+
+            decimal totalMonthly = 0;
+            decimal totalYearly = 0;
+
+            foreach (var sub in Subscriptions)
+            {
+                // First convert amount to UAH
+                decimal amountInUah = ConvertToUah(sub.Amount, sub.Currency);
+
+                // Get interval value (default to 1 if invalid)
+                int intervalValue = sub.IntervalValue > 0 ? sub.IntervalValue : 1;
+
+                // Normalize to monthly and yearly based on interval unit
+                decimal monthlyAmount;
+                decimal yearlyAmount;
+
+                switch (sub.IntervalUnit?.ToLower())
+                {
+                    case "day":
+                        // Amount per day * 30 days / interval (e.g., every 2 days)
+                        monthlyAmount = (amountInUah / intervalValue) * 30;
+                        yearlyAmount = (amountInUah / intervalValue) * 365;
+                        break;
+
+                    case "week":
+                        // Amount per week * ~4.33 weeks per month / interval (e.g., every 2 weeks)
+                        monthlyAmount = (amountInUah / intervalValue) * 4.33m;
+                        yearlyAmount = (amountInUah / intervalValue) * 52;
+                        break;
+
+                    case "month":
+                        // Amount per month / interval (e.g., every 2 months)
+                        monthlyAmount = amountInUah / intervalValue;
+                        yearlyAmount = (amountInUah / intervalValue) * 12;
+                        break;
+
+                    case "year":
+                        // Amount per year / interval (e.g., every 2 years)
+                        yearlyAmount = amountInUah / intervalValue;
+                        monthlyAmount = yearlyAmount / 12;
+                        break;
+
+                    default:
+                        // Default to monthly if unknown
+                        monthlyAmount = amountInUah;
+                        yearlyAmount = amountInUah * 12;
+                        break;
+                }
+
+                totalMonthly += monthlyAmount;
+                totalYearly += yearlyAmount;
+            }
+
+            TotalMonthlyCost = Math.Round(totalMonthly, 2);
+            TotalYearlyCost = Math.Round(totalYearly, 2);
+        }
+
+        #endregion
+
         private async Task OnLoadedAsync()
         {
             await LoadUserSubscriptionsAsync();
@@ -221,6 +330,9 @@ namespace TaskForge.WPF.ViewModels
                 Subscriptions = new ObservableCollection<SubscriptionRecordDto>(userSubscriptions);
 
                 IsSubscriptionsListVisible = Subscriptions.Any();
+
+                // Recalculate totals after loading subscriptions
+                RecalculateTotals();
             }
             catch (Exception ex)
             {
