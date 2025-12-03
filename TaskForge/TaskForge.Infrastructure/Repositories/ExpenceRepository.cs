@@ -45,6 +45,7 @@ namespace TaskForge.Infrastructure.Repositories
             return await _context.Expenses
                 .Where(e => e.UserId == userId)
                 .OrderByDescending(e => e.Date)
+                .ThenByDescending(e => e.Id)
                 .ToListAsync();
         }
 

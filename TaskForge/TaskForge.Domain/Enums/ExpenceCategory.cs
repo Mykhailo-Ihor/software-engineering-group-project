@@ -2,12 +2,12 @@
 
 public enum ExpenceCategory
 {
-    Travel,
-    Supplies,
-    Entertainment,
-    Grocery,
-    Restaurants,
-    Books,
-    Subscriptions,
-    Other
+    Подорожі,
+    Товари,
+    Розваги,
+    Продукти,
+    Ресторани,
+    Книги,
+    Підписки,
+    Інше
 }

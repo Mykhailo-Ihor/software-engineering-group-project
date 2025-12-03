@@ -291,6 +291,7 @@ namespace TaskForge.WPF.ViewModels
             AddExpenseDate = DateTime.Today;
             AddExpenseDescription = string.Empty;
             IsAddIncome = false;
+            IsAddCategoryVisible = true;
         }
 
         private async Task OnEditExpenseAsync(object? parameter)
@@ -419,11 +420,15 @@ namespace TaskForge.WPF.ViewModels
             RecalculateStats();
         }
 
+        #endregion
+
+        #region HelperFunctions
+
         private decimal ConvertToUah(decimal amount, string currencyStr)
         {
             if (!Enum.TryParse(currencyStr, out Currency currency))
             {
-                return amount; 
+                return amount;
             }
 
             return currency switch
@@ -484,7 +489,7 @@ namespace TaskForge.WPF.ViewModels
                 (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#5C6BC0"),
                 (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#29B6F6"),
                 (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#EC407A"),
-                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#78909C") 
+                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#78909C")
             };
 
             int colorIndex = 0;
@@ -495,7 +500,7 @@ namespace TaskForge.WPF.ViewModels
 
                 newSeries.Add(new PieSeries
                 {
-                    Title = item.Category, 
+                    Title = item.Category,
                     Values = new ChartValues<decimal> { item.AmountUah },
                     DataLabels = true,
                     LabelPoint = chartPoint => "",

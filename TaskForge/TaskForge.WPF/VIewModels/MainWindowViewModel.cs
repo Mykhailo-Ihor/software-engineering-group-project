@@ -1,3 +1,6 @@
+using Duende.IdentityModel.OidcClient;
+using LiveCharts;
+using LiveCharts.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -5,13 +8,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Duende.IdentityModel.OidcClient;
 using TaskForge.Application.DTOs;
 using TaskForge.Application.Interfaces;
 using TaskForge.Application.Services;
 using TaskForge.Domain.Enums;
+using TaskForge.Domain.Enums;
 using TaskForge.WPF.Commands;
+using TaskForge.WPF.Common;
 using SysApp = System.Windows.Application;
 
 namespace TaskForge.WPF.ViewModels
@@ -27,6 +32,7 @@ namespace TaskForge.WPF.ViewModels
         private readonly IPasswordService _passwordService;
         private readonly ISubscriptionService _subscriptionService;
         private LoginResult _currentLoginResult;
+        private int _currentUserId;
 
         // Visibility Properties
         private bool _isMainContentVisible;
@@ -151,6 +157,130 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _projects, value);
         }
 
+        private ObservableCollection<ExpenceRecordDto> _recentExpenses;
+        public ObservableCollection<ExpenceRecordDto> RecentExpenses
+        {
+            get => _recentExpenses;
+            set => SetProperty(ref _recentExpenses, value);
+        }
+
+        private ObservableCollection<SubscriptionRecordDto> _recentSubscriptions;
+        public ObservableCollection<SubscriptionRecordDto> RecentSubscriptions
+        {
+            get => _recentSubscriptions;
+            set => SetProperty(ref _recentSubscriptions, value);
+        }
+
+        private SeriesCollection _dashboardPieChartSeries;
+        public SeriesCollection DashboardPieChartSeries
+        {
+            get => _dashboardPieChartSeries;
+            set => SetProperty(ref _dashboardPieChartSeries, value);
+        }
+
+        private ObservableCollection<ProjectDto> _recentProjects;
+        public ObservableCollection<ProjectDto> RecentProjects
+        {
+            get => _recentProjects;
+            set => SetProperty(ref _recentProjects, value);
+        }
+
+        private ObservableCollection<PasswordDisplayItem> _recentPasswords;
+        public ObservableCollection<PasswordDisplayItem> RecentPasswords
+        {
+            get => _recentPasswords;
+            set => SetProperty(ref _recentPasswords, value);
+        }
+
+        private async Task LoadDashboardDataAsync(int userId)
+        {
+            var expenses = await _expenseService.GetUserExpensesAsync(userId);
+
+            var recent = expenses.OrderByDescending(e => e.Date).Take(4);
+            RecentExpenses = new ObservableCollection<ExpenceRecordDto>(recent);
+
+            var expenseCategories = expenses
+                .Where(e => e.Type == TransactionType.Expense.ToString())
+                .GroupBy(e => e.Category)
+                .Select(g => new { Category = g.Key, Amount = g.Sum(e => e.Amount) }) 
+                .ToList();
+
+            var newSeries = new SeriesCollection();
+            var colors = new List<Brush>
+                {
+                    (SolidColorBrush)new BrushConverter().ConvertFrom("#7E57C2"),
+                    (SolidColorBrush)new BrushConverter().ConvertFrom("#42A5F5"),
+                    (SolidColorBrush)new BrushConverter().ConvertFrom("#26C6DA"),
+                    (SolidColorBrush)new BrushConverter().ConvertFrom("#AB47BC"),
+                    (SolidColorBrush)new BrushConverter().ConvertFrom("#5C6BC0"),
+                };
+
+            int colorIndex = 0;
+            foreach (var item in expenseCategories)
+            {
+                var color = colors[colorIndex % colors.Count];
+                newSeries.Add(new PieSeries
+                {
+                    Title = item.Category,
+                    Values = new ChartValues<decimal> { item.Amount },
+                    DataLabels = false,
+                    Fill = color,
+                    Stroke = Brushes.Transparent,
+                    StrokeThickness = 0
+                });
+                colorIndex++;
+            }
+            DashboardPieChartSeries = newSeries;
+        }
+
+        private async Task LoadSubscriptionsDataAsync(int userId)
+        {
+            try
+            {
+                var subs = await _subscriptionService.GetUserSubscriptionsAsync(userId);
+                var upcoming = subs.OrderBy(s => s.BillingDate).Take(4);
+
+                RecentSubscriptions = new ObservableCollection<SubscriptionRecordDto>(upcoming);
+            }
+            catch (Exception ex)
+            {
+                
+            }
+        }
+
+        private async Task LoadProjectsWidgetDataAsync(int userId)
+        {
+            try
+            {
+                var projects = await _projectService.GetUserProjectsAsync(userId);
+                var recent = projects.OrderByDescending(p => p.Id).Take(4);
+
+                RecentProjects = new ObservableCollection<ProjectDto>(recent);
+            }
+            catch (Exception ex)
+            {
+                
+            }
+        }
+        private async Task LoadPasswordsWidgetDataAsync(int userId)
+        {
+            try
+            {
+                var passwords = await _passwordService.GetPasswordsByUserIdAsync(userId);
+
+                var recent = passwords.OrderByDescending(p => p.Id).Take(4);
+
+                var displayItems = recent.Select(p => new PasswordDisplayItem
+                {
+                    Password = p,
+                    IsRevealed = false
+                });
+
+                RecentPasswords = new ObservableCollection<PasswordDisplayItem>(displayItems);
+            }
+            catch (Exception ex) { }
+        }
+
         // Commands
         public ICommand LoginCommand { get; }
         public ICommand LogoutCommand { get; }
@@ -163,6 +293,7 @@ namespace TaskForge.WPF.ViewModels
         public ICommand ViewExpensesCommand { get; }
         public ICommand OpenPasswordManagerCommand { get; }
         public ICommand OpenSubscriptionManagerCommand { get; }
+        public ICommand CopyPasswordCommand { get; }
 
         public MainWindowViewModel(
             Auth0Service auth0Service,
@@ -213,6 +344,14 @@ namespace TaskForge.WPF.ViewModels
             ViewExpensesCommand = new RelayCommand(OnViewExpenses);
             OpenPasswordManagerCommand = new RelayCommand(OnOpenPasswordManager);
             OpenSubscriptionManagerCommand = new RelayCommand(OnOpenSubscriptionManager);
+            CopyPasswordCommand = new RelayCommand(OnCopyPassword);
+
+            RecentExpenses = new ObservableCollection<ExpenceRecordDto>();
+            RecentSubscriptions = new ObservableCollection<SubscriptionRecordDto>();
+            RecentProjects = new ObservableCollection<ProjectDto>();
+            RecentPasswords = new ObservableCollection<PasswordDisplayItem>();
+            DashboardPieChartSeries = new SeriesCollection();
+            _expenseService.ExpensesChanged += OnExpensesChanged;
         }
 
         private async Task OnLoginAsync()
@@ -241,6 +380,16 @@ namespace TaskForge.WPF.ViewModels
 
                 await _userService.AddUserFromAuth0ResponseAsync(firstName, lastName, userEmail, userId);
 
+                var dbUser = await _userService.GetUserByAuth0IdAsync(userId);
+                if (dbUser != null)
+                {
+                    _currentUserId = dbUser.Id;
+                    await LoadDashboardDataAsync(_currentUserId);
+                    await LoadSubscriptionsDataAsync(_currentUserId);
+                    await LoadProjectsWidgetDataAsync(_currentUserId);
+                    await LoadPasswordsWidgetDataAsync(_currentUserId);
+                }
+
                 ShowUserInfo(_currentLoginResult);
                 IsLogoutButtonEnabled = true;
                 StatusText = "Успішний вхід!";
@@ -251,6 +400,17 @@ namespace TaskForge.WPF.ViewModels
               MessageBoxButton.OK, MessageBoxImage.Error);
                 IsLoginButtonEnabled = true;
                 StatusText = "";
+            }
+        }
+
+        private async void OnExpensesChanged()
+        {
+            if (_currentUserId > 0)
+            {
+                await System.Windows.Application.Current.Dispatcher.InvokeAsync(async () =>
+                {
+                    await LoadDashboardDataAsync(_currentUserId);
+                });
             }
         }
 
@@ -426,12 +586,16 @@ namespace TaskForge.WPF.ViewModels
         private async Task OnOpenProjectDetailsAsync(object parameter)
         {
             if (parameter is not int projectId) return;
-
             var selectedProject = Projects.FirstOrDefault(p => p.Id == projectId);
 
             if (selectedProject == null)
             {
-                MessageBox.Show("Не вдалося знайти проект");
+                selectedProject = RecentProjects.FirstOrDefault(p => p.Id == projectId);
+            }
+
+            if (selectedProject == null)
+            {
+                MessageBox.Show("Не вдалося знайти проект у локальному кеші. Спробуйте оновити сторінку.");
                 return;
             }
 
@@ -446,8 +610,8 @@ namespace TaskForge.WPF.ViewModels
                 _taskFilterService
               );
             detailsWindow.ShowDialog();
-
-            await OnViewProjectsAsync();
+            await LoadProjectsWidgetDataAsync(_currentUserId);
+            if (IsProjectsListVisible) await OnViewProjectsAsync();
         }
 
         private void OnViewExpenses()
@@ -517,6 +681,36 @@ namespace TaskForge.WPF.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show($"Помилка відкриття вікна підписок: {ex.Message}", "Помилка6    ");
+            }
+        }
+
+        private void OnCopyPassword(object parameter)
+        {
+            if (parameter is string passwordEncrypted)
+            {
+                try
+                {
+
+                    Clipboard.SetText(DecryptPassword(passwordEncrypted));
+                    MessageBox.Show("Пароль скопійовано в буфер обміну!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Помилка: {ex.Message}");
+                }
+            }
+        }
+
+        public string DecryptPassword(string encryptedText)
+        {
+            try
+            {
+                var encryptedBytes = Convert.FromBase64String(encryptedText);
+                return System.Text.Encoding.UTF8.GetString(encryptedBytes);
+            }
+            catch (FormatException)
+            {
+                return encryptedText;
             }
         }
     }

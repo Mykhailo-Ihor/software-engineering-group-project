@@ -4,9 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TaskForge.WPF"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
-        Title="TaskForge" Height="600" Width="900"
+        Title="TaskForge" Height="650" Width="1100"
         Background="#222531"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
         WindowStartupLocation="CenterScreen">
 
     <Window.Resources>
@@ -93,106 +96,590 @@
                 <StackPanel x:Name="MainContentPanel" Visibility="{Binding IsMainContentVisible, Converter={StaticResource BoolToVisibilityConverter}}">
 
                     <StackPanel Margin="50,0,50,20">
-                        <TextBlock Text="Welcome back," FontSize="18" Foreground="White" Opacity="0.8"/>
+                        <TextBlock Text="З поверненням," FontSize="18" Foreground="White" Opacity="0.8"/>
                         <TextBlock Text="{Binding UserName}" FontSize="24" FontWeight="Bold" Foreground="White"/>
                     </StackPanel>
 
-                    <StackPanel HorizontalAlignment="Stretch" Margin="0,10,0,0">
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                            <Button Content="Створити проект"
-                                    Height="40" Width="150" FontSize="14"
-                                    Background="#2196F3" Foreground="White" BorderThickness="0"
-                                    Command="{Binding CreateProjectCommand}" Margin="0,0,10,0">
-                                <Button.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="5"/>
-                                    </Style>
-                                </Button.Resources>
-                            </Button>
+                    <Grid Margin="50,0,50,30">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                            <Button Content="Мої проекти"
-                                    Height="40" Width="180" FontSize="14"
-                                    Background="#009688" Foreground="White" BorderThickness="0"
-                                    Command="{Binding ViewProjectsCommand}">
-                                <Button.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="5"/>
-                                    </Style>
-                                </Button.Resources>
-                            </Button>
-                        </StackPanel>
+                        <Border Grid.Column="0" Background="#2B2F3E" CornerRadius="10" Padding="25" Height="320">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.3"/>
+                            </Border.Effect>
 
-                        <ListView x:Name="ProjectsListView"
-                                  Margin="50,20,50,0"
-                                  Visibility="{Binding IsProjectsListVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                  ItemsSource="{Binding Projects}"
-                                  MaxHeight="400"
-                                  BorderThickness="0"
-                                  Background="Transparent"
-                                  HorizontalContentAlignment="Stretch">
-                            <ListView.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="#2B2F3E" CornerRadius="8" Margin="0,0,0,10" Padding="15">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <StackPanel Grid.Column="0">
-                                                <Button Background="Transparent" BorderThickness="0" Cursor="Hand"
-                                                        HorizontalAlignment="Left" Padding="0"
-                                                        Command="{Binding DataContext.OpenProjectDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                        CommandParameter="{Binding Id}">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16" Foreground="#64B5F6"/>
-                                                </Button>
-                                                <TextBlock Text="{Binding Description}" TextWrapping="Wrap" Foreground="#B0BEC5" Margin="0,5,0,5"/>
-                                                <TextBlock FontSize="12" Foreground="#90A4AE">
-                                                    <Run Text="Статус:" FontWeight="SemiBold"/>
-                                                    <Run Text="{Binding Status}" Foreground="#80CBC4"/>
-                                                </TextBlock>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-                        </ListView>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                        <Separator Margin="50,20,50,20" Background="#404457"/>
+                                <TextBlock Text="Фінансовий звіт" Foreground="White" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
-                        <TextBlock Text="Швидкий доступ" FontSize="16" FontWeight="Bold" Margin="50,0,0,10"/>
+                                <Grid Grid.Row="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
-                            <Button Content="Витрати" Height="40" Width="150" Margin="5"
-                                    Background="#9C27B0" Foreground="White" BorderThickness="0"
-                                    Command="{Binding ViewExpensesCommand}">
-                                <Button.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="5"/>
-                                    </Style>
-                                </Button.Resources>
-                            </Button>
+                                    <ItemsControl VerticalAlignment="Center" Grid.Column="0" ItemsSource="{Binding RecentExpenses}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,0,0,15">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
 
-                            <Button Content="Паролі" Height="40" Width="150" Margin="5"
-                                    Background="#3F51B5" Foreground="White" BorderThickness="0"
-                                    Command="{Binding OpenPasswordManagerCommand}">
-                                <Button.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="5"/>
-                                    </Style>
-                                </Button.Resources>
-                            </Button>
+                                                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Description}" Foreground="#E0E0E0" FontSize="14" TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
 
-                            <Button Content="Підписки" Height="40" Width="150" Margin="5"
-                                    Background="#3F51B5" Foreground="White" BorderThickness="0"
-                                    Command="{Binding OpenSubscriptionManagerCommand}">
-                                <Button.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="5"/>
-                                    </Style>
-                                </Button.Resources>
-                            </Button>
-                        </StackPanel>
-                    </StackPanel>
+                                                    <TextBlock Grid.Column="1" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding Type}" Value="Expense">
+                                                                        <Setter Property="Foreground" Value="#EF5350"/>
+                                                                        <Setter Property="Text" Value="{Binding Amount, StringFormat='-{0:N0} UAH'}"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding Type}" Value="Income">
+                                                                        <Setter Property="Foreground" Value="#66BB6A"/>
+                                                                        <Setter Property="Text" Value="{Binding Amount, StringFormat='+{0:N0} UAH'}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <lvc:PieChart Grid.Column="2" 
+                              Series="{Binding DashboardPieChartSeries}" 
+                              LegendLocation="None" 
+                              InnerRadius="0"
+                              HoverPushOut="3"
+                              Margin="10,0">
+                                        <lvc:PieChart.DataTooltip>
+                                            <lvc:DefaultTooltip SelectionMode="OnlySender" Background="#323645" Foreground="White"/>
+                                        </lvc:PieChart.DataTooltip>
+                                    </lvc:PieChart>
+                                </Grid>
+
+                                <Grid Grid.Row="2" Margin="0,15,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" Content="Переглянути більше" Command="{Binding ViewExpensesCommand}" Height="40" Background="#7994B2" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <Button Grid.Column="2" Content="Додати запис" Command="{Binding ViewExpensesCommand}" Height="40" Background="#26A69A" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Column="2" Background="#2B2F3E" CornerRadius="10" Padding="25" Height="320">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.3"/>
+                            </Border.Effect>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Підписки" 
+                       Foreground="White" 
+                       FontSize="18" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,20"/>
+
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding RecentSubscriptions}" VerticalAlignment="Top">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#3C4050" BorderThickness="0,0,0,1" Margin="0,0,0,12" Padding="0,0,0,8">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="60"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0" 
+                                           Text="{Binding Name}" 
+                                           Foreground="#E0E0E0" 
+                                           FontSize="14" 
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           Margin="0,0,10,0"/>
+
+                                                    <TextBlock Grid.Column="1" 
+                                           FontSize="14" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="#EF5350" 
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,20,0">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="-{0:N0} {1}">
+                                                                <Binding Path="Amount"/>
+                                                                <Binding Path="Currency"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+
+                                                    <TextBlock Grid.Column="2" 
+                                           Text="{Binding BillingDate, StringFormat='{}{0:dd/MM}'}" 
+                                           Foreground="White" 
+                                           FontSize="14" 
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Right"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBlock Grid.Row="1" 
+                       Text="Немає активних підписок" 
+                       Foreground="#607D8B" 
+                       VerticalAlignment="Center" 
+                       HorizontalAlignment="Center">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding RecentSubscriptions.Count}" Value="0">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+
+                                <Grid Grid.Row="2" Margin="0,15,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" 
+                        Content="Переглянути більше" 
+                        Command="{Binding OpenSubscriptionManagerCommand}"
+                        Height="40"
+                        Background="#7994B2" 
+                        Foreground="White" 
+                        BorderThickness="0" 
+                        Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <Button Grid.Column="2" 
+                        Content="Додати запис" 
+                        Command="{Binding OpenSubscriptionManagerCommand}" 
+                        Height="40"
+                        Background="#26A69A" 
+                        Foreground="White" 
+                        BorderThickness="0" 
+                        Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <Grid Margin="50,0,50,50">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="#2B2F3E" CornerRadius="10" Padding="25" Height="360">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.3"/>
+                            </Border.Effect>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Проекти" 
+                       Foreground="White" 
+                       FontSize="18" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,20"/>
+
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding RecentProjects}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="2" Rows="2"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Command="{Binding DataContext.OpenProjectDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                 CommandParameter="{Binding Id}"
+                                                 Height="80"
+                                                 Margin="6"
+                                                 Background="#3C4050"
+                                                 BorderThickness="0"
+                                                 Cursor="Hand">
+                                                <Button.Template>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="15,10">
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding Name}" 
+                                                                       Foreground="White" 
+                                                                       FontSize="15" 
+                                                                       FontWeight="SemiBold"
+                                                                       TextTrimming="CharacterEllipsis"
+                                                                       Margin="0,0,0,3"/>
+
+                                                                    <TextBlock FontSize="11" Foreground="#B0BEC5">
+                                                                        <Run Text="{Binding Status}"/>
+                                                                        <Run Text="•"/>
+                                                                        <Run Text="{Binding UserRoleInProject}"/>
+                                                                    </TextBlock>
+                                                                </StackPanel>
+
+                                                                <Path Grid.Column="1" 
+                                                  Data="M0,0 L4,4 L0,8" 
+                                                  Stroke="#B0BEC5" 
+                                                  StrokeThickness="1.5" 
+                                                  VerticalAlignment="Center" 
+                                                  Margin="10,0,0,0"/>
+                                                            </Grid>
+
+                                                            <VisualStateManager.VisualStateGroups>
+                                                                <VisualStateGroup x:Name="CommonStates">
+                                                                    <VisualState x:Name="Normal"/>
+                                                                    <VisualState x:Name="MouseOver">
+                                                                        <Storyboard>
+                                                                            <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                        To="#454955" Duration="0:0:0.1"/>
+                                                                        </Storyboard>
+                                                                    </VisualState>
+                                                                    <VisualState x:Name="Pressed">
+                                                                        <Storyboard>
+                                                                            <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                        To="#323645" Duration="0:0:0.1"/>
+                                                                        </Storyboard>
+                                                                    </VisualState>
+                                                                </VisualStateGroup>
+                                                            </VisualStateManager.VisualStateGroups>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBlock Grid.Row="1" 
+                       Text="У вас поки немає проектів" 
+                       Foreground="#607D8B" 
+                       FontSize="14"
+                       VerticalAlignment="Center" 
+                       HorizontalAlignment="Center"
+                       Visibility="{Binding RecentProjects.Count, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}"/>
+
+                                <Grid Grid.Row="2" Margin="0,20,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" 
+                        Content="Переглянути більше" 
+                        Command="{Binding ViewProjectsCommand}"
+                        Height="40"
+                        Background="#7994B2" 
+                        Foreground="White" 
+                        BorderThickness="0" 
+                        Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <Button Grid.Column="2" 
+                        Content="Додати проект" 
+                        Command="{Binding CreateProjectCommand}" 
+                        Height="40"
+                        Background="#26A69A" 
+                        Foreground="White" 
+                        BorderThickness="0" 
+                        Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                        <Border Grid.Column="2" Background="#2B2F3E" CornerRadius="10" Padding="25" Height="360">
+                            <Border.Effect>
+                                <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="5" Opacity="0.3"/>
+                            </Border.Effect>
+
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Text="Паролі" 
+                       Foreground="White" 
+                       FontSize="18" 
+                       HorizontalAlignment="Center" 
+                       Margin="0,0,0,20"/>
+
+                                <ItemsControl Grid.Row="1" ItemsSource="{Binding RecentPasswords}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="#3C4050" BorderThickness="0,0,0,1" Margin="0,0,0,12" >
+                                                <Grid Margin="0,0,0,15">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0" 
+                                       Text="{Binding Password.Note}" 
+                                       Foreground="#E0E0E0" 
+                                       FontSize="14" 
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="0,0,10,0"/>
+
+                                                    <Button Grid.Column="1" 
+                                    Content="Копіювати" 
+                                    Command="{Binding DataContext.CopyPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding Password.PasswordEncrypted}"
+                                    Width="80" Height="30"
+                                    Background="#7994B2" 
+                                    Foreground="White" 
+                                    FontSize="12"
+                                    BorderThickness="0" 
+                                    Cursor="Hand">
+                                                        <Button.Resources>
+                                                            <Style TargetType="Border">
+                                                                <Setter Property="CornerRadius" Value="5"/>
+                                                            </Style>
+                                                        </Button.Resources>
+                                                        <Button.Template>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" CornerRadius="5" >
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                                <ControlTemplate.Triggers>
+                                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                                    </Trigger>
+                                                                </ControlTemplate.Triggers>
+                                                            </ControlTemplate>
+                                                        </Button.Template>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <TextBlock Grid.Row="1" 
+                       Text="Немає збережених паролів" 
+                       Foreground="#607D8B" 
+                       VerticalAlignment="Center" 
+                       HorizontalAlignment="Center"
+                       Visibility="{Binding RecentPasswords.Count, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Inverted}"/>
+
+                                <Grid Grid.Row="2" Margin="0,20,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="20"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Button Grid.Column="0" 
+                        Content="Переглянути більше" 
+                        Command="{Binding OpenPasswordManagerCommand}"
+                        Height="40"
+                        Background="#7994B2" 
+                        Foreground="White" 
+                        BorderThickness="0" 
+                        Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+
+                                    <Button Grid.Column="2" 
+                        Content="Додати пароль" 
+                        Command="{Binding OpenPasswordManagerCommand}" 
+                        Height="40"
+                        Background="#26A69A" 
+                        Foreground="White" 
+                        BorderThickness="0" 
+                        Cursor="Hand">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="5"/>
+                                            </Style>
+                                        </Button.Resources>
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter Property="Opacity" Value="0.9"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                    </Grid>
                 </StackPanel>
 
                 <StackPanel x:Name="LoginPanel"
@@ -230,22 +717,51 @@
             <Border Background="#323645" 
                 CornerRadius="10" 
                 Padding="30" 
-                Width="400" 
+                Width="450" 
                 VerticalAlignment="Center" 
                 HorizontalAlignment="Center">
                 <StackPanel>
                     <TextBlock Text="Створити проект" FontSize="20" FontWeight="Bold" Margin="0,0,0,20" HorizontalAlignment="Center" Foreground="White"/>
 
                     <TextBlock Text="Назва проекту:" Margin="0,0,0,5" Foreground="#B0BEC5"/>
-                    <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,0,0,15"/>
+                    <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,15"/>
                     <TextBlock Text="Статус проекту:" Margin="0,0,0,5" Foreground="#B0BEC5"/>
-                    <TextBox Text="{Binding ProjectStatus, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,0,0,15"/>
+                    <TextBox Text="{Binding ProjectStatus, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,15"/>
 
                     <TextBlock Text="Опис проекту:" Margin="0,0,0,5" Foreground="#B0BEC5"/>
                     <TextBox Text="{Binding ProjectDescription, UpdateSourceTrigger=PropertyChanged}" Height="80" Padding="5" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="OK" Width="80" Height="35" Margin="0,0,10,0" Command="{Binding SaveProjectCommand}" Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelProjectCommand}" Background="#9E9E9E" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                        <Button 
+                            Content="Скасувати" 
+                            Width="190" 
+                            Height="40" 
+                            Command="{Binding CancelProjectCommand}" 
+                            Background="#7994B2" 
+                            Foreground="White" 
+                            Margin="0,0,10,0" 
+                            BorderThickness="0" 
+                            Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button 
+                            Content="Додати" 
+                            Width="190" 
+                            Height="40" 
+                            Command="{Binding SaveProjectCommand}" 
+                            Background="#4DB6AC" 
+                            Foreground="White" 
+                            BorderThickness="0" 
+                            Cursor="Hand">                      
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="5"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
                     </StackPanel>
                 </StackPanel>
             </Border>
