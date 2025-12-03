@@ -445,7 +445,6 @@ namespace TaskForge.WPF.ViewModels
         private async Task OnClearFilterAsync()
         {
             SelectedUserFilter = null;
-            await LoadProjectDetailsAsync();
         }
 
         private async Task OnAddTaskAsync()
@@ -509,6 +508,7 @@ namespace TaskForge.WPF.ViewModels
                 MessageBox.Show($"Помилка завантаження користувачів: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+        
 
         private void OnSaveAssignUsers()
         {
