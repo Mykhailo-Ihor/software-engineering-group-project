@@ -23,6 +23,9 @@ namespace TaskForge.WPF.ViewModels
         private readonly Auth0Service _auth0Service;
         private readonly LoginResult? _currentLoginResult;
 
+        public Func<string>? GetAddPassword { get; set; }
+        public Func<string>? GetEditPassword { get; set; }
+
         // Data binding properties
         private ObservableCollection<PasswordDisplayItem> _passwords;
         private string _url;
@@ -55,20 +58,20 @@ namespace TaskForge.WPF.ViewModels
             // Initialize commands with external command classes
             LoadPasswordsCommand = new LoadPasswordsCommand(
  this, _passwordService, _userService, _auth0Service, _currentLoginResult);
-       
-   SaveAddCommand = new AddPasswordCommand(
-      this, _passwordService, _userService, _auth0Service, _currentLoginResult);
-            
-        DeleteCommand = new DeletePasswordCommand(this, _passwordService);
 
-  // Initialize simple UI commands
-     OpenAddCommand = new RelayCommand(OpenAddModal);
-          CancelCommand = new RelayCommand(CancelAdd);
-    OpenEditCommand = new RelayCommand(OpenEditModal);
-    SaveEditCommand = new AsyncRelayCommand(SaveEditedPasswordAsync);
+            SaveAddCommand = new AddPasswordCommand(
+               this, _passwordService, _userService, _auth0Service, _currentLoginResult);
+
+            DeleteCommand = new DeletePasswordCommand(this, _passwordService);
+
+            // Initialize simple UI commands
+            OpenAddCommand = new RelayCommand(OpenAddModal);
+            CancelCommand = new RelayCommand(CancelAdd);
+            OpenEditCommand = new RelayCommand(OpenEditModal);
+            SaveEditCommand = new AsyncRelayCommand(SaveEditedPasswordAsync);
             CancelEditCommand = new RelayCommand(CancelEdit);
-   CopyPasswordCommand = new RelayCommand(CopyPassword);
-     ToggleVisibilityCommand = new RelayCommand(ToggleVisibility);
+            CopyPasswordCommand = new RelayCommand(CopyPassword);
+            ToggleVisibilityCommand = new RelayCommand(ToggleVisibility);
         }
 
         #region Properties
@@ -193,27 +196,38 @@ namespace TaskForge.WPF.ViewModels
             }
         }
 
-        private async Task SaveEditedPasswordAsync(object parameter)
+        private async Task SaveEditedPasswordAsync(object? parameter)
         {
             if (SelectedItem?.Password == null)
             {
                 return;
             }
 
-            SelectedItem.Password.Url = Url;
-            SelectedItem.Password.Login = Login;
-            SelectedItem.Password.PasswordEncrypted = PasswordText;
-            SelectedItem.Password.Note = Note;
-            SelectedItem.Password.Category = SelectedCategory;
+            try
+            {
+                SelectedItem.Password.Url = Url;
+                SelectedItem.Password.Login = Login;
 
-            await _passwordService.UpdatePasswordAsync(SelectedItem.Password);
-            IsEditModalVisible = false;
-   
- // Reload passwords by executing LoadPasswordsCommand
-  if (LoadPasswordsCommand.CanExecute(null))
-  {
-       await ((AsyncRelayCommand)LoadPasswordsCommand).ExecuteAsync(null);
-       }
+                var passwordFromUI = GetEditPassword?.Invoke() ?? "";
+                SelectedItem.Password.PasswordEncrypted = Convert.ToBase64String(
+                    System.Text.Encoding.UTF8.GetBytes(passwordFromUI));
+
+                SelectedItem.Password.Note = Note;
+                SelectedItem.Password.Category = SelectedCategory;
+
+                await _passwordService.UpdatePasswordAsync(SelectedItem.Password);
+                IsEditModalVisible = false;
+
+                if (LoadPasswordsCommand.CanExecute(null))
+                {
+                    await ((AsyncRelayCommand)LoadPasswordsCommand).ExecuteAsync(null);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"РџРѕРјРёР»РєР° РїСЂРё Р·Р±РµСЂРµР¶РµРЅРЅС– РїР°СЂРѕР»СЋ: {ex.Message}", "РџРѕРјРёР»РєР°",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void CancelEdit(object parameter)
@@ -228,11 +242,11 @@ namespace TaskForge.WPF.ViewModels
                 try
                 {
                     Clipboard.SetText(password);
-                    MessageBox.Show("Пароль скопійовано в буфер обміну!", "Пароль скопійовано", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("РџР°СЂРѕР»СЊ СЃРєРѕРїС–Р№РѕРІР°РЅРѕ РІ Р±СѓС„РµСЂ РѕР±РјС–РЅСѓ!", "Р†РЅС„РѕСЂРјР°С†С–СЏ", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Не вдалося скопіювати пароль: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"РџРѕРјРёР»РєР° РїСЂРё РєРѕРїС–СЋРІР°РЅРЅС– РїР°СЂРѕР»СЋ: {ex.Message}", "РџРѕРјРёР»РєР°", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }

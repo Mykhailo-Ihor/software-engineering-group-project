@@ -45,8 +45,8 @@ namespace TaskForge.WPF.Commands.PasswordManager
             if (loginResult == null || loginResult.IsError)
             {
                 MessageBox.Show(
-                   "Будь ласка, увійдіть, щоб зберегти паролі.",
-                       "Потрібна автентифікація",
+                   "пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ.",
+                       "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
                    MessageBoxButton.OK,
                             MessageBoxImage.Warning);
                 return;
@@ -61,19 +61,21 @@ namespace TaskForge.WPF.Commands.PasswordManager
             if (user == null)
             {
                 MessageBox.Show(
-                       "Користувача не знайдено в системі.",
-                         "Помилка",
+                       "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.",
+                         "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
                      MessageBoxButton.OK,
                MessageBoxImage.Error);
                 return;
             }
 
             // Read input values from viewModel properties
+            var passwordFromUI = viewModel.GetAddPassword?.Invoke() ?? "";
             var password = new Password
             {
                 Url = viewModel.Url,
                 Login = viewModel.Login,
-                PasswordEncrypted = viewModel.PasswordText,
+                PasswordEncrypted = Convert.ToBase64String(
+                    System.Text.Encoding.UTF8.GetBytes(passwordFromUI)),
                 Note = viewModel.Note,
                 Category = viewModel.SelectedCategory,
                 UserId = user.Id

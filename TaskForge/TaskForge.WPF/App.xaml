@@ -386,5 +386,11 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="CategoryTagStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource AccentColor}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="10,10,10,10"/>
+        </Style>
     </Application.Resources>
 </Application>
