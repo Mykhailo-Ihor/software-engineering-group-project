@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 using TaskForge.Application.Interfaces;
+using TaskForge.Domain.Enums;
 using TaskForge.WPF.ViewModels;
 
 namespace TaskForge.WPF.Commands.FinancialSummary
@@ -39,6 +40,7 @@ namespace TaskForge.WPF.Commands.FinancialSummary
             try
             {
                 var description = viewModel.AddExpenseDescription?.Trim() ?? string.Empty;
+                var type = viewModel.IsAddIncome ? TransactionType.Income : TransactionType.Expense;
 
                 await expenseService.CreateExpenseAsync(
                     amount,
@@ -46,6 +48,7 @@ namespace TaskForge.WPF.Commands.FinancialSummary
                     viewModel.AddExpenseCategory,
                     viewModel.AddExpenseDate,
                     description,
+                    type,
                     viewModel.CurrentUserId);
 
                 MessageBox.Show("Витрату успішно додано!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);

@@ -18,8 +18,8 @@ namespace TaskForge.Application.Services
             _expenseRepository = expenseRepository;
         }
 
-        public Task<Expense> CreateExpenseAsync(decimal amount, Currency currency, ExpenceCategory category, DateTime date, string description, int userId)
-            => _expenseRepository.CreateExpenseAsync(amount, currency, category, date, description, userId);
+        public Task<Expense> CreateExpenseAsync(decimal amount, Currency currency, ExpenceCategory category, DateTime date, string description, TransactionType type, int userId)
+            => _expenseRepository.CreateExpenseAsync(amount, currency, category, date, description, type, userId);
 
         public async Task<List<ExpenceRecordDto>> GetUserExpensesAsync(int userId)
         {
@@ -29,10 +29,11 @@ namespace TaskForge.Application.Services
             {
                 Id = e.Id,
                 Amount = e.Amount,
-                Category = e.Category.ToString(),
+                Category = e.Type == TransactionType.Income ? "Дохід" : e.Category.ToString(),
                 Date = e.Date,
                 Currency = e.Currency.ToString(),
-                Description = e.Description
+                Description = e.Description,
+                Type = e.Type.ToString()
             }).ToList();
         }
 

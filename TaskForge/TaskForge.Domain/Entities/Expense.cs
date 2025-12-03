@@ -18,6 +18,9 @@ public class Expense
     public Currency Currency { get; set; }
 
     [Required]
+    public TransactionType Type { get; set; } = TransactionType.Expense;
+
+    [Required]
     public DateTime Date { get; set; }
 
     public ExpenceCategory Category { get; set; }

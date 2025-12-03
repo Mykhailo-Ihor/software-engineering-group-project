@@ -7,7 +7,7 @@ namespace TaskForge.Domain.Interfaces
 {
     public interface IExpenseRepository
     {
-        Task<Expense> CreateExpenseAsync(decimal amount, Currency currency, ExpenceCategory category, DateTime date, string description, int userId);
+        Task<Expense> CreateExpenseAsync(decimal amount, Currency currency, ExpenceCategory category, DateTime date, string description, TransactionType type, int userId);
         Task<List<Expense>> GetExpensesByUserIdAsync(int userId);
         Task<Expense?> GetExpenseByIdAsync(int expenseId);
         Task<bool> DeleteExpenseAsync(int expenseId);
