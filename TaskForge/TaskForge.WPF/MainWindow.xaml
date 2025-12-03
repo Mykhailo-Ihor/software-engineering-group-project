@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TaskForge.WPF"
         mc:Ignorable="d"
-        Title="TaskForge" Height="600" Width="900"
+        Title="TaskForge" Height="700" Width="1100"
         Background="#222531"
         WindowStartupLocation="CenterScreen">
 
@@ -195,24 +195,100 @@
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel x:Name="LoginPanel"
-                            Visibility="{Binding IsLoginPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                            VerticalAlignment="Center"
-                            Margin="50">
-                    <TextBlock Text="Увійдіть за допомогою Auth0" FontSize="18" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-                    <Button x:Name="LoginButton"
-                            Content="Увійти / Зареєструватися"
-                            Height="45" Width="250" FontSize="16"
-                            Background="#4CAF50" Foreground="White" BorderThickness="0" Cursor="Hand"
-                            Command="{Binding LoginCommand}"
-                            IsEnabled="{Binding IsLoginButtonEnabled}">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="5"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                </StackPanel>
+                <Grid x:Name="LoginPanel"
+                      Visibility="{Binding IsLoginPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                      Margin="0,20,0,0">
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="1" 
+                            Background="#2B2F3E" 
+                            CornerRadius="15" 
+                            Width="900" Height="500"
+                            HorizontalAlignment="Center" 
+                            VerticalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect Color="Black" BlurRadius="30" ShadowDepth="5" Opacity="0.4"/>
+                        </Border.Effect>
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Image Grid.Column="0" 
+                                   Source="/Resources/welcome-screen-picture.png" 
+                                   Stretch="Uniform" 
+                                   Margin="40"/>
+
+                            <StackPanel Grid.Column="1" 
+                                        VerticalAlignment="Center" 
+                                        Margin="0,0,60,0">
+
+                                <TextBlock TextAlignment="Right" Margin="0,0,0,30">
+                                    <Run Text="Ласкаво просимо до " FontSize="23" Foreground="White"/>
+                                    <Run Text="TaskForge" FontSize="23" FontWeight="Bold" Foreground="#4DB6AC"/>
+                                </TextBlock>
+
+                                <TextBlock TextAlignment="Right" 
+                                           TextWrapping="Wrap" 
+                                           Foreground="#B0BEC5" 
+                                           FontSize="14" 
+                                           LineHeight="22"
+                                           Margin="0,0,0,40">
+                                    Керуйте своїми проектами ефективно та без зайвих зусиль. 
+                                    Відстежуйте витрати, організовуйте завдання та співпрацюйте з командою в одному місці. 
+                                    TaskForge надає інструменти, необхідні для досягнення успіху.
+                                </TextBlock>
+
+                                <TextBlock Text="Приєднуйтесь до нас вже зараз" 
+                                           Foreground="White" 
+                                           HorizontalAlignment="Right" 
+                                           FontSize="14" 
+                                           Margin="0,0,0,15"/>
+
+                                <Button Content="Увійти"
+                                        Command="{Binding LoginCommand}"
+                                        IsEnabled="{Binding IsLoginButtonEnabled}"
+                                        Width="200" Height="45"
+                                        HorizontalAlignment="Right"
+                                        FontSize="16" FontWeight="SemiBold"
+                                        Background="#26A69A" 
+                                        Foreground="White" 
+                                        BorderThickness="0" 
+                                        Cursor="Hand">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="5"/>
+                                        </Style>
+                                    </Button.Resources>
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Opacity" Value="0.9"/>
+                                                </Trigger>
+                                                <Trigger Property="IsEnabled" Value="False">
+                                                    <Setter Property="Background" Value="#546E7A"/>
+                                                    <Setter Property="Foreground" Value="#B0BEC5"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
 

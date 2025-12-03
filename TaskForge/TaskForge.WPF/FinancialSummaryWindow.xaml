@@ -9,7 +9,8 @@
         WindowStartupLocation="CenterScreen"
         Background="#222531"
         Loaded="Window_Loaded"
-        UseLayoutRounding="True"        SnapsToDevicePixels="True">
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
