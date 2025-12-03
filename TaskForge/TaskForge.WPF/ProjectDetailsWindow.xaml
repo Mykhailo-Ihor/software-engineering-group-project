@@ -11,6 +11,27 @@
 
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        
+        <Style x:Key="HeaderButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="10,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.7"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
 
         <Style TargetType="Button" x:Key="ActionButtonStyle">
             <Setter Property="Height" Value="35"/>
@@ -60,219 +81,267 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
-    <Grid Margin="20">
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="#2B2F3E" CornerRadius="10" Padding="30" Margin="0,0,0,10">
+        <Border Grid.Row="0" Background="#323645" Padding="20,15" Margin="0,0,0,20">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding ProjectName}" FontSize="28" Foreground="White" FontWeight="Bold" Margin="0,0,0,10"/>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="/Resources/icon_.png" Width="30" Height="30" Margin="0,0,10,0"/>
 
-                    <TextBlock Text="{Binding ProjectDescription}" 
-                               FontSize="20" Foreground="#B0BEC5" 
-                               TextWrapping="Wrap" MaxWidth="600" HorizontalAlignment="Left" Margin="0,0,0,10"/>
-
-                    <StackPanel Orientation="Horizontal">
-                        <Border Background="#37474F" CornerRadius="4" Padding="8,4">
-                            <TextBlock Text="{Binding ProjectStatus}" FontSize="18" Foreground="#80CBC4" FontWeight="SemiBold"/>
-                        </Border>
-                    </StackPanel>
+                    <TextBlock Text="TaskForge" 
+                               FontSize="20" 
+                               FontWeight="Normal" 
+                               VerticalAlignment="Center"
+                               Foreground="White"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
-                        <Button Content="Manage project" 
-                                Background="#78909C"
-                                Style="{StaticResource ActionButtonStyle}"
-                                Command="{Binding EditProjectCommand}"
-                                Visibility="{Binding IsEditProjectVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                Width="140"/>
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
 
-                        <Button Content="Leave project" 
-                                Background="#78909C"
-                                Style="{StaticResource ActionButtonStyle}"
-                                Command="{Binding LeaveProjectCommand}"
-                                Width="140"/>
-                    </StackPanel>
+                    <Button Command="{Binding ProfileCommand}" Style="{StaticResource HeaderButtonStyle}" ToolTip="Профіль">
+                        <Ellipse Width="32" Height="32" Stroke="White" StrokeThickness="1">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="{Binding UserAvatar}" Stretch="UniformToFill"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                    </Button>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Kick member" 
-                                Background="#EF5350"
-                                Style="{StaticResource ActionButtonStyle}"
-                                Command="{Binding OpenKickUserModalCommand}"
-                                Visibility="{Binding IsManageModeratorsVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                Width="140"/>
-
-                        <Button Content="Appoint moderator" 
-                                Background="#26A69A"
-                                Style="{StaticResource ActionButtonStyle}"
-                                Command="{Binding ManageModeratorsCommand}"
-                                Visibility="{Binding IsManageModeratorsVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                Width="140"/>
-
-                        <Button Content="Add new member" 
-                                Background="#26A69A"
-                                Style="{StaticResource ActionButtonStyle}"
-                                Command="{Binding AddUserToProjectCommand}"
-                                Width="140"/>
-                    </StackPanel>
+                    <Button Command="{Binding LogoutCommand}" Style="{StaticResource HeaderButtonStyle}" ToolTip="Вийти">
+                        <Path Data="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" 
+                              Fill="White" 
+                              Width="24" 
+                              Height="24" 
+                              Stretch="Uniform"/>
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="1" Margin="0,10,0,15">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <Grid Grid.Row="1" Margin="20,0,20,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <TextBlock Text="Tasks" FontSize="24" Foreground="White" VerticalAlignment="Center"/>
+            <Border Grid.Row="0" Background="#2B2F3E" CornerRadius="10" Padding="30" Margin="0,0,0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
-                <TextBlock Text="Filter by:" Foreground="#90A4AE" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                <ComboBox Width="180" Height="35"
-                          Padding="10,0"
-                          ItemsSource="{Binding UserFilterItems}"
-                          SelectedItem="{Binding SelectedUserFilter}"
-                          DisplayMemberPath="Username" 
-                          SelectedValuePath="Id"
-                          VerticalContentAlignment="Center"/>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding ProjectName}" FontSize="28" Foreground="White" FontWeight="Bold" Margin="0,0,0,10"/>
 
-                <Button Content="✕" 
-                        Width="35" Height="35" 
-                        Margin="5,0,0,0"
-                        Background="#78909C" Foreground="White" BorderThickness="0"
-                        Command="{Binding ClearFilterCommand}"
-                        ToolTip="Clear Filter">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="3"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
-            </StackPanel>
+                        <TextBlock Text="{Binding ProjectDescription}" 
+                                   FontSize="20" Foreground="#B0BEC5" 
+                                   TextWrapping="Wrap" MaxWidth="600" HorizontalAlignment="Left" Margin="0,0,0,10"/>
 
-            <Button Grid.Column="2" 
-                    Content="+ New Task" 
-                    Background="#26A69A"
-                    Style="{StaticResource ActionButtonStyle}"
-                    Width="140"
-                    Command="{Binding AddTaskCommand}"
-                    Margin="0"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Background="#37474F" CornerRadius="4" Padding="8,4">
+                                <TextBlock Text="{Binding ProjectStatus}" FontSize="18" Foreground="#80CBC4" FontWeight="SemiBold"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                            <Button Content="Налаштування проекту" 
+                                    Background="#78909C"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Command="{Binding EditProjectCommand}"
+                                    Visibility="{Binding IsEditProjectVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Width="160"/>
+
+                            <Button Content="Покинути проект" 
+                                    Background="#78909C"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Command="{Binding LeaveProjectCommand}"
+                                    Width="160"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Вигнати учасника" 
+                                    Background="#EF5350"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Command="{Binding OpenKickUserModalCommand}"
+                                    Visibility="{Binding IsManageModeratorsVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Width="160"/>
+
+                            <Button Content="Призначити модератора" 
+                                    Background="#26A69A"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Command="{Binding ManageModeratorsCommand}"
+                                    Visibility="{Binding IsManageModeratorsVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Width="160"/>
+
+                            <Button Content="Додати учасника" 
+                                    Background="#26A69A"
+                                    Style="{StaticResource ActionButtonStyle}"
+                                    Command="{Binding AddUserToProjectCommand}"
+                                    Width="160"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        
+            <Grid Grid.Row="1" Margin="0,10,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Завдання" FontSize="24" Foreground="White" VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,20,0">
+                    <TextBlock Text="Фільтрувати за:" Foreground="#90A4AE" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <ComboBox Width="180" Height="35"
+                              Padding="10,0"
+                              ItemsSource="{Binding UserFilterItems}"
+                              SelectedItem="{Binding SelectedUserFilter}"
+                              DisplayMemberPath="Username" 
+                              SelectedValuePath="Id"
+                              VerticalContentAlignment="Center"/>
+
+                    <Button Content="✕" 
+                            Width="35" Height="35" 
+                            Margin="5,0,0,0"
+                            Background="#78909C" Foreground="White" BorderThickness="0"
+                            Command="{Binding ClearFilterCommand}"
+                            ToolTip="Clear Filter">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="3"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+
+                <Button Grid.Column="2" 
+                        Content="+ Нове завдання" 
+                        Background="#26A69A"
+                        Style="{StaticResource ActionButtonStyle}"
+                        Width="140"
+                        Command="{Binding AddTaskCommand}"
+                        Margin="0"/>
+            </Grid>
+
+            <ListView Grid.Row="2" 
+                      ItemsSource="{Binding Tasks}" 
+                      Background="Transparent" 
+                      BorderThickness="0"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Margin" Value="0,0,0,10"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListViewItem">
+                                    <ContentPresenter/>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="#2B2F3E" CornerRadius="8" Padding="20">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="250"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,5"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="20" Foreground="#90A4AE" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock FontSize="20" Foreground="#B0BEC5" Margin="0,0,0,5">
+                                        <Run Text="Due: " FontWeight="Bold"/>
+                                        <Run Text="{Binding DueDate, StringFormat='{}{0:dd.MM.yyyy}'}" Foreground="White"/>
+                                    </TextBlock>
+
+                                    <WrapPanel Orientation="Horizontal">
+                                        <ItemsControl ItemsSource="{Binding TaskUsers}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel Orientation="Horizontal"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="#455A64" CornerRadius="3" Padding="5,2" Margin="0,2,5,0">
+                                                        <TextBlock FontSize="16" Foreground="White">
+                                                            <Run Text="{Binding User.FirstName}"/> <Run Text="{Binding User.LastName}"/>
+                                                        </TextBlock>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </WrapPanel>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Style="{StaticResource IconButtonStyle}"
+                                            Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding Id}"
+                                            ToolTip="Edit">
+                                        <Path Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                                              Fill="#B0BEC5" Stretch="Uniform" Width="16" Height="16"/>
+                                    </Button>
+
+                                    <Button Style="{StaticResource IconButtonStyle}"
+                                            Margin="10,0,0,0"
+                                            Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding Id}"
+                                            ToolTip="Delete">
+                                        <Path Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                              Fill="#B0BEC5" Stretch="Uniform" Width="16" Height="16"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </Grid>
-
-        <ListView Grid.Row="2" 
-                  ItemsSource="{Binding Tasks}" 
-                  Background="Transparent" 
-                  BorderThickness="0"
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="Background" Value="Transparent"/>
-                    <Setter Property="Margin" Value="0,0,0,10"/>
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate TargetType="ListViewItem">
-                                <ContentPresenter/>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </ListView.ItemContainerStyle>
-
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Border Background="#2B2F3E" CornerRadius="8" Padding="20">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="250"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                                <TextBlock Text="{Binding Title}" FontSize="20" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,5"/>
-                                <TextBlock Text="{Binding Description}" FontSize="20" Foreground="#90A4AE" TextTrimming="CharacterEllipsis"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                <TextBlock FontSize="20" Foreground="#B0BEC5" Margin="0,0,0,5">
-                                    <Run Text="Due: " FontWeight="Bold"/>
-                                    <Run Text="{Binding DueDate, StringFormat='{}{0:dd.MM.yyyy}'}" Foreground="White"/>
-                                </TextBlock>
-
-                                <WrapPanel Orientation="Horizontal">
-                                    <ItemsControl ItemsSource="{Binding TaskUsers}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel Orientation="Horizontal"/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Background="#455A64" CornerRadius="3" Padding="5,2" Margin="0,2,5,0">
-                                                    <TextBlock FontSize="16" Foreground="White">
-                                                        <Run Text="{Binding User.FirstName}"/> <Run Text="{Binding User.LastName}"/>
-                                                    </TextBlock>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </WrapPanel>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Style="{StaticResource IconButtonStyle}"
-                                        Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding Id}"
-                                        ToolTip="Edit">
-                                    <Path Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
-                                          Fill="#B0BEC5" Stretch="Uniform" Width="16" Height="16"/>
-                                </Button>
-
-                                <Button Style="{StaticResource IconButtonStyle}"
-                                        Margin="10,0,0,0"
-                                        Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding Id}"
-                                        ToolTip="Delete">
-                                    <Path Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
-                                          Fill="#B0BEC5" Stretch="Uniform" Width="16" Height="16"/>
-                                </Button>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
 
         <Grid Visibility="{Binding IsTaskModalVisible, Converter={StaticResource BoolToVisibilityConverter}}" 
               Grid.RowSpan="3" Background="#99000000">
             <Border Background="#323645" CornerRadius="10" Padding="30" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Create New Task" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
+                    <TextBlock Text="Додати завадання" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
 
-                    <TextBlock Text="Task Name" Foreground="#B0BEC5"/>
-                    <TextBox Text="{Binding TaskTitle, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,5,0,15"/>
+                    <TextBlock Text="Назва завдання" Foreground="#B0BEC5"/>
+                    <TextBox Text="{Binding TaskTitle, UpdateSourceTrigger=PropertyChanged}"  Margin="0,5,0,15"/>
 
-                    <TextBlock Text="Description" Foreground="#B0BEC5"/>
-                    <TextBox Text="{Binding TaskDescription, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Padding="5" Margin="0,5,0,15"/>
+                    <TextBlock Text="Опис" Foreground="#B0BEC5"/>
+                    <TextBox Text="{Binding TaskDescription, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Margin="0,5,0,15"/>
 
-                    <TextBlock Text="Due Date" Foreground="#B0BEC5"/>
+                    <TextBlock Text="Дата закінчення" Foreground="#B0BEC5"/>
                     <DatePicker SelectedDate="{Binding TaskDueDate}" Height="30" Margin="0,5,0,15"/>
 
                     <TextBlock Text="{Binding SelectedAssigneesText}" Foreground="#90A4AE" Margin="0,0,0,5"/>
-                    <Button Content="Assign Users" Command="{Binding AssignUsersCommand}" 
+                    <Button Content="Вибрати виконавців" Command="{Binding AssignUsersCommand}" 
                             Height="30" Background="#2196F3" Foreground="White" BorderThickness="0" Margin="0,0,0,20">
                         <Button.Resources>
                             <Style TargetType="Border">
@@ -282,8 +351,8 @@
                     </Button>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Cancel" Width="80" Height="35" Command="{Binding CancelTaskCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Create" Width="80" Height="35" Command="{Binding SaveTaskCommand}" Background="#4CAF50" Foreground="White" BorderThickness="0"/>
+                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelTaskCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
+                        <Button Content="Створити" Width="80" Height="35" Command="{Binding SaveTaskCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -293,20 +362,30 @@
               Grid.RowSpan="3" Background="#99000000">
             <Border Background="#323645" CornerRadius="10" Padding="30" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Edit Task" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
+                    <TextBlock Text="Редагування завдання" FontSize="20" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
 
-                    <TextBlock Text="Task Name" Foreground="#B0BEC5"/>
-                    <TextBox Text="{Binding EditTaskTitle, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,5,0,15"/>
+                    <TextBlock Text="Назва завдання" Foreground="#B0BEC5"/>
+                    <TextBox Text="{Binding EditTaskTitle, UpdateSourceTrigger=PropertyChanged}"  Margin="0,5,0,15"/>
 
-                    <TextBlock Text="Description" Foreground="#B0BEC5"/>
+                    <TextBlock Text="Опис" Foreground="#B0BEC5"/>
                     <TextBox Text="{Binding EditTaskDescription, UpdateSourceTrigger=PropertyChanged}" Height="60" TextWrapping="Wrap" AcceptsReturn="True" Padding="5" Margin="0,5,0,15"/>
 
-                    <TextBlock Text="Due Date" Foreground="#B0BEC5"/>
+                    <TextBlock Text="Дата закінчення" Foreground="#B0BEC5"/>
                     <DatePicker SelectedDate="{Binding EditTaskDueDate}" Height="30" Margin="0,5,0,20"/>
 
+                    <TextBlock Text="{Binding SelectedAssigneesText}" Foreground="#90A4AE" Margin="0,0,0,5"/>
+                    <Button Content="Вибрати виконавців" Command="{Binding AssignUsersCommand}" 
+                            Height="30" Background="#2196F3" Foreground="White" BorderThickness="0" Margin="0,0,0,20">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="3"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Cancel" Width="80" Height="35" Command="{Binding CancelEditTaskCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Save" Width="80" Height="35" Command="{Binding SaveEditTaskCommand}" Background="#4CAF50" Foreground="White" BorderThickness="0"/>
+                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelEditTaskCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
+                        <Button Content="Зберегти" Width="80" Height="35" Command="{Binding SaveEditTaskCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -316,7 +395,7 @@
               Grid.RowSpan="3" Background="#99000000">
             <Border Background="#323645" CornerRadius="10" Padding="20" Width="300" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Select Assignees" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+                    <TextBlock Text="Виберіть виконавців" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
                     <ListBox ItemsSource="{Binding UsersForAssignment}" Height="200" Margin="0,0,0,15" Background="White">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
@@ -325,8 +404,8 @@
                         </ListBox.ItemTemplate>
                     </ListBox>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Cancel" Width="80" Height="30" Command="{Binding CancelAssignUsersCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Save" Width="80" Height="30" Command="{Binding SaveAssignUsersCommand}" Background="#4CAF50" Foreground="White" BorderThickness="0"/>
+                        <Button Content="Скасувати" Width="80" Height="30" Command="{Binding CancelAssignUsersCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
+                        <Button Content="Зберегти" Width="80" Height="30" Command="{Binding SaveAssignUsersCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -336,12 +415,12 @@
               Grid.RowSpan="3" Background="#99000000">
             <Border Background="#323645" CornerRadius="10" Padding="30" Width="350" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Add User to Project" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
-                    <TextBlock Text="User Email" Foreground="#B0BEC5"/>
-                    <TextBox Text="{Binding AddUserEmail, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,5,0,20"/>
+                    <TextBlock Text="Додати користувача до проекту" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+                    <TextBlock Text="Email користувача" Foreground="#B0BEC5"/>
+                    <TextBox Text="{Binding AddUserEmail, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,20"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Cancel" Width="80" Height="35" Command="{Binding CancelAddUserCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Add" Width="80" Height="35" Command="{Binding SaveAddUserCommand}" Background="#4CAF50" Foreground="White" BorderThickness="0"/>
+                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelAddUserCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
+                        <Button Content="Додати" Width="80" Height="35" Command="{Binding SaveAddUserCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -351,8 +430,8 @@
               Grid.RowSpan="3" Background="#99000000">
             <Border Background="#323645" CornerRadius="10" Padding="30" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Manage Moderators" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
-                    <TextBlock Text="Check users who should be moderators:" Foreground="#B0BEC5" Margin="0,0,0,10"/>
+                    <TextBlock Text="Налаштування модераторів" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+                    <TextBlock Text="Виберіть, кого призначити:" Foreground="#B0BEC5" Margin="0,0,0,10"/>
                     <ListView ItemsSource="{Binding Moderators}" MaxHeight="300" Background="White">
                         <ListView.ItemTemplate>
                             <DataTemplate>
@@ -361,8 +440,8 @@
                         </ListView.ItemTemplate>
                     </ListView>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                        <Button Content="Cancel" Width="80" Height="35" Command="{Binding CancelModeratorsCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Save" Width="80" Height="35" Command="{Binding SaveModeratorsCommand}" Background="#4CAF50" Foreground="White" BorderThickness="0"/>
+                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelModeratorsCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
+                        <Button Content="Зберегти" Width="80" Height="35" Command="{Binding SaveModeratorsCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -372,13 +451,13 @@
               Grid.RowSpan="3" Background="#99000000">
             <Border Background="#323645" CornerRadius="10" Padding="30" Width="450" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Kick Member" FontSize="18" FontWeight="Bold" Foreground="#EF5350" Margin="0,0,0,5"/>
-                    <TextBlock Text="Select a user to remove from the project:" Foreground="#B0BEC5" Margin="0,0,0,15"/>
+                    <TextBlock Text="Вигнати учасника" FontSize="18" FontWeight="Bold" Foreground="#EF5350" Margin="0,0,0,5"/>
+                    <TextBlock Text="Виберіть, кого вигнати:" Foreground="#B0BEC5" Margin="0,0,0,15"/>
 
                     <ListView ItemsSource="{Binding UsersToKickList}" MaxHeight="300" Background="White" BorderThickness="0">
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border Padding="10" BorderBrush="#EEEEEE" BorderThickness="0,0,0,1">
+                                <Border Padding="10" BorderBrush="#B0BEC5" BorderThickness="0,0,0,1">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
@@ -388,8 +467,8 @@
                                             <TextBlock FontWeight="SemiBold" Text="{Binding FirstName}"/>
                                             <TextBlock Text="{Binding Email}" FontSize="11" Foreground="Gray"/>
                                         </StackPanel>
-                                        <Button Grid.Column="1" Content="Kick" 
-                                                Command="{Binding DataContext.KickUserCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                        <Button Grid.Column="1" Content="Вигнати" Margin="100,0,0,0"
+                                                Command="{Binding DataContext.KickUserCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                                 CommandParameter="{Binding Id}"
                                                 Background="#EF5350" Foreground="White" BorderThickness="0" Height="25" Width="60">
                                             <Button.Resources>
@@ -404,7 +483,7 @@
                         </ListView.ItemTemplate>
                     </ListView>
 
-                    <Button Content="Close" Width="100" Height="35" Command="{Binding CloseKickUserModalCommand}" 
+                    <Button Content="Скасувати" Width="100" Height="35" Command="{Binding CloseKickUserModalCommand}" 
                             Background="#78909C" Foreground="White" BorderThickness="0" HorizontalAlignment="Right" Margin="0,15,0,0"/>
                 </StackPanel>
             </Border>
@@ -414,23 +493,23 @@
               Grid.RowSpan="3" Background="#99000000">
             <Border Background="#323645" CornerRadius="10" Padding="30" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel>
-                    <TextBlock Text="Project Settings" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
+                    <TextBlock Text="Налаштування проекту" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,15"/>
 
-                    <TextBlock Text="Project Name" Foreground="#B0BEC5"/>
-                    <TextBox Text="{Binding EditProjectName, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,5,0,10"/>
+                    <TextBlock Text="Назва проекту" Foreground="#B0BEC5"/>
+                    <TextBox Text="{Binding EditProjectName, UpdateSourceTrigger=PropertyChanged}"  Margin="0,5,0,10"/>
 
-                    <TextBlock Text="Description" Foreground="#B0BEC5"/>
+                    <TextBlock Text="Опис" Foreground="#B0BEC5"/>
                     <TextBox Text="{Binding EditProjectDescription, UpdateSourceTrigger=PropertyChanged}" Height="80" TextWrapping="Wrap" AcceptsReturn="True" Padding="5" Margin="0,5,0,10"/>
 
-                    <TextBlock Text="Status" Foreground="#B0BEC5"/>
-                    <TextBox Text="{Binding EditProjectStatus, UpdateSourceTrigger=PropertyChanged}" Height="30" Padding="5" Margin="0,5,0,20"/>
+                    <TextBlock Text="Статус" Foreground="#B0BEC5"/>
+                    <TextBox Text="{Binding EditProjectStatus, UpdateSourceTrigger=PropertyChanged}"  Margin="0,5,0,20"/>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
-                        <Button Content="Cancel" Width="80" Height="35" Command="{Binding CancelEditProjectCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
-                        <Button Content="Save" Width="80" Height="35" Command="{Binding SaveEditProjectCommand}" Background="#4CAF50" Foreground="White" BorderThickness="0"/>
+                        <Button Content="Скасувати" Width="80" Height="35" Command="{Binding CancelEditProjectCommand}" Background="#78909C" Foreground="White" BorderThickness="0" Margin="0,0,10,0"/>
+                        <Button Content="Зберегти" Width="80" Height="35" Command="{Binding SaveEditProjectCommand}" Background="#26A69A" Foreground="White" BorderThickness="0"/>
                     </StackPanel>
 
-                    <Button Content="Delete Project" Command="{Binding DeleteProjectCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="35" Margin="0,10,0,0"/>
+                    <Button Content="Видалити проект" Command="{Binding DeleteProjectCommand}" Background="#C62828" Foreground="White" BorderThickness="0" Height="35" Margin="0,10,0,0"/>
                 </StackPanel>
             </Border>
         </Grid>

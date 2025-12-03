@@ -6,6 +6,7 @@ using System.Windows.Media.Imaging;
 using TaskForge.Application.DTOs;
 using TaskForge.Application.Interfaces;
 using TaskForge.WPF.Commands;
+using SysApp = System.Windows.Application;
 
 namespace TaskForge.WPF.ViewModels
 {
@@ -81,6 +82,7 @@ namespace TaskForge.WPF.ViewModels
         public ICommand LoadedCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand CloseCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         public ProfileViewModel(Duende.IdentityModel.OidcClient.LoginResult loginResult, Auth0Service auth0Service, IUserService userService)
         {
@@ -93,13 +95,34 @@ namespace TaskForge.WPF.ViewModels
             LoadedCommand = new Commands.Profile.LoadProfileCommand(this, _userService, _auth0Service, _loginResult);
             SaveCommand = new Commands.Profile.SaveProfileCommand(this, _userService, _auth0Service, _loginResult);
             CloseCommand = new RelayCommand(() => CloseRequested?.Invoke());
+            LogoutCommand = new AsyncRelayCommand(OnLogoutAsync);
         }
 
         public void RequestClose()
         {
             CloseRequested?.Invoke();
         }
+        private async Task OnLogoutAsync()
+        {
+            var result = MessageBox.Show(
+                "Ви впевнені, що хочете вийти з облікового запису?",
+                "Вихід",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
 
+            if (result == MessageBoxResult.Yes)
+            {
+                RequestClose();
+
+                if (SysApp.Current.MainWindow?.DataContext is MainWindowViewModel mainVM)
+                {
+                    if (mainVM.LogoutCommand.CanExecute(null))
+                    {
+                        mainVM.LogoutCommand.Execute(null);
+                    }
+                }
+            }
+        }
         public event Action? CloseRequested;
     }
 }
