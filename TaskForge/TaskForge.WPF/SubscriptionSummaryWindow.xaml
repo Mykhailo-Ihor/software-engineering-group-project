@@ -2,18 +2,48 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:TaskForge.WPF.Converters"
-     xmlns:vm="clr-namespace:TaskForge.WPF.ViewModels"
+        xmlns:vm="clr-namespace:TaskForge.WPF.ViewModels"
+        xmlns:components="clr-namespace:TaskForge.WPF.Components"
         Title="Керування Підписками" Height="750" Width="1100"
         WindowStartupLocation="CenterScreen"
         Background="#222531"
-    Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType">
     <Window.Resources>
+        <Style TargetType="Button" x:Key="ActionButtonStyle">
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="15,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
 
     <Grid>
-        <!-- Main Content Grid -->
-        <Grid Margin="40,30,40,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <components:AppHeader Grid.Row="0"/>
+
+        <Grid Grid.Row="1" Margin="40,20,40,20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -21,7 +51,6 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header Section -->
             <Grid Grid.Row="0" Margin="0,0,0,20">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -31,13 +60,13 @@
                 <TextBlock Grid.Column="0" Text="Керування Підписками" FontSize="28" Foreground="White" VerticalAlignment="Center"/>
 
                 <Button Grid.Column="1" Content="Додати підписку" 
-             Command="{Binding AddSubscriptionCommand}"
-       Width="150" Height="40"
-     Background="#4DB6AC" 
-             Foreground="White"
-      FontSize="14"
- BorderThickness="0"
-                    Cursor="Hand">
+                        Command="{Binding AddSubscriptionCommand}"
+                        Width="150" Height="40"
+                        Background="#4DB6AC" 
+                        Foreground="White"
+                        FontSize="14"
+                        BorderThickness="0"
+                        Cursor="Hand">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>
@@ -46,7 +75,6 @@
                 </Button>
             </Grid>
 
-            <!-- Summary Cards Section -->
             <Grid Grid.Row="1" Margin="0,0,0,30">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -54,43 +82,39 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Monthly Cost Card -->
                 <Border Grid.Column="0" Style="{StaticResource DashboardCardStyle}" Height="140">
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Місячна вартість" Style="{StaticResource CardHeaderTextStyle}"/>
                         <TextBlock Text="{Binding TotalMonthlyCost, StringFormat='{}{0:N2} ₴'}" 
-           FontSize="42" 
-     Foreground="#EF5350" 
-     FontWeight="Medium" 
-     HorizontalAlignment="Center"/>
+                                   FontSize="42" 
+                                   Foreground="#EF5350" 
+                                   FontWeight="Medium" 
+                                   HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>
 
-                <!-- Yearly Cost Card -->
                 <Border Grid.Column="2" Style="{StaticResource DashboardCardStyle}" Height="140">
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Річна вартість" Style="{StaticResource CardHeaderTextStyle}"/>
                         <TextBlock Text="{Binding TotalYearlyCost, StringFormat='{}{0:N2} ₴'}" 
-FontSize="42" 
-     Foreground="#EF5350" 
-  FontWeight="Medium" 
-    HorizontalAlignment="Center"/>
+                                   FontSize="42" 
+                                   Foreground="#EF5350" 
+                                   FontWeight="Medium" 
+                                   HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Border>
             </Grid>
 
-            <!-- Subscriptions List Header -->
             <TextBlock Grid.Row="2" Text="Ваші підписки" 
-          FontSize="20" 
-         Foreground="White" 
-                 Margin="0,0,0,15"/>
+                       FontSize="20" 
+                       Foreground="White" 
+                       Margin="0,0,0,15"/>
 
-            <!-- Subscriptions Cards Grid -->
             <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Subscriptions}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid Columns="4"/>
+                            <UniformGrid Columns="4" VerticalAlignment="Top"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
 
@@ -104,32 +128,28 @@ FontSize="42"
                                         <RowDefinition Height="Auto"/>
                                     </Grid.RowDefinitions>
 
-                                    <!-- Category Tag -->
                                     <Border Grid.Row="0" 
-        Background="#4DB6AC" 
-         CornerRadius="10" 
-            Padding="10,4" 
-           HorizontalAlignment="Left"
-          Margin="0,0,0,10">
+                                            Background="#4DB6AC" 
+                                            CornerRadius="10" 
+                                            Padding="10,4" 
+                                            HorizontalAlignment="Left"
+                                            Margin="0,0,0,10">
                                         <TextBlock Text="{Binding IntervalUnit}" 
-        Foreground="White" 
-         FontSize="11" 
-             FontWeight="SemiBold"/>
+                                                   Foreground="White" 
+                                                   FontSize="11" 
+                                                   FontWeight="SemiBold"/>
                                     </Border>
 
-                                    <!-- Subscription Details -->
                                     <StackPanel Grid.Row="1" VerticalAlignment="Top">
-                                        <!-- Subscription Name -->
                                         <TextBlock Text="{Binding Name}" 
-                  FontSize="15" 
-                   FontWeight="Bold" 
-          Foreground="White" 
-      TextTrimming="CharacterEllipsis"
-   TextWrapping="NoWrap"
-  ToolTip="{Binding Name}"
-      Margin="0,0,0,8"/>
+                                                   FontSize="15" 
+                                                   FontWeight="Bold" 
+                                                   Foreground="White" 
+                                                   TextTrimming="CharacterEllipsis"
+                                                   TextWrapping="NoWrap"
+                                                   ToolTip="{Binding Name}"
+                                                   Margin="0,0,0,8"/>
 
-                                        <!-- Amount -->
                                         <TextBlock FontSize="20" FontWeight="Bold" Foreground="#EF5350" Margin="0,0,0,10">
                                             <TextBlock.Text>
                                                 <MultiBinding StringFormat="-{0:F2} {1}">
@@ -141,48 +161,40 @@ FontSize="42"
 
                                         <Separator Background="#3D4255" Height="1" Margin="0,0,0,10"/>
 
-                                        <!-- Billing Cycle -->
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
                                             <TextBlock Text="Цикл: " FontSize="12" Foreground="#78909C"/>
                                             <TextBlock FontSize="12" Foreground="#B0BEC5">
-        <Run Text="кожні "/>
-          <Run Text="{Binding IntervalValue, Mode=OneWay}"/>
-             <Run Text=" "/>
-       <Run Text="{Binding IntervalUnit, Mode=OneWay}"/>
+                                                <Run Text="кожні "/>
+                                                <Run Text="{Binding IntervalValue, Mode=OneWay}"/>
+                                                <Run Text=" "/>
+                                                <Run Text="{Binding IntervalUnit, Mode=OneWay}"/>
                                             </TextBlock>
                                         </StackPanel>
 
-                                        <!-- Next Billing Date -->
                                         <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                             <TextBlock Text="Оплата: " FontSize="12" Foreground="#78909C"/>
                                             <TextBlock Text="{Binding BillingDate, StringFormat='{}{0:dd.MM.yyyy}'}" 
-          FontSize="12" 
-     Foreground="#B0BEC5"/>
+                                                       FontSize="12" 
+                                                       Foreground="#B0BEC5"/>
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <!-- Action Buttons -->
-                                    <StackPanel Grid.Row="2" 
-            Orientation="Horizontal" 
-     HorizontalAlignment="Right" 
-         Margin="0,10,0,0">
-                                        <!-- Edit Button -->
+                                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
                                         <Button Style="{StaticResource ActionIconButtonStyle}" 
-     Command="{Binding DataContext.OpenEditSubscriptionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-        CommandParameter="{Binding Id}"
- ToolTip="Редагувати"
-                 Margin="0,0,8,0">
+                                                Command="{Binding DataContext.OpenEditSubscriptionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding Id}"
+                                                ToolTip="Редагувати"
+                                                Margin="0,0,8,0">
                                             <Path Data="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" 
-          Fill="#B0BEC5" Stretch="Uniform" Width="16" Height="16"/>
+                                                  Fill="#B0BEC5" Stretch="Uniform" Width="16" Height="16"/>
                                         </Button>
 
-                                        <!-- Delete Button -->
                                         <Button Style="{StaticResource ActionIconButtonStyle}" 
-   Command="{Binding DataContext.DeleteSubscriptionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-               CommandParameter="{Binding Id}"
-      ToolTip="Видалити">
+                                                Command="{Binding DataContext.DeleteSubscriptionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding Id}"
+                                                ToolTip="Видалити">
                                             <Path Data="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" 
-   Fill="#B0BEC5" Stretch="Uniform" Width="16" Height="16"/>
+                                                  Fill="#B0BEC5" Stretch="Uniform" Width="16" Height="16"/>
                                         </Button>
                                     </StackPanel>
                                 </Grid>
@@ -194,7 +206,7 @@ FontSize="42"
         </Grid>
 
         <!-- Add Subscription Modal -->
-        <Grid x:Name="AddSubscriptionModalOverlay" 
+        <Grid x:Name="AddSubscriptionModalOverlay" Grid.RowSpan="2"
      Visibility="{Binding IsAddSubscriptionModalVisible, Converter={StaticResource BoolToVisibilityConverter}}"
 Background="#CC000000" Panel.ZIndex="100">
             <Border Background="#2B2F3E" CornerRadius="10" Padding="30" Width="450" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -253,37 +265,33 @@ Background="#CC000000" Panel.ZIndex="100">
                         </StackPanel>
                     </Grid>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Скасувати" 
-          Command="{Binding CancelAddSubscriptionCommand}" 
-            Width="100" Height="40" 
-   Background="#546E7A" Foreground="White" 
-       BorderThickness="0" Margin="0,0,10,0" Cursor="Hand">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                        <Button Content="Зберегти" 
-                  Command="{Binding SaveAddSubscriptionCommand}" 
-       Width="100" Height="40" 
-  Background="#4DB6AC" Foreground="White" 
- BorderThickness="0" Cursor="Hand">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
-                    </StackPanel>
+                        <Button Grid.Column="0" 
+                                Content="Скасувати" 
+                                Height="35" 
+                                Command="{Binding CancelAddSubscriptionCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#78909C" Foreground="White" BorderThickness="0"/>
+
+                        <Button Grid.Column="2" 
+                                Content="Зберегти" 
+                                Height="35" 
+                                Command="{Binding SaveAddSubscriptionCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#26A69A" Foreground="White" BorderThickness="0"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>
 
         <!-- Edit Subscription Modal -->
-        <Grid x:Name="EditSubscriptionModalOverlay" 
+        <Grid x:Name="EditSubscriptionModalOverlay" Grid.RowSpan="2"
            Visibility="{Binding IsEditSubscriptionModalVisible, Converter={StaticResource BoolToVisibilityConverter}}"
  Background="#CC000000" Panel.ZIndex="101">
             <Border Background="#2B2F3E" CornerRadius="10" Padding="30" Width="450" VerticalAlignment="Center" HorizontalAlignment="Center">
@@ -337,36 +345,32 @@ Background="#CC000000" Panel.ZIndex="100">
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Одиниця" Style="{StaticResource ModalLabelStyle}"/>
                             <ComboBox ItemsSource="{Binding IntervalUnits}" 
-  SelectedItem="{Binding EditSubscriptionIntervalUnit}" 
- Height="35"/>
+                                                             SelectedItem="{Binding EditSubscriptionIntervalUnit}" 
+                                                                        Height="35"/>
                         </StackPanel>
                     </Grid>
 
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="Скасувати" 
-   Command="{Binding CancelEditSubscriptionCommand}" 
-       Width="100" Height="40" 
-          Background="#546E7A" Foreground="White" 
-      BorderThickness="0" Margin="0,0,10,0" Cursor="Hand">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                        <Button Content="Зберегти зміни" 
-      Command="{Binding SaveEditSubscriptionCommand}" 
-           Width="120" Height="40" 
-     Background="#4DB6AC" Foreground="White" 
-         BorderThickness="0" Cursor="Hand">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="5"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
-                    </StackPanel>
+                        <Button Grid.Column="0" 
+                                Content="Скасувати" 
+                                Height="35" 
+                                Command="{Binding CancelEditSubscriptionCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#78909C" Foreground="White" BorderThickness="0"/>
+
+                        <Button Grid.Column="2" 
+                                Content="Зберегти" 
+                                Height="35" 
+                                Command="{Binding SaveEditSubscriptionCommand}" 
+                                Style="{StaticResource ActionButtonStyle}" 
+                                Background="#26A69A" Foreground="White" BorderThickness="0"/>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>

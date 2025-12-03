@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging; // Для BitmapImage
 using Duende.IdentityModel.OidcClient;
 using LiveCharts;
 using LiveCharts.Wpf;
@@ -14,7 +15,7 @@ using TaskForge.Application.DTOs;
 using TaskForge.Domain.Entities;
 using TaskForge.Domain.Enums;
 using TaskForge.WPF.Commands;
-using TaskForge.WPF.Commands.FinancialSummary; 
+using TaskForge.WPF.Commands.FinancialSummary;
 using SysApp = System.Windows.Application;
 
 namespace TaskForge.WPF.ViewModels
@@ -27,6 +28,23 @@ namespace TaskForge.WPF.ViewModels
         private readonly LoginResult _currentLoginResult;
         private int _currentUserId;
         private int _editingExpenseId;
+
+        // --- Властивості для Header ---
+        private BitmapImage _userAvatar;
+        public BitmapImage UserAvatar
+        {
+            get => _userAvatar;
+            set => SetProperty(ref _userAvatar, value);
+        }
+
+        private bool _isUserInfoVisible = true;
+        public bool IsUserInfoVisible
+        {
+            get => _isUserInfoVisible;
+            set => SetProperty(ref _isUserInfoVisible, value);
+        }
+        // ------------------------------
+
         private ObservableCollection<ExpenceRecordDto> _expenses;
         private bool _isExpensesListVisible;
         private bool _isAddExpenseModalVisible;
@@ -80,7 +98,68 @@ namespace TaskForge.WPF.ViewModels
             SaveEditExpenseCommand = new AsyncRelayCommand(OnSaveEditExpenseAsync);
             CancelEditExpenseCommand = new RelayCommand(OnCancelEditExpense);
             CloseCommand = new RelayCommand(OnClose);
+
+            // --- Header Commands Init ---
+            ProfileCommand = new AsyncRelayCommand(OnProfileAsync);
+            LogoutCommand = new AsyncRelayCommand(OnLogoutAsync);
+
+            LoadUserAvatar();
         }
+
+        #region Header Logic
+
+        private void LoadUserAvatar()
+        {
+            UserAvatar = new BitmapImage(new Uri("pack://application:,,,/TaskForge.WPF;component/Resources/avatar_placeholder.png"));
+
+            if (_currentLoginResult != null && !_currentLoginResult.IsError)
+            {
+                var avatarUrl = _auth0Service.GetUserAvatarUrl(_currentLoginResult);
+                if (!string.IsNullOrEmpty(avatarUrl))
+                {
+                    try
+                    {
+                        UserAvatar = new BitmapImage(new Uri(avatarUrl));
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        private async Task OnProfileAsync()
+        {
+            var profileWindow = new ProfileWindow(_currentLoginResult, _auth0Service, _userService);
+            var currentWindow = SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this);
+            if (currentWindow != null)
+            {
+                profileWindow.Owner = currentWindow;
+            }
+            profileWindow.ShowDialog();
+            LoadUserAvatar();
+        }
+
+        private async Task OnLogoutAsync()
+        {
+            var result = MessageBox.Show(
+                "Ви впевнені, що хочете вийти з облікового запису?",
+                "Вихід",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                OnClose();
+                if (SysApp.Current.MainWindow?.DataContext is MainWindowViewModel mainVM)
+                {
+                    if (mainVM.LogoutCommand.CanExecute(null))
+                    {
+                        mainVM.LogoutCommand.Execute(null);
+                    }
+                }
+            }
+        }
+
+        #endregion
 
         #region Properties
 
@@ -259,14 +338,18 @@ namespace TaskForge.WPF.ViewModels
         #region Commands
 
         public ICommand LoadedCommand { get; }
-        public ICommand AddExpenseCommand { get; } 
-        public ICommand SaveAddExpenseCommand { get; } 
+        public ICommand AddExpenseCommand { get; }
+        public ICommand SaveAddExpenseCommand { get; }
         public ICommand CancelAddExpenseCommand { get; }
         public ICommand EditExpenseCommand { get; }
         public ICommand SaveEditExpenseCommand { get; }
         public ICommand CancelEditExpenseCommand { get; }
-        public ICommand DeleteExpenseCommand { get; } 
+        public ICommand DeleteExpenseCommand { get; }
         public ICommand CloseCommand { get; }
+
+        // --- Header Commands ---
+        public ICommand ProfileCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         #endregion
 
