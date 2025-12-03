@@ -12,14 +12,18 @@ namespace TaskForge.Application.Services
     public class ExpenseService : IExpenseService
     {
         private readonly IExpenseRepository _expenseRepository;
-
+        public event Action ExpensesChanged;
         public ExpenseService(IExpenseRepository expenseRepository)
         {
             _expenseRepository = expenseRepository;
         }
 
-        public Task<Expense> CreateExpenseAsync(decimal amount, Currency currency, ExpenceCategory category, DateTime date, string description, TransactionType type, int userId)
-            => _expenseRepository.CreateExpenseAsync(amount, currency, category, date, description, type, userId);
+        public async Task<Expense> CreateExpenseAsync(decimal amount, Currency currency, ExpenceCategory category, DateTime date, string description, TransactionType type, int userId)
+        {
+            var result = await _expenseRepository.CreateExpenseAsync(amount, currency, category, date, description, type, userId);
+            ExpensesChanged?.Invoke();
+            return result;
+        }
 
         public async Task<List<ExpenceRecordDto>> GetUserExpensesAsync(int userId)
         {
@@ -40,10 +44,23 @@ namespace TaskForge.Application.Services
         public Task<Expense?> GetExpenseByIdAsync(int expenseId)
             => _expenseRepository.GetExpenseByIdAsync(expenseId);
 
-        public Task<bool> DeleteExpenseAsync(int expenseId)
-            => _expenseRepository.DeleteExpenseAsync(expenseId);
+        public async Task<bool> DeleteExpenseAsync(int expenseId)
+        {
+            var result = await _expenseRepository.DeleteExpenseAsync(expenseId);
 
-        public Task<Expense> UpdateExpenseAsync(Expense expense)
-            => _expenseRepository.UpdateExpenseAsync(expense);
+            if (result)
+            {
+                ExpensesChanged?.Invoke();
+            }
+
+            return result;
+        }
+
+        public async Task<Expense> UpdateExpenseAsync(Expense expense)
+        {
+            var result = await _expenseRepository.UpdateExpenseAsync(expense);
+            ExpensesChanged?.Invoke();
+            return result;
+        }
     }
 }
