@@ -15,7 +15,7 @@ namespace TaskForge.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Expense> CreateExpenseAsync(decimal amount, Currency currency, ExpenceCategory category, DateTime date, string description, int userId)
+        public async Task<Expense> CreateExpenseAsync(decimal amount, Currency currency, ExpenceCategory category, DateTime date, string description, TransactionType type, int userId)
         {
             var userExists = await _context.Users.AnyAsync(u => u.Id == userId);
             if (!userExists)
@@ -30,6 +30,7 @@ namespace TaskForge.Infrastructure.Repositories
                 Category = category,
                 Date = date,
                 Description = description,
+                Type = type,
                 UserId = userId
             };
 

@@ -5,7 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 using Duende.IdentityModel.OidcClient;
+using LiveCharts;
+using LiveCharts.Wpf;
 using TaskForge.Application.Interfaces;
 using TaskForge.Application.DTOs;
 using TaskForge.Domain.Entities;
@@ -38,6 +41,16 @@ namespace TaskForge.WPF.ViewModels
         private ExpenceCategory _editExpenseCategory;
         private DateTime _editExpenseDate;
         private string _editExpenseDescription;
+        private bool _isAddIncome;
+        private bool _isAddCategoryVisible;
+        private bool _isEditIncome;
+        private bool _isEditCategoryVisible;
+        private TransactionType _editTransactionType;
+
+        private decimal _currentBalance;
+        private decimal _spentThisMonth;
+        private decimal _earnedThisMonth;
+        private SeriesCollection _pieChartSeries;
 
         public FinancialSummaryViewModel(
             IExpenseService expenseService,
@@ -50,11 +63,14 @@ namespace TaskForge.WPF.ViewModels
             _auth0Service = auth0Service ?? throw new ArgumentNullException(nameof(auth0Service));
             _currentLoginResult = currentLoginResult ?? throw new ArgumentNullException(nameof(currentLoginResult));
 
+            IsAddIncome = false;
+
             _expenses = new ObservableCollection<ExpenceRecordDto>();
+            _pieChartSeries = new SeriesCollection();
             ClearAddExpenseFields();
             ClearEditExpenseFields();
 
-            LoadedCommand = new LoadExpensesCommand(this, _expenseService, _userService, _auth0Service, _currentLoginResult);
+            LoadedCommand = new AsyncRelayCommand(OnLoadedAsync);
             SaveAddExpenseCommand = new AddExpenseCommand(this, _expenseService);
             DeleteExpenseCommand = new DeleteExpenseCommand(this, _expenseService);
 
@@ -157,6 +173,80 @@ namespace TaskForge.WPF.ViewModels
             get => _editExpenseDescription;
             set => SetProperty(ref _editExpenseDescription, value);
         }
+
+        public bool IsAddIncome
+        {
+            get => _isAddIncome;
+            set
+            {
+                if (SetProperty(ref _isAddIncome, value))
+                {
+                    IsAddCategoryVisible = !value;
+                    OnPropertyChanged(nameof(IsAddExpense));
+                }
+            }
+        }
+
+        public bool IsAddExpense
+        {
+            get => !_isAddIncome;
+            set => IsAddIncome = !value;
+        }
+
+        public bool IsAddCategoryVisible
+        {
+            get => _isAddCategoryVisible;
+            set => SetProperty(ref _isAddCategoryVisible, value);
+        }
+
+        public bool IsEditIncome
+        {
+            get => _isEditIncome;
+            set
+            {
+                if (SetProperty(ref _isEditIncome, value))
+                {
+                    IsEditCategoryVisible = !value;
+                    OnPropertyChanged(nameof(IsEditExpense));
+                }
+            }
+        }
+
+        public bool IsEditExpense
+        {
+            get => !_isEditIncome;
+            set => IsEditIncome = !value;
+        }
+
+        public bool IsEditCategoryVisible
+        {
+            get => _isEditCategoryVisible;
+            set => SetProperty(ref _isEditCategoryVisible, value);
+        }
+
+        public decimal CurrentBalance
+        {
+            get => _currentBalance;
+            set => SetProperty(ref _currentBalance, value);
+        }
+
+        public decimal SpentThisMonth
+        {
+            get => _spentThisMonth;
+            set => SetProperty(ref _spentThisMonth, value);
+        }
+
+        public decimal EarnedThisMonth
+        {
+            get => _earnedThisMonth;
+            set => SetProperty(ref _earnedThisMonth, value);
+        }
+
+        public SeriesCollection PieChartSeries
+        {
+            get => _pieChartSeries;
+            set => SetProperty(ref _pieChartSeries, value);
+        }
         #endregion
 
         #region ComboBoxInit
@@ -200,6 +290,7 @@ namespace TaskForge.WPF.ViewModels
             AddExpenseCategory = Categories.FirstOrDefault();
             AddExpenseDate = DateTime.Today;
             AddExpenseDescription = string.Empty;
+            IsAddIncome = false;
         }
 
         private async Task OnEditExpenseAsync(object? parameter)
@@ -223,6 +314,7 @@ namespace TaskForge.WPF.ViewModels
                 EditExpenseCategory = expense.Category;
                 EditExpenseDate = expense.Date;
                 EditExpenseDescription = expense.Description;
+                IsEditIncome = expense.Type == TransactionType.Income;
 
                 IsEditExpenseModalVisible = true;
             }
@@ -261,6 +353,7 @@ namespace TaskForge.WPF.ViewModels
                 expense.Category = EditExpenseCategory;
                 expense.Date = EditExpenseDate;
                 expense.Description = EditExpenseDescription?.Trim() ?? string.Empty;
+                expense.Type = IsEditIncome ? TransactionType.Income : TransactionType.Expense;
 
                 await _expenseService.UpdateExpenseAsync(expense);
 
@@ -298,6 +391,123 @@ namespace TaskForge.WPF.ViewModels
         private void OnClose()
         {
             SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this)?.Close();
+        }
+
+        private async Task OnLoadedAsync(object? parameter)
+        {
+            if (_currentLoginResult == null || _currentLoginResult.IsError)
+            {
+                return;
+            }
+
+            var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
+            var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
+
+            if (user == null) return;
+
+            CurrentUserId = user.Id;
+            var userExpenses = await _expenseService.GetUserExpensesAsync(user.Id);
+
+            Expenses.Clear();
+            foreach (var expense in userExpenses)
+            {
+                Expenses.Add(expense);
+            }
+
+            IsExpensesListVisible = Expenses.Count > 0;
+
+            RecalculateStats();
+        }
+
+        private decimal ConvertToUah(decimal amount, string currencyStr)
+        {
+            if (!Enum.TryParse(currencyStr, out Currency currency))
+            {
+                return amount; 
+            }
+
+            return currency switch
+            {
+                Currency.UAH => amount,
+                Currency.USD => amount * 42.3342m,
+                Currency.EUR => amount * 49.1839m,
+                Currency.GBP => amount * 55.9150m,
+                Currency.JPY => amount * 2.7136m,
+                Currency.CAD => amount * 30.2301m,
+                Currency.AUD => amount * 27.7458m,
+                _ => amount
+            };
+        }
+        public void RecalculateStats()
+        {
+            var now = DateTime.Now;
+            var totalIncomeUah = Expenses
+                .Where(e => e.Type == TransactionType.Income.ToString())
+                .Sum(e => ConvertToUah(e.Amount, e.Currency));
+
+            var totalExpenseUah = Expenses
+                .Where(e => e.Type == TransactionType.Expense.ToString())
+                .Sum(e => ConvertToUah(e.Amount, e.Currency));
+
+            CurrentBalance = totalIncomeUah - totalExpenseUah;
+            SpentThisMonth = Expenses
+                .Where(e => e.Type == TransactionType.Expense.ToString() && e.Date.Month == now.Month && e.Date.Year == now.Year)
+                .Sum(e => ConvertToUah(e.Amount, e.Currency));
+
+            EarnedThisMonth = Expenses
+                .Where(e => e.Type == TransactionType.Income.ToString() && e.Date.Month == now.Month && e.Date.Year == now.Year)
+                .Sum(e => ConvertToUah(e.Amount, e.Currency));
+
+            UpdatePieChart();
+        }
+
+        private void UpdatePieChart()
+        {
+            var expenseCategories = Expenses
+                .Where(e => e.Type == TransactionType.Expense.ToString())
+                .GroupBy(e => e.Category)
+                .Select(g => new
+                {
+                    Category = g.Key,
+                    AmountUah = g.Sum(e => ConvertToUah(e.Amount, e.Currency))
+                })
+                .ToList();
+
+            var newSeries = new SeriesCollection();
+
+            var colors = new List<System.Windows.Media.Brush>
+            {
+                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#7E57C2"),
+                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#42A5F5"),
+                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#26C6DA"),
+                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#AB47BC"),
+                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#5C6BC0"),
+                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#29B6F6"),
+                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#EC407A"),
+                (System.Windows.Media.SolidColorBrush)new System.Windows.Media.BrushConverter().ConvertFrom("#78909C") 
+            };
+
+            int colorIndex = 0;
+
+            foreach (var item in expenseCategories)
+            {
+                var color = colors[colorIndex % colors.Count];
+
+                newSeries.Add(new PieSeries
+                {
+                    Title = item.Category, 
+                    Values = new ChartValues<decimal> { item.AmountUah },
+                    DataLabels = true,
+                    LabelPoint = chartPoint => "",
+                    Fill = color,
+                    Stroke = System.Windows.Media.Brushes.Transparent,
+                    StrokeThickness = 0
+                });
+
+                colorIndex++;
+            }
+
+            PieChartSeries = newSeries;
         }
 
         #endregion
