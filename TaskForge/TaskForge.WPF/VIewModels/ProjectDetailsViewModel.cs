@@ -14,6 +14,7 @@ using TaskForge.Domain.Enums;
 using TaskForge.WPF.Commands;
 using SysApp = System.Windows.Application;
 using TaskForge.WPF.Commands.ProjectDetails;
+using System.Windows.Media.Imaging;
 
 namespace TaskForge.WPF.ViewModels
 {
@@ -44,6 +45,13 @@ namespace TaskForge.WPF.ViewModels
         {
             get => _projectName;
             set => SetProperty(ref _projectName, value);
+        }
+
+        private BitmapImage _userAvatar;
+        public BitmapImage UserAvatar
+        {
+            get => _userAvatar;
+            set => SetProperty(ref _userAvatar, value);
         }
 
         private string _projectDescription;
@@ -315,6 +323,8 @@ namespace TaskForge.WPF.ViewModels
         public ICommand OpenKickUserModalCommand { get; }
         public ICommand KickUserCommand { get; } 
         public ICommand CloseKickUserModalCommand { get; }
+        public ICommand ProfileCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         public ProjectDetailsViewModel(
             int projectId,
@@ -357,6 +367,7 @@ namespace TaskForge.WPF.ViewModels
             _editProjectStatus = string.Empty;
             _usersToPromote = new ObservableCollection<PromoteUserViewModel>();
 
+
             // Initialize commands
             LoadedCommand = new AsyncRelayCommand(OnLoadedAsync);
             CloseCommand = new RelayCommand(OnClose);
@@ -387,6 +398,11 @@ namespace TaskForge.WPF.ViewModels
             OpenKickUserModalCommand = new AsyncRelayCommand(OnOpenKickUserModalAsync);
             KickUserCommand = new KickUserCommand(this, _userService, _projectId);
             CloseKickUserModalCommand = new RelayCommand(OnCloseKickUserModal);
+            UserAvatar = new BitmapImage(new Uri("pack://application:,,,/TaskForge.WPF;component/Resources/avatar_placeholder.png"));
+
+            // 2. Ініціалізуємо команди
+            ProfileCommand = new AsyncRelayCommand(OnProfileAsync);
+            LogoutCommand = new AsyncRelayCommand(OnLogoutAsync);
         }
 
         private async Task OnLoadedAsync()
@@ -394,6 +410,19 @@ namespace TaskForge.WPF.ViewModels
             var auth0Id = _auth0Service.GetUserId(_currentLoginResult);
             var currentUser = await _userService.GetUserByAuth0IdAsync(auth0Id);
             _currentUserId = currentUser.Id;
+
+            var avatarUrl = _auth0Service.GetUserAvatarUrl(_currentLoginResult);
+            if (!string.IsNullOrEmpty(avatarUrl))
+            {
+                try
+                {
+                    UserAvatar = new BitmapImage(new Uri(avatarUrl));
+                }
+                catch
+                {
+                }
+            }
+
             var projectUser = await _projectService.GetProjectUserAsync(currentUser.Id, _projectId);
 
             if (projectUser?.Role == Role.Moderator)
@@ -922,6 +951,40 @@ namespace TaskForge.WPF.ViewModels
         {
             IsKickUserModalVisible = false;
         }
+
+        private async Task OnLogoutAsync()
+        {
+            var result = MessageBox.Show(
+                "Ви впевнені, що хочете вийти з облікового запису?",
+                "Вихід",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                OnClose();
+                if (SysApp.Current.MainWindow?.DataContext is MainWindowViewModel mainVM)
+                {
+                    if (mainVM.LogoutCommand.CanExecute(null))
+                    {
+                        mainVM.LogoutCommand.Execute(null);
+                    }
+                }
+            }
+        }
+
+        private async Task OnProfileAsync()
+        {
+            var profileWindow = new ProfileWindow(_currentLoginResult, _auth0Service, _userService);
+            var currentWindow = SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this);
+            if (currentWindow != null)
+            {
+                profileWindow.Owner = currentWindow;
+            }
+            profileWindow.ShowDialog();
+            await OnLoadedAsync();
+        }
+
     }
 
     public class UserSelectionViewModel
