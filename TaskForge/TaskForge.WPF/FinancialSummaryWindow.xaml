@@ -11,14 +11,82 @@
         Loaded="Window_Loaded"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
+
+    <Window.Resources>
+        <Style x:Key="HeaderButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="10,0,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Opacity" Value="0.7"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="60"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#323645" Padding="20,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Image Source="/Resources/icon_.png" Width="30" Height="30" Margin="0,0,10,0"/>
+                    <TextBlock Text="TaskForge" 
+                               FontSize="20" 
+                               FontWeight="Normal" 
+                               VerticalAlignment="Center"
+                               Foreground="White"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" 
+                            Orientation="Horizontal" 
+                            VerticalAlignment="Center">
+                    <Button Command="{Binding ProfileCommand}" 
+                            Style="{StaticResource HeaderButtonStyle}" 
+                            ToolTip="Profile">
+                        <Ellipse Width="32" Height="32" Stroke="White" StrokeThickness="1">
+                            <Ellipse.Fill>
+                                <ImageBrush ImageSource="{Binding UserAvatar}" Stretch="UniformToFill"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                    </Button>
+
+                    <Button Command="{Binding LogoutCommand}" 
+                            Style="{StaticResource HeaderButtonStyle}" 
+                            ToolTip="Logout">
+                        <Path Data="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" 
+                              Fill="White" 
+                              Width="24" 
+                              Height="24" 
+                              Stretch="Uniform"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <Grid Grid.Row="1" Margin="40,30,40,20">
             <Grid.ColumnDefinitions>
@@ -261,11 +329,12 @@
             </ListView.ItemTemplate>
         </ListView>
 
+        <!-- Add Expense Modal -->
         <Grid x:Name="AddExpenseModalOverlay" 
-          Grid.RowSpan="5"
-          Visibility="{Binding IsAddExpenseModalVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-          Background="#CC000000" Panel.ZIndex="100">
-
+              Grid.Row="0"
+              Grid.RowSpan="5"
+              Visibility="{Binding IsAddExpenseModalVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+              Background="#CC000000" Panel.ZIndex="1000">
             <Border Background="#2B2F3E" CornerRadius="10" Padding="30" Width="450" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>
@@ -349,11 +418,12 @@
             </Border>
         </Grid>
 
+        <!-- Edit Expense Modal -->
         <Grid x:Name="EditExpenseModalOverlay" 
-          Grid.RowSpan="5"
-          Visibility="{Binding IsEditExpenseModalVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-          Background="#CC000000" Panel.ZIndex="100">
-
+              Grid.Row="0"
+              Grid.RowSpan="5"
+              Visibility="{Binding IsEditExpenseModalVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+              Background="#CC000000" Panel.ZIndex="1001">
             <Border Background="#2B2F3E" CornerRadius="10" Padding="30" Width="450" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.5"/>

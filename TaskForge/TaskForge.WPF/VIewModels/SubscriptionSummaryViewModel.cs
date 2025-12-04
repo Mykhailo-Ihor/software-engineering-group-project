@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using Duende.IdentityModel.OidcClient;
 using TaskForge.Application.DTOs;
 using TaskForge.Application.Interfaces;
@@ -166,6 +167,14 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _editSubscriptionNotify, value);
         }
 
+        // Header properties
+        private BitmapImage _userAvatar;
+        public BitmapImage UserAvatar
+        {
+            get => _userAvatar;
+            set => SetProperty(ref _userAvatar, value);
+        }
+
         public IEnumerable<Currency> Currencies => Enum.GetValues(typeof(Currency)).Cast<Currency>();
         public IEnumerable<IntervalUnit> IntervalUnits => Enum.GetValues(typeof(IntervalUnit)).Cast<IntervalUnit>();
 
@@ -178,6 +187,8 @@ namespace TaskForge.WPF.ViewModels
         public ICommand SaveEditSubscriptionCommand { get; }
         public ICommand CancelEditSubscriptionCommand { get; }
         public ICommand DeleteSubscriptionCommand { get; }
+        public ICommand ProfileCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         public SubscriptionSummaryViewModel(
             ISubscriptionService subscriptionService,
@@ -192,6 +203,10 @@ namespace TaskForge.WPF.ViewModels
 
             _subscriptions = new ObservableCollection<SubscriptionRecordDto>();
 
+            // Initialize user avatar
+            _userAvatar = new BitmapImage(new Uri("pack://application:,,,/TaskForge.WPF;component/Resources/avatar_placeholder.png"));
+            LoadUserAvatar();
+
             LoadedCommand = new AsyncRelayCommand(OnLoadedAsync);
             CloseCommand = new RelayCommand(OnClose);
 
@@ -204,7 +219,53 @@ namespace TaskForge.WPF.ViewModels
             CancelEditSubscriptionCommand = new RelayCommand(OnCancelEditSubscription);
 
             DeleteSubscriptionCommand = new AsyncRelayCommand(OnDeleteSubscriptionAsync);
+
+            // Header commands
+            ProfileCommand = new AsyncRelayCommand(OnProfileAsync);
+            LogoutCommand = new AsyncRelayCommand(OnLogoutAsync);
         }
+
+        private void LoadUserAvatar()
+        {
+            if (_currentLoginResult != null && !_currentLoginResult.IsError)
+            {
+                var avatarUrl = _auth0Service.GetUserAvatarUrl(_currentLoginResult);
+                if (!string.IsNullOrEmpty(avatarUrl))
+                {
+                    UserAvatar = new BitmapImage(new Uri(avatarUrl));
+                }
+            }
+        }
+
+        #region Header Command Implementations
+
+        private async Task OnProfileAsync()
+        {
+            var profileWindow = new ProfileWindow(_currentLoginResult, _auth0Service, _userService);
+            var currentWindow = SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this);
+            if (currentWindow != null)
+            {
+                profileWindow.Owner = currentWindow;
+            }
+            profileWindow.ShowDialog();
+            LoadUserAvatar();
+        }
+
+        private async Task OnLogoutAsync()
+        {
+            try
+            {
+                await _auth0Service.LogoutAsync();
+                CloseWindow();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при виході: {ex.Message}", "Помилка виходу",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        #endregion
 
         #region Currency Conversion
 
