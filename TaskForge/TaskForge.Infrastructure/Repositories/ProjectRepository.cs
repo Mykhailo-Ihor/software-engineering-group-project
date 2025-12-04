@@ -44,6 +44,7 @@ public class ProjectRepository : IProjectRepository
     {
         return await _context.Projects
             .Include(p => p.ProjectUsers)
+            .ThenInclude(pu => pu.User)
             .Where(p => p.ProjectUsers.Any(pu => pu.UserId == userId))
             .ToListAsync();
     }

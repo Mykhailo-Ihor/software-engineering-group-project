@@ -558,28 +558,28 @@ namespace TaskForge.WPF.ViewModels
                     return;
                 }
 
-                var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
-                var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
-                if (user == null)
-                {
-                    MessageBox.Show("Не вдалося знайти ваші дані в системі.");
-                    return;
-                }
+                var projectsWindow = new ProjectsSummaryWindow(
+   _projectService,
+ _userService,
+                _auth0Service,
+        _currentLoginResult,
+  _taskService,
+         _taskFilterService
+      );
 
-                var currentUserId = user.Id;
-                var userProjects = await _projectService.GetUserProjectsAsync(currentUserId);
+   var mainWindow = SysApp.Current.Windows.OfType<MainWindow>().FirstOrDefault();
+            if (mainWindow != null)
+   {
+        projectsWindow.Owner = mainWindow;
+      }
+        projectsWindow.ShowDialog();
 
-                Projects = new ObservableCollection<ProjectDto>(userProjects);
-                IsProjectsListVisible = true;
-
-                if (!userProjects.Any())
-                {
-                    MessageBox.Show("У вас ще немає жодного проекту. Спробуйте створити новий!");
-                }
-            }
+          // Refresh projects widget after returning from the window
+     await LoadProjectsWidgetDataAsync(_currentUserId);
+          }
             catch (Exception ex)
-            {
-                MessageBox.Show($"Помилка завантаження проектів: {ex.Message}");
+         {
+            MessageBox.Show($"Помилка відкриття вікна проектів: {ex.Message}", "Помилка");
             }
         }
 
