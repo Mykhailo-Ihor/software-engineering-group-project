@@ -25,21 +25,13 @@ namespace TaskForge.WPF.ViewModels
         private int _currentUserId;
         private int _editingSubscriptionId;
 
-        // --- Властивості для Header ---
+        // Header properties
         private BitmapImage _userAvatar;
         public BitmapImage UserAvatar
         {
             get => _userAvatar;
             set => SetProperty(ref _userAvatar, value);
         }
-
-        private bool _isUserInfoVisible = true;
-        public bool IsUserInfoVisible
-        {
-            get => _isUserInfoVisible;
-            set => SetProperty(ref _isUserInfoVisible, value);
-        }
-        // ------------------------------
 
         private ObservableCollection<SubscriptionRecordDto> _subscriptions;
         public ObservableCollection<SubscriptionRecordDto> Subscriptions
@@ -183,18 +175,11 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _editSubscriptionNotify, value);
         }
 
-        // Header properties
-        private BitmapImage _userAvatar;
-        public BitmapImage UserAvatar
-        {
-            get => _userAvatar;
-            set => SetProperty(ref _userAvatar, value);
-        }
-
         public IEnumerable<Currency> Currencies => Enum.GetValues(typeof(Currency)).Cast<Currency>();
         public IEnumerable<IntervalUnit> IntervalUnits => Enum.GetValues(typeof(IntervalUnit)).Cast<IntervalUnit>();
 
-        // Commands
+        #region Commands
+
         public ICommand LoadedCommand { get; }
         public ICommand CloseCommand { get; }
         public ICommand AddSubscriptionCommand { get; }
@@ -207,9 +192,7 @@ namespace TaskForge.WPF.ViewModels
         public ICommand ProfileCommand { get; }
         public ICommand LogoutCommand { get; }
 
-        // --- Header Commands ---
-        public ICommand ProfileCommand { get; }
-        public ICommand LogoutCommand { get; }
+        #endregion
 
         public SubscriptionSummaryViewModel(
             ISubscriptionService subscriptionService,
@@ -253,14 +236,21 @@ namespace TaskForge.WPF.ViewModels
                 var avatarUrl = _auth0Service.GetUserAvatarUrl(_currentLoginResult);
                 if (!string.IsNullOrEmpty(avatarUrl))
                 {
-                    UserAvatar = new BitmapImage(new Uri(avatarUrl));
+                    try
+                    {
+                        UserAvatar = new BitmapImage(new Uri(avatarUrl));
+                    }
+                    catch
+                    {
+                        // Keep default avatar
+                    }
                 }
             }
         }
 
         #region Header Command Implementations
 
-        private async Task OnProfileAsync()
+        private async Task OnProfileAsync(object? parameter)
         {
             var profileWindow = new ProfileWindow(_currentLoginResult, _auth0Service, _userService);
             var currentWindow = SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this);
@@ -272,7 +262,7 @@ namespace TaskForge.WPF.ViewModels
             LoadUserAvatar();
         }
 
-        private async Task OnLogoutAsync()
+        private async Task OnLogoutAsync(object? parameter)
         {
             try
             {
@@ -361,48 +351,52 @@ namespace TaskForge.WPF.ViewModels
             TotalYearlyCost = Math.Round(totalYearly, 2);
         }
 
+        #endregion
+
+     #region Loading and Closing
+
         private async Task OnLoadedAsync()
         {
-            await LoadUserSubscriptionsAsync();
+        await LoadUserSubscriptionsAsync();
         }
 
-        private async Task LoadUserSubscriptionsAsync()
+      private async Task LoadUserSubscriptionsAsync()
         {
-            try
-            {
-                if (_currentLoginResult == null || _currentLoginResult.IsError)
+   try
+        {
+         if (_currentLoginResult == null || _currentLoginResult.IsError)
                 {
-                    MessageBox.Show("Помилка автентифікації.", "Помилка");
+     MessageBox.Show("Помилка автентифікації.", "Помилка");
                     CloseWindow();
-                    return;
-                }
+             return;
+    }
 
-                var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
-                var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
-                if (user == null)
-                {
-                    MessageBox.Show("Не вдалося знайти ваші дані в системі.", "Помилка");
+          var auth0UserId = _auth0Service.GetUserId(_currentLoginResult);
+       var user = await _userService.GetUserByAuth0IdAsync(auth0UserId);
+     if (user == null)
+   {
+        MessageBox.Show("Не вдалося знайти ваші дані в системі.", "Помилка");
                     CloseWindow();
-                    return;
-                }
+ return;
+         }
 
-                _currentUserId = user.Id;
+     _currentUserId = user.Id;
 
-                var userSubscriptions = await _subscriptionService.GetUserSubscriptionsAsync(user.Id);
-                Subscriptions = new ObservableCollection<SubscriptionRecordDto>(userSubscriptions);
+     var userSubscriptions = await _subscriptionService.GetUserSubscriptionsAsync(user.Id);
+            Subscriptions = new ObservableCollection<SubscriptionRecordDto>(userSubscriptions);
 
-                IsSubscriptionsListVisible = Subscriptions.Any();
-                RecalculateTotals();
+       IsSubscriptionsListVisible = Subscriptions.Any();
+     RecalculateTotals();
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Помилка завантаження підписок: {ex.Message}", "Помилка");
-            }
+catch (Exception ex)
+{
+         MessageBox.Show($"Помилка завантаження підписок: {ex.Message}", "Помилка");
+ }
         }
 
         private void CloseWindow()
-        {
-            SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this)?.Close();
+{
+   SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this)?.Close();
         }
 
         private void OnClose()
@@ -410,25 +404,25 @@ namespace TaskForge.WPF.ViewModels
             CloseWindow();
         }
 
-        #endregion
+   #endregion
 
         #region Add/Edit Logic
 
         private void OnAddSubscription()
         {
-            ClearAddSubscriptionFields();
-            IsAddSubscriptionModalVisible = true;
-        }
+     ClearAddSubscriptionFields();
+    IsAddSubscriptionModalVisible = true;
+  }
 
-        private void ClearAddSubscriptionFields()
-        {
+     private void ClearAddSubscriptionFields()
+      {
             AddSubscriptionName = string.Empty;
-            AddSubscriptionAmount = string.Empty;
-            AddSubscriptionCurrency = Currencies.FirstOrDefault();
-            AddSubscriptionBillingDate = DateTime.Today.AddDays(1);
-            AddSubscriptionIntervalValue = 1;
+AddSubscriptionAmount = string.Empty;
+      AddSubscriptionCurrency = Currencies.FirstOrDefault();
+        AddSubscriptionBillingDate = DateTime.Today.AddDays(1);
+          AddSubscriptionIntervalValue = 1;
             AddSubscriptionIntervalUnit = IntervalUnits.FirstOrDefault(u => u == IntervalUnit.Month);
-            AddSubscriptionNotify = true;
+          AddSubscriptionNotify = true;
         }
 
         private void OnCancelAddSubscription()
@@ -436,185 +430,185 @@ namespace TaskForge.WPF.ViewModels
             IsAddSubscriptionModalVisible = false;
         }
 
-        private async Task OnSaveAddSubscriptionAsync()
+    private async Task OnSaveAddSubscriptionAsync()
         {
             var name = AddSubscriptionName?.Trim();
 
             if (string.IsNullOrWhiteSpace(name))
             {
-                MessageBox.Show("Будь ласка, введіть назву підписки.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            MessageBox.Show("Будь ласка, введіть назву підписки.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+      return;
+    }
 
             if (!decimal.TryParse(AddSubscriptionAmount, out decimal amount) || amount <= 0)
-            {
-                MessageBox.Show("Будь ласка, введіть коректну суму (число більше 0).", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+       {
+     MessageBox.Show("Будь ласка, введіть коректну суму (число більше 0).", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+     return;
+    }
+
+       if (AddSubscriptionIntervalValue <= 0)
+       {
+          MessageBox.Show("Інтервал повторення має бути більшим за 0.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+     return;
             }
 
-            if (AddSubscriptionIntervalValue <= 0)
-            {
-                MessageBox.Show("Інтервал повторення має бути більшим за 0.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            try
-            {
+  try
+   {
                 await _subscriptionService.CreateSubscriptionAsync(
-                    name,
-                    amount,
-                    AddSubscriptionCurrency,
-                    AddSubscriptionBillingDate,
-                    AddSubscriptionNotify,
-                    AddSubscriptionIntervalValue,
-                    AddSubscriptionIntervalUnit,
-                    _currentUserId
-                );
+       name,
+   amount,
+     AddSubscriptionCurrency,
+   AddSubscriptionBillingDate,
+      AddSubscriptionNotify,
+     AddSubscriptionIntervalValue,
+       AddSubscriptionIntervalUnit,
+          _currentUserId
+  );
 
-                MessageBox.Show("Підписку успішно додано!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-                IsAddSubscriptionModalVisible = false;
+  MessageBox.Show("Підписку успішно додано!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+        IsAddSubscriptionModalVisible = false;
 
-                await LoadUserSubscriptionsAsync();
-            }
-            catch (Exception ex)
-            {
+      await LoadUserSubscriptionsAsync();
+      }
+         catch (Exception ex)
+      {
                 MessageBox.Show($"Помилка при додаванні підписки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+     }
         }
 
         private async Task OnOpenEditSubscriptionAsync(object? parameter)
-        {
-            if (parameter is not int subscriptionId) return;
+  {
+        if (parameter is not int subscriptionId) return;
 
-            _editingSubscriptionId = subscriptionId;
+        _editingSubscriptionId = subscriptionId;
 
-            try
-            {
-                var subscription = await _subscriptionService.GetSubscriptionByIdAsync(subscriptionId);
-                if (subscription == null)
-                {
-                    MessageBox.Show("Підписку не знайдено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
+    try
+      {
+  var subscription = await _subscriptionService.GetSubscriptionByIdAsync(subscriptionId);
+            if (subscription == null)
+    {
+    MessageBox.Show("Підписку не знайдено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+   return;
+    }
 
-                EditSubscriptionName = subscription.Name;
-                EditSubscriptionAmount = subscription.Amount.ToString("F2");
-                EditSubscriptionCurrency = subscription.Currency;
-                EditSubscriptionBillingDate = subscription.BillingDate;
-                EditSubscriptionIntervalValue = subscription.IntervalValue;
-                EditSubscriptionIntervalUnit = subscription.IntervalUnit;
-                EditSubscriptionNotify = subscription.Notify;
+      EditSubscriptionName = subscription.Name;
+          EditSubscriptionAmount = subscription.Amount.ToString("F2");
+    EditSubscriptionCurrency = subscription.Currency;
+   EditSubscriptionBillingDate = subscription.BillingDate;
+ EditSubscriptionIntervalValue = subscription.IntervalValue;
+              EditSubscriptionIntervalUnit = subscription.IntervalUnit;
+  EditSubscriptionNotify = subscription.Notify;
 
-                IsEditSubscriptionModalVisible = true;
-            }
+IsEditSubscriptionModalVisible = true;
+    }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка при завантаженні підписки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+      MessageBox.Show($"Помилка при завантаженні підписки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+   }
+    }
 
-        private void OnCancelEditSubscription()
+    private void OnCancelEditSubscription()
         {
             IsEditSubscriptionModalVisible = false;
-            ClearEditSubscriptionFields();
-        }
+      ClearEditSubscriptionFields();
+    }
 
-        private void ClearEditSubscriptionFields()
-        {
-            _editingSubscriptionId = 0;
-            EditSubscriptionName = string.Empty;
-            EditSubscriptionAmount = string.Empty;
-            EditSubscriptionCurrency = Currencies.FirstOrDefault();
-            EditSubscriptionBillingDate = DateTime.Today;
-            EditSubscriptionIntervalValue = 1;
+     private void ClearEditSubscriptionFields()
+      {
+          _editingSubscriptionId = 0;
+      EditSubscriptionName = string.Empty;
+         EditSubscriptionAmount = string.Empty;
+          EditSubscriptionCurrency = Currencies.FirstOrDefault();
+  EditSubscriptionBillingDate = DateTime.Today;
+    EditSubscriptionIntervalValue = 1;
             EditSubscriptionIntervalUnit = IntervalUnits.FirstOrDefault();
-            EditSubscriptionNotify = false;
-        }
+          EditSubscriptionNotify = false;
+   }
 
-        private async Task OnSaveEditSubscriptionAsync()
+  private async Task OnSaveEditSubscriptionAsync()
         {
-            var name = EditSubscriptionName?.Trim();
+          var name = EditSubscriptionName?.Trim();
             if (string.IsNullOrWhiteSpace(name))
-            {
-                MessageBox.Show("Будь ласка, введіть назву підписки.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+       {
+         MessageBox.Show("Будь ласка, введіть назву підписки.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+           return;
             }
 
-            if (!decimal.TryParse(EditSubscriptionAmount, out decimal amount) || amount <= 0)
-            {
+   if (!decimal.TryParse(EditSubscriptionAmount, out decimal amount) || amount <= 0)
+   {
                 MessageBox.Show("Будь ласка, введіть коректну суму (число більше 0).", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+       return;
+      }
 
             if (EditSubscriptionIntervalValue <= 0)
-            {
-                MessageBox.Show("Інтервал повторення має бути більшим за 0.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+     {
+       MessageBox.Show("Інтервал повторення має бути більшим за 0.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+           return;
+      }
 
-            try
-            {
-                var subscription = await _subscriptionService.GetSubscriptionByIdAsync(_editingSubscriptionId);
-                if (subscription == null)
-                {
-                    MessageBox.Show("Підписку не знайдено. Можливо, її було видалено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    IsEditSubscriptionModalVisible = false;
-                    return;
-                }
-                subscription.Name = name;
-                subscription.Amount = amount;
-                subscription.Currency = EditSubscriptionCurrency;
-                subscription.BillingDate = EditSubscriptionBillingDate;
-                subscription.Notify = EditSubscriptionNotify;
+          try
+     {
+      var subscription = await _subscriptionService.GetSubscriptionByIdAsync(_editingSubscriptionId);
+     if (subscription == null)
+           {
+      MessageBox.Show("Підписку не знайдено. Можливо, її було видалено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+   IsEditSubscriptionModalVisible = false;
+         return;
+           }
+    subscription.Name = name;
+    subscription.Amount = amount;
+    subscription.Currency = EditSubscriptionCurrency;
+            subscription.BillingDate = EditSubscriptionBillingDate;
+              subscription.Notify = EditSubscriptionNotify;
                 subscription.IntervalValue = EditSubscriptionIntervalValue;
                 subscription.IntervalUnit = EditSubscriptionIntervalUnit;
 
                 await _subscriptionService.UpdateSubscriptionAsync(subscription);
 
-                MessageBox.Show("Підписку успішно оновлено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-                IsEditSubscriptionModalVisible = false;
-                ClearEditSubscriptionFields();
+MessageBox.Show("Підписку успішно оновлено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+           IsEditSubscriptionModalVisible = false;
+          ClearEditSubscriptionFields();
 
-                await LoadUserSubscriptionsAsync();
+         await LoadUserSubscriptionsAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Помилка при оновленні підписки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+    MessageBox.Show($"Помилка при оновленні підписки: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+ }
         }
 
         private async Task OnDeleteSubscriptionAsync(object? parameter)
         {
-            if (parameter is not int subscriptionId) return;
+       if (parameter is not int subscriptionId) return;
 
-            var result = MessageBox.Show(
-                "Ви впевнені, що хочете видалити цю підписку?",
-                "Підтвердження видалення",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
+          var result = MessageBox.Show(
+              "Ви впевнені, що хочете видалити цю підписку?",
+   "Підтвердження видалення",
+              MessageBoxButton.YesNo,
+  MessageBoxImage.Warning);
 
-            if (result == MessageBoxResult.Yes)
+      if (result == MessageBoxResult.Yes)
+ {
+      try
+     {
+ var success = await _subscriptionService.DeleteSubscriptionAsync(subscriptionId);
+ if (success)
             {
-                try
-                {
-                    var success = await _subscriptionService.DeleteSubscriptionAsync(subscriptionId);
-                    if (success)
-                    {
-                        MessageBox.Show("Підписку успішно видалено.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
-                        await LoadUserSubscriptionsAsync();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Не вдалося знайти підписку для видалення.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Помилка під час видалення: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
+       MessageBox.Show("Підписку успішно видалено.", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+    await LoadUserSubscriptionsAsync();
+          }
+     else
+   {
+         MessageBox.Show("Не вдалося знайти підписку для видалення.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+          }
+     }
+    catch (Exception ex)
+            {
+            MessageBox.Show($"Помилка під час видалення: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+          }
+  }
 
         #endregion
-    }
+  }
 }
