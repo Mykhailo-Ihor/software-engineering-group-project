@@ -29,9 +29,10 @@ namespace TaskForge.Tests.Application.Services
             // Arrange
             var amount = 150.75m;
             var currency = Currency.UAH;
-            var category = ExpenceCategory.Restaurants;
+            var category = ExpenceCategory.Ресторани;
             var date = DateTime.UtcNow.AddDays(-1);
             var description = "Обід у кафе";
+            var type = TransactionType.Expense;
             var userId = 5;
 
             var createdExpense = new Expense
@@ -42,15 +43,16 @@ namespace TaskForge.Tests.Application.Services
                 Category = category,
                 Date = date,
                 Description = description,
+                Type = type,
                 UserId = userId
             };
 
             _mockExpenseRepository
-                .Setup(repo => repo.CreateExpenseAsync(amount, currency, category, date, description, userId))
+                .Setup(repo => repo.CreateExpenseAsync(amount, currency, category, date, description, type, userId))
                 .ReturnsAsync(createdExpense);
 
             // Act
-            var result = await _expenseService.CreateExpenseAsync(amount, currency, category, date, description, userId);
+            var result = await _expenseService.CreateExpenseAsync(amount, currency, category, date, description, type, userId);
 
             // Assert
             Assert.NotNull(result);
@@ -59,7 +61,7 @@ namespace TaskForge.Tests.Application.Services
             Assert.Equal(category, result.Category);
             Assert.Equal(description, result.Description);
             Assert.Equal(userId, result.UserId);
-            _mockExpenseRepository.Verify(repo => repo.CreateExpenseAsync(amount, currency, category, date, description, userId), Times.Once);
+            _mockExpenseRepository.Verify(repo => repo.CreateExpenseAsync(amount, currency, category, date, description, type, userId), Times.Once);
         }
 
         [Fact]
@@ -74,9 +76,10 @@ namespace TaskForge.Tests.Application.Services
                     Id = 1,
                     Amount = 100.50m,
                     Currency = Currency.USD,
-                    Category = ExpenceCategory.Travel,
+                    Category = ExpenceCategory.Подорожі,
                     Date = new DateTime(2025, 1, 15),
                     Description = "Авіаквитки",
+                    Type = TransactionType.Expense,
                     UserId = userId
                 },
                 new Expense
@@ -84,9 +87,10 @@ namespace TaskForge.Tests.Application.Services
                     Id = 2,
                     Amount = 25.00m,
                     Currency = Currency.EUR,
-                    Category = ExpenceCategory.Grocery,
+                    Category = ExpenceCategory.Продукти,
                     Date = new DateTime(2025, 1, 20),
                     Description = "Продукти",
+                    Type = TransactionType.Expense,
                     UserId = userId
                 }
             };
@@ -105,7 +109,7 @@ namespace TaskForge.Tests.Application.Services
             var first = result[0];
             Assert.Equal(1, first.Id);
             Assert.Equal(100.50m, first.Amount);
-            Assert.Equal("Travel", first.Category);
+            Assert.Equal("Подорожі", first.Category);
             Assert.Equal("USD", first.Currency);
             Assert.Equal(expenses[0].Date, first.Date);
             Assert.Equal("Авіаквитки", first.Description);
@@ -141,9 +145,10 @@ namespace TaskForge.Tests.Application.Services
                 Id = expenseId,
                 Amount = 75.00m,
                 Currency = Currency.UAH,
-                Category = ExpenceCategory.Subscriptions,
+                Category = ExpenceCategory.Підписки,
                 Date = DateTime.UtcNow,
-                Description = "Netflix"
+                Description = "Netflix",
+                Type = TransactionType.Expense
             };
 
             _mockExpenseRepository
@@ -220,9 +225,10 @@ namespace TaskForge.Tests.Application.Services
                 Id = 4,
                 Amount = 199.99m,
                 Currency = Currency.USD,
-                Category = ExpenceCategory.Books,
+                Category = ExpenceCategory.Книги,
                 Date = new DateTime(2025, 2, 10),
                 Description = "Книги по програмуванню",
+                Type = TransactionType.Expense,
                 UserId = 2
             };
 
