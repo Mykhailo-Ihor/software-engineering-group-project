@@ -239,10 +239,10 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Text="Підписки" 
-                       Foreground="White" 
-                       FontSize="18" 
-                       HorizontalAlignment="Center" 
-                       Margin="0,0,0,20"/>
+                                           Foreground="White" 
+                                           FontSize="18" 
+                                           HorizontalAlignment="Center" 
+                                           Margin="0,0,0,20"/>
 
                                 <ItemsControl Grid.Row="1" ItemsSource="{Binding RecentSubscriptions}" VerticalAlignment="Top">
                                     <ItemsControl.ItemTemplate>
@@ -256,19 +256,19 @@
                                                     </Grid.ColumnDefinitions>
 
                                                     <TextBlock Grid.Column="0" 
-                                           Text="{Binding Name}" 
-                                           Foreground="#E0E0E0" 
-                                           FontSize="14" 
-                                           VerticalAlignment="Center"
-                                           TextTrimming="CharacterEllipsis"
-                                           Margin="0,0,10,0"/>
+                                                               Text="{Binding Name}" 
+                                                               Foreground="#E0E0E0" 
+                                                               FontSize="14" 
+                                                               VerticalAlignment="Center"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Margin="0,0,10,0"/>
 
                                                     <TextBlock Grid.Column="1" 
-                                           FontSize="14" 
-                                           FontWeight="SemiBold" 
-                                           Foreground="#EF5350" 
-                                           VerticalAlignment="Center"
-                                           Margin="0,0,20,0">
+                                                               FontSize="14" 
+                                                               FontWeight="SemiBold" 
+                                                               Foreground="#EF5350" 
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,20,0">
                                                         <TextBlock.Text>
                                                             <MultiBinding StringFormat="-{0:N0} {1}">
                                                                 <Binding Path="Amount"/>
@@ -290,10 +290,10 @@
                                 </ItemsControl>
 
                                 <TextBlock Grid.Row="1" 
-                       Text="Немає активних підписок" 
-                       Foreground="#607D8B" 
-                       VerticalAlignment="Center" 
-                       HorizontalAlignment="Center">
+                                           Text="Немає активних підписок" 
+                                           Foreground="#607D8B" 
+                                           VerticalAlignment="Center" 
+                                           HorizontalAlignment="Center">
                                     <TextBlock.Style>
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -314,13 +314,13 @@
                                     </Grid.ColumnDefinitions>
 
                                     <Button Grid.Column="0" 
-                        Content="Переглянути більше" 
-                        Command="{Binding OpenSubscriptionManagerCommand}"
-                        Height="40"
-                        Background="#7994B2" 
-                        Foreground="White" 
-                        BorderThickness="0" 
-                        Cursor="Hand">
+                                            Content="Переглянути більше" 
+                                            Command="{Binding OpenSubscriptionManagerCommand}"
+                                            Height="40"
+                                            Background="#7994B2" 
+                                            Foreground="White" 
+                                            BorderThickness="0" 
+                                            Cursor="Hand">
                                         <Button.Resources>
                                             <Style TargetType="Border">
                                                 <Setter Property="CornerRadius" Value="5"/>
@@ -341,13 +341,13 @@
                                     </Button>
 
                                     <Button Grid.Column="2" 
-                        Content="Додати запис" 
-                        Command="{Binding OpenSubscriptionManagerCommand}" 
-                        Height="40"
-                        Background="#26A69A" 
-                        Foreground="White" 
-                        BorderThickness="0" 
-                        Cursor="Hand">
+                                            Content="Додати запис" 
+                                            Command="{Binding OpenSubscriptionManagerCommand}" 
+                                            Height="40"
+                                            Background="#26A69A" 
+                                            Foreground="White" 
+                                            BorderThickness="0" 
+                                            Cursor="Hand">
                                         <Button.Resources>
                                             <Style TargetType="Border">
                                                 <Setter Property="CornerRadius" Value="5"/>
@@ -391,10 +391,10 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Text="Проекти" 
-                       Foreground="White" 
-                       FontSize="18" 
-                       HorizontalAlignment="Center" 
-                       Margin="0,0,0,20"/>
+                                           Foreground="White" 
+                                           FontSize="18" 
+                                           HorizontalAlignment="Center" 
+                                           Margin="0,0,0,20"/>
 
                                 <ItemsControl Grid.Row="1" ItemsSource="{Binding RecentProjects}">
                                     <ItemsControl.ItemsPanel>
@@ -406,12 +406,12 @@
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
                                             <Button Command="{Binding DataContext.OpenProjectDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                 CommandParameter="{Binding Id}"
-                                                 Height="80"
-                                                 Margin="6"
-                                                 Background="#3C4050"
-                                                 BorderThickness="0"
-                                                 Cursor="Hand">
+                                                    CommandParameter="{Binding Id}"
+                                                    Height="80"
+                                                    Margin="6"
+                                                    Background="#3C4050"
+                                                    BorderThickness="0"
+                                                    Cursor="Hand">
                                                 <Button.Template>
                                                     <ControlTemplate TargetType="Button">
                                                         <Border Background="{TemplateBinding Background}" CornerRadius="8" Padding="15,10">

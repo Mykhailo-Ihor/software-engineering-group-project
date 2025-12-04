@@ -271,7 +271,7 @@ Fill="#9E9E9E"
          <DropShadowEffect Color="Black" BlurRadius="20" ShadowDepth="0" Opacity="0.3"/>
             </Border.Effect>
        <Border.InputBindings>
-  <MouseBinding MouseAction="LeftDoubleClick" 
+                                    <MouseBinding MouseAction="LeftClick" 
      Command="{Binding DataContext.OpenProjectDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}"
    CommandParameter="{Binding Id}"/>
        </Border.InputBindings>
