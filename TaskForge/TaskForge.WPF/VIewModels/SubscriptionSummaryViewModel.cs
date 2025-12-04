@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Imaging; // Для BitmapImage
+using System.Windows.Media.Imaging;
 using Duende.IdentityModel.OidcClient;
 using TaskForge.Application.DTOs;
 using TaskForge.Application.Interfaces;
@@ -183,6 +183,14 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _editSubscriptionNotify, value);
         }
 
+        // Header properties
+        private BitmapImage _userAvatar;
+        public BitmapImage UserAvatar
+        {
+            get => _userAvatar;
+            set => SetProperty(ref _userAvatar, value);
+        }
+
         public IEnumerable<Currency> Currencies => Enum.GetValues(typeof(Currency)).Cast<Currency>();
         public IEnumerable<IntervalUnit> IntervalUnits => Enum.GetValues(typeof(IntervalUnit)).Cast<IntervalUnit>();
 
@@ -196,6 +204,8 @@ namespace TaskForge.WPF.ViewModels
         public ICommand SaveEditSubscriptionCommand { get; }
         public ICommand CancelEditSubscriptionCommand { get; }
         public ICommand DeleteSubscriptionCommand { get; }
+        public ICommand ProfileCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         // --- Header Commands ---
         public ICommand ProfileCommand { get; }
@@ -214,6 +224,10 @@ namespace TaskForge.WPF.ViewModels
 
             _subscriptions = new ObservableCollection<SubscriptionRecordDto>();
 
+            // Initialize user avatar
+            _userAvatar = new BitmapImage(new Uri("pack://application:,,,/TaskForge.WPF;component/Resources/avatar_placeholder.png"));
+            LoadUserAvatar();
+
             LoadedCommand = new AsyncRelayCommand(OnLoadedAsync);
             CloseCommand = new RelayCommand(OnClose);
 
@@ -227,33 +241,24 @@ namespace TaskForge.WPF.ViewModels
 
             DeleteSubscriptionCommand = new AsyncRelayCommand(OnDeleteSubscriptionAsync);
 
-            // --- Header Commands Init ---
+            // Header commands
             ProfileCommand = new AsyncRelayCommand(OnProfileAsync);
             LogoutCommand = new AsyncRelayCommand(OnLogoutAsync);
-
-            // Завантаження аватара
-            LoadUserAvatar();
         }
-
-        #region Header Logic
 
         private void LoadUserAvatar()
         {
-            UserAvatar = new BitmapImage(new Uri("pack://application:,,,/TaskForge.WPF;component/Resources/avatar_placeholder.png"));
-
             if (_currentLoginResult != null && !_currentLoginResult.IsError)
             {
                 var avatarUrl = _auth0Service.GetUserAvatarUrl(_currentLoginResult);
                 if (!string.IsNullOrEmpty(avatarUrl))
                 {
-                    try
-                    {
-                        UserAvatar = new BitmapImage(new Uri(avatarUrl));
-                    }
-                    catch { }
+                    UserAvatar = new BitmapImage(new Uri(avatarUrl));
                 }
             }
         }
+
+        #region Header Command Implementations
 
         private async Task OnProfileAsync()
         {
@@ -269,28 +274,21 @@ namespace TaskForge.WPF.ViewModels
 
         private async Task OnLogoutAsync()
         {
-            var result = MessageBox.Show(
-                "Ви впевнені, що хочете вийти з облікового запису?",
-                "Вихід",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            try
             {
+                await _auth0Service.LogoutAsync();
                 CloseWindow();
-                if (SysApp.Current.MainWindow?.DataContext is MainWindowViewModel mainVM)
-                {
-                    if (mainVM.LogoutCommand.CanExecute(null))
-                    {
-                        mainVM.LogoutCommand.Execute(null);
-                    }
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Помилка при виході: {ex.Message}", "Помилка виходу",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         #endregion
 
-        #region Currency Conversion & Logic
+        #region Currency Conversion
 
         private decimal ConvertToUah(decimal amount, string currencyStr)
         {

@@ -24,7 +24,7 @@ public class ProjectService : IProjectService
     {
         var projects = await _projectRepository.GetProjectsByUserIdAsync(userId);
 
-        // Як буде час замінити на автомапер
+        // Map projects to DTOs including participants
         return projects.Select(p => new ProjectDto
         {
             Id = p.Id,
@@ -33,7 +33,18 @@ public class ProjectService : IProjectService
             Status = p.Status,
             UserRoleInProject = p.ProjectUsers
                                  .FirstOrDefault(pu => pu.UserId == userId)?
-                                 .Role.ToString() ?? "Unknown"
+                                 .Role.ToString() ?? "Unknown",
+            Participants = p.ProjectUsers
+                .Where(pu => pu.User != null)
+                .Select(pu => new UserDto
+                {
+                    Id = pu.User.Id,
+                    FirstName = pu.User.FirstName ?? string.Empty,
+                    LastName = pu.User.LastName ?? string.Empty,
+                    Email = pu.User.Email ?? string.Empty,
+                    Auth0UserId = pu.User.Auth0UserId ?? string.Empty
+                })
+                .ToList()
         });
     }
 
