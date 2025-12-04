@@ -5,6 +5,7 @@
         xmlns:converters="clr-namespace:TaskForge.WPF.Converters"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:components="clr-namespace:TaskForge.WPF.Components"
         Title="Трекер фінансів" Height="750" Width="1100"
         WindowStartupLocation="CenterScreen"
         Background="#222531"
@@ -102,7 +103,7 @@
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <Button Content="+ Додати запис" 
                         Command="{Binding AddExpenseCommand}"
-                        Width="120" Height="40"
+                        Width="140" Height="40"
                         Background="#4DB6AC" 
                         Foreground="White"
                         FontSize="14"
@@ -363,16 +364,16 @@
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Валюта" Style="{StaticResource ModalLabelStyle}"/>
                             <ComboBox ItemsSource="{Binding Currencies}" 
-                                  SelectedItem="{Binding AddExpenseCurrency}" 
-                                  Height="35"/>
+                                      SelectedItem="{Binding AddExpenseCurrency}" 
+                                      Height="35"/>
                         </StackPanel>
                     </Grid>
 
                     <StackPanel Margin="0,0,0,15" Visibility="{Binding IsAddCategoryVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="Категорія" Style="{StaticResource ModalLabelStyle}"/>
                         <ComboBox ItemsSource="{Binding Categories}" 
-                              SelectedItem="{Binding AddExpenseCategory}" 
-                              Height="35"/>
+                                  SelectedItem="{Binding AddExpenseCategory}" 
+                                  Height="35"/>
                     </StackPanel>
 
                     <StackPanel Margin="0,0,0,15">
@@ -383,18 +384,18 @@
                     <StackPanel Margin="0,0,0,25">
                         <TextBlock Text="Опис" Style="{StaticResource ModalLabelStyle}"/>
                         <TextBox Text="{Binding AddExpenseDescription, UpdateSourceTrigger=PropertyChanged}" 
-                             Height="80" 
-                             TextWrapping="Wrap" 
-                             AcceptsReturn="True" 
-                             VerticalContentAlignment="Top"/>
+                                 Height="80" 
+                                 TextWrapping="Wrap" 
+                                 AcceptsReturn="True" 
+                                 VerticalContentAlignment="Top"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                         <Button Content="Скасувати" 
-                            Command="{Binding CancelAddExpenseCommand}" 
-                            Width="190" Height="40" 
-                            Background="#7994B2" Foreground="White" 
-                            BorderThickness="0" Margin="0,0,10,0" Cursor="Hand">
+                                Command="{Binding CancelAddExpenseCommand}" 
+                                Width="190" Height="40" 
+                                Background="#7994B2" Foreground="White" 
+                                BorderThickness="0" Margin="0,0,10,0" Cursor="Hand">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="5"/>
@@ -403,10 +404,10 @@
                         </Button>
 
                         <Button Content="Додати" 
-                            Command="{Binding SaveAddExpenseCommand}" 
-                            Width="190" Height="40" 
-                            Background="#4DB6AC" Foreground="White" 
-                            BorderThickness="0" Cursor="Hand">
+                                Command="{Binding SaveAddExpenseCommand}" 
+                                Width="190" Height="40" 
+                                Background="#4DB6AC" Foreground="White" 
+                                BorderThickness="0" Cursor="Hand">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="5"/>
@@ -452,16 +453,16 @@
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="Валюта" Style="{StaticResource ModalLabelStyle}"/>
                             <ComboBox ItemsSource="{Binding Currencies}" 
-                                  SelectedItem="{Binding EditExpenseCurrency}" 
-                                  Height="35"/>
+                                      SelectedItem="{Binding EditExpenseCurrency}" 
+                                      Height="35"/>
                         </StackPanel>
                     </Grid>
 
                     <StackPanel Margin="0,0,0,15" Visibility="{Binding IsEditCategoryVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                         <TextBlock Text="Категорія" Style="{StaticResource ModalLabelStyle}"/>
                         <ComboBox ItemsSource="{Binding Categories}" 
-                              SelectedItem="{Binding EditExpenseCategory}" 
-                              Height="35"/>
+                                  SelectedItem="{Binding EditExpenseCategory}" 
+                                  Height="35"/>
                     </StackPanel>
 
                     <StackPanel Margin="0,0,0,15">
@@ -472,18 +473,18 @@
                     <StackPanel Margin="0,0,0,25">
                         <TextBlock Text="Опис" Style="{StaticResource ModalLabelStyle}"/>
                         <TextBox Text="{Binding EditExpenseDescription, UpdateSourceTrigger=PropertyChanged}" 
-                             Height="80" 
-                             TextWrapping="Wrap" 
-                             AcceptsReturn="True" 
-                             VerticalContentAlignment="Top"/>
+                                 Height="80" 
+                                 TextWrapping="Wrap" 
+                                 AcceptsReturn="True" 
+                                 VerticalContentAlignment="Top"/>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="Скасувати" 
-                            Command="{Binding CancelEditExpenseCommand}" 
-                            Width="190" Height="40" 
-                            Background="#7994B2" Foreground="White" 
-                            BorderThickness="0" Margin="0,0,10,0" Cursor="Hand">
+                                Command="{Binding CancelEditExpenseCommand}" 
+                                Width="190" Height="40" 
+                                Background="#7994B2" Foreground="White" 
+                                BorderThickness="0" Margin="0,0,10,0" Cursor="Hand">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="5"/>
@@ -492,10 +493,10 @@
                         </Button>
 
                         <Button Content="Зберегти зміни" 
-                            Command="{Binding SaveEditExpenseCommand}" 
-                            Width="190" Height="40" 
-                            Background="#4DB6AC" Foreground="White" 
-                            BorderThickness="0" Cursor="Hand">
+                                Command="{Binding SaveEditExpenseCommand}" 
+                                Width="190" Height="40" 
+                                Background="#4DB6AC" Foreground="White" 
+                                BorderThickness="0" Cursor="Hand">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="5"/>

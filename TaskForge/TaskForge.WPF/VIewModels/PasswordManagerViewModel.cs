@@ -38,7 +38,6 @@ namespace TaskForge.WPF.ViewModels
   private PasswordCategory _selectedCategory;
      private ObservableCollection<PasswordCategory> _categories;
 
-        // UI state properties
         private bool _isAddModalVisible;
         private bool _isEditModalVisible;
       private PasswordDisplayItem _selectedItem;
@@ -50,6 +49,21 @@ namespace TaskForge.WPF.ViewModels
   get => _userAvatar;
             set => SetProperty(ref _userAvatar, value);
         }
+
+
+        public ICommand LoadPasswordsCommand { get; }
+        public ICommand OpenAddCommand { get; }
+        public ICommand CancelCommand { get; }
+        public ICommand SaveAddCommand { get; }
+        public ICommand OpenEditCommand { get; }
+        public ICommand SaveEditCommand { get; }
+        public ICommand CancelEditCommand { get; }
+        public ICommand DeleteCommand { get; }
+        public ICommand CopyPasswordCommand { get; }
+        public ICommand ToggleVisibilityCommand { get; }
+
+        public ICommand ProfileCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         public PasswordManagerViewModel(
         IPasswordService passwordService,
@@ -105,8 +119,72 @@ namespace TaskForge.WPF.ViewModels
 }
         }
 
-        #region Properties
+        #region Header Logic
 
+        private void LoadUserAvatar()
+        {
+            UserAvatar = new BitmapImage(new Uri("pack://application:,,,/TaskForge.WPF;component/Resources/avatar_placeholder.png"));
+
+            if (_currentLoginResult != null && !_currentLoginResult.IsError)
+            {
+                var avatarUrl = _auth0Service.GetUserAvatarUrl(_currentLoginResult);
+                if (!string.IsNullOrEmpty(avatarUrl))
+                {
+                    try
+                    {
+                        UserAvatar = new BitmapImage(new Uri(avatarUrl));
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+        }
+
+        private async Task OnProfileAsync()
+        {
+            if (_currentLoginResult == null) return;
+
+            var profileWindow = new ProfileWindow(_currentLoginResult, _auth0Service, _userService);
+
+            var currentWindow = SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this);
+            if (currentWindow != null)
+            {
+                profileWindow.Owner = currentWindow;
+            }
+
+            profileWindow.ShowDialog();
+
+            LoadUserAvatar();
+        }
+
+        private async Task OnLogoutAsync()
+        {
+            var result = MessageBox.Show(
+                "Ви впевнені, що хочете вийти з облікового запису?",
+                "Вихід",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                var currentWindow = SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this);
+                currentWindow?.Close();
+
+                if (SysApp.Current.MainWindow?.DataContext is MainWindowViewModel mainVM)
+                {
+                    if (mainVM.LogoutCommand.CanExecute(null))
+                    {
+                        mainVM.LogoutCommand.Execute(null);
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Properties
         public ObservableCollection<PasswordDisplayItem> Passwords
         {
 get => _passwords;

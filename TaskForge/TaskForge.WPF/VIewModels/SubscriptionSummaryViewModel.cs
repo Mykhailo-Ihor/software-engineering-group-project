@@ -25,13 +25,27 @@ namespace TaskForge.WPF.ViewModels
         private int _currentUserId;
         private int _editingSubscriptionId;
 
+        // --- Властивості для Header ---
+        private BitmapImage _userAvatar;
+        public BitmapImage UserAvatar
+        {
+            get => _userAvatar;
+            set => SetProperty(ref _userAvatar, value);
+        }
+
+        private bool _isUserInfoVisible = true;
+        public bool IsUserInfoVisible
+        {
+            get => _isUserInfoVisible;
+            set => SetProperty(ref _isUserInfoVisible, value);
+        }
+        // ------------------------------
+
         private ObservableCollection<SubscriptionRecordDto> _subscriptions;
         public ObservableCollection<SubscriptionRecordDto> Subscriptions
         {
             get => _subscriptions;
-            set {
-                SetProperty(ref _subscriptions, value);
-            }
+            set => SetProperty(ref _subscriptions, value);
         }
 
         private decimal _totalMonthlyCost;
@@ -55,6 +69,7 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _isSubscriptionsListVisible, value);
         }
 
+        // Add Modal Properties
         private bool _isAddSubscriptionModalVisible;
         public bool IsAddSubscriptionModalVisible
         {
@@ -111,6 +126,7 @@ namespace TaskForge.WPF.ViewModels
             set => SetProperty(ref _addSubscriptionNotify, value);
         }
 
+        // Edit Modal Properties
         private bool _isEditSubscriptionModalVisible;
         public bool IsEditSubscriptionModalVisible
         {
@@ -178,6 +194,7 @@ namespace TaskForge.WPF.ViewModels
         public IEnumerable<Currency> Currencies => Enum.GetValues(typeof(Currency)).Cast<Currency>();
         public IEnumerable<IntervalUnit> IntervalUnits => Enum.GetValues(typeof(IntervalUnit)).Cast<IntervalUnit>();
 
+        // Commands
         public ICommand LoadedCommand { get; }
         public ICommand CloseCommand { get; }
         public ICommand AddSubscriptionCommand { get; }
@@ -187,6 +204,10 @@ namespace TaskForge.WPF.ViewModels
         public ICommand SaveEditSubscriptionCommand { get; }
         public ICommand CancelEditSubscriptionCommand { get; }
         public ICommand DeleteSubscriptionCommand { get; }
+        public ICommand ProfileCommand { get; }
+        public ICommand LogoutCommand { get; }
+
+        // --- Header Commands ---
         public ICommand ProfileCommand { get; }
         public ICommand LogoutCommand { get; }
 
@@ -289,10 +310,6 @@ namespace TaskForge.WPF.ViewModels
             };
         }
 
-        #endregion
-
-        #region Cost Calculation
-
         private void RecalculateTotals()
         {
             if (Subscriptions == null || !Subscriptions.Any())
@@ -307,44 +324,30 @@ namespace TaskForge.WPF.ViewModels
 
             foreach (var sub in Subscriptions)
             {
-                // First convert amount to UAH
                 decimal amountInUah = ConvertToUah(sub.Amount, sub.Currency);
-
-                // Get interval value (default to 1 if invalid)
                 int intervalValue = sub.IntervalValue > 0 ? sub.IntervalValue : 1;
-
-                // Normalize to monthly and yearly based on interval unit
                 decimal monthlyAmount;
                 decimal yearlyAmount;
 
                 switch (sub.IntervalUnit?.ToLower())
                 {
                     case "day":
-                        // Amount per day * 30 days / interval (e.g., every 2 days)
                         monthlyAmount = (amountInUah / intervalValue) * 30;
                         yearlyAmount = (amountInUah / intervalValue) * 365;
                         break;
-
                     case "week":
-                        // Amount per week * ~4.33 weeks per month / interval (e.g., every 2 weeks)
                         monthlyAmount = (amountInUah / intervalValue) * 4.33m;
                         yearlyAmount = (amountInUah / intervalValue) * 52;
                         break;
-
                     case "month":
-                        // Amount per month / interval (e.g., every 2 months)
                         monthlyAmount = amountInUah / intervalValue;
                         yearlyAmount = (amountInUah / intervalValue) * 12;
                         break;
-
                     case "year":
-                        // Amount per year / interval (e.g., every 2 years)
                         yearlyAmount = amountInUah / intervalValue;
                         monthlyAmount = yearlyAmount / 12;
                         break;
-
                     default:
-                        // Default to monthly if unknown
                         monthlyAmount = amountInUah;
                         yearlyAmount = amountInUah * 12;
                         break;
@@ -357,8 +360,6 @@ namespace TaskForge.WPF.ViewModels
             TotalMonthlyCost = Math.Round(totalMonthly, 2);
             TotalYearlyCost = Math.Round(totalYearly, 2);
         }
-
-        #endregion
 
         private async Task OnLoadedAsync()
         {
@@ -391,8 +392,6 @@ namespace TaskForge.WPF.ViewModels
                 Subscriptions = new ObservableCollection<SubscriptionRecordDto>(userSubscriptions);
 
                 IsSubscriptionsListVisible = Subscriptions.Any();
-
-                // Recalculate totals after loading subscriptions
                 RecalculateTotals();
             }
             catch (Exception ex)
@@ -410,6 +409,10 @@ namespace TaskForge.WPF.ViewModels
         {
             CloseWindow();
         }
+
+        #endregion
+
+        #region Add/Edit Logic
 
         private void OnAddSubscription()
         {
@@ -611,5 +614,7 @@ namespace TaskForge.WPF.ViewModels
                 }
             }
         }
+
+        #endregion
     }
 }

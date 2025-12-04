@@ -15,7 +15,7 @@ using TaskForge.Application.DTOs;
 using TaskForge.Domain.Entities;
 using TaskForge.Domain.Enums;
 using TaskForge.WPF.Commands;
-using TaskForge.WPF.Commands.FinancialSummary; 
+using TaskForge.WPF.Commands.FinancialSummary;
 using SysApp = System.Windows.Application;
 
 namespace TaskForge.WPF.ViewModels
@@ -110,6 +110,41 @@ namespace TaskForge.WPF.ViewModels
   }
    }
         }
+
+        private async Task OnProfileAsync()
+        {
+            var profileWindow = new ProfileWindow(_currentLoginResult, _auth0Service, _userService);
+            var currentWindow = SysApp.Current.Windows.OfType<Window>().FirstOrDefault(w => w.DataContext == this);
+            if (currentWindow != null)
+            {
+                profileWindow.Owner = currentWindow;
+            }
+            profileWindow.ShowDialog();
+            LoadUserAvatar();
+        }
+
+        private async Task OnLogoutAsync()
+        {
+            var result = MessageBox.Show(
+                "Г‚ГЁ ГўГЇГҐГўГ­ГҐГ­Ві, Г№Г® ГµГ®Г·ГҐГІГҐ ГўГЁГ©ГІГЁ Г§ Г®ГЎГ«ВіГЄГ®ГўГ®ГЈГ® Г§Г ГЇГЁГ±Гі?",
+                "Г‚ГЁГµВіГ¤",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                OnClose();
+                if (SysApp.Current.MainWindow?.DataContext is MainWindowViewModel mainVM)
+                {
+                    if (mainVM.LogoutCommand.CanExecute(null))
+                    {
+                        mainVM.LogoutCommand.Execute(null);
+                    }
+                }
+            }
+        }
+
+        #endregion
 
         #region Properties
 
@@ -294,10 +329,14 @@ get => !_isEditIncome;
         public ICommand EditExpenseCommand { get; }
         public ICommand SaveEditExpenseCommand { get; }
         public ICommand CancelEditExpenseCommand { get; }
-        public ICommand DeleteExpenseCommand { get; } 
+        public ICommand DeleteExpenseCommand { get; }
         public ICommand CloseCommand { get; }
         public ICommand ProfileCommand { get; }
   public ICommand LogoutCommand { get; }
+
+        // --- Header Commands ---
+        public ICommand ProfileCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         #endregion
 
@@ -324,7 +363,7 @@ profileWindow.ShowDialog();
        }
             catch (Exception ex)
    {
-MessageBox.Show($"Помилка при виході: {ex.Message}", "Помилка виходу",
+MessageBox.Show($"ГЏГ®Г¬ГЁГ«ГЄГ  ГЇГ°ГЁ ГўГЁГµГ®Г¤Ві: {ex.Message}", "ГЏГ®Г¬ГЁГ«ГЄГ  ГўГЁГµГ®Г¤Гі",
   MessageBoxButton.OK, MessageBoxImage.Error);
      }
         }
@@ -372,7 +411,7 @@ return;
         var expense = await _expenseService.GetExpenseByIdAsync(expenseId);
          if (expense == null)
             {
-   MessageBox.Show("Витрату не знайдено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+   MessageBox.Show("Г‚ГЁГІГ°Г ГІГі Г­ГҐ Г§Г­Г Г©Г¤ГҐГ­Г®.", "ГЏГ®Г¬ГЁГ«ГЄГ ", MessageBoxButton.OK, MessageBoxImage.Error);
    return;
   }
 
@@ -387,7 +426,7 @@ EditExpenseCurrency = expense.Currency;
             }
    catch (Exception ex)
  {
-        MessageBox.Show($"Помилка при завантаженні витрати: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show($"ГЏГ®Г¬ГЁГ«ГЄГ  ГЇГ°ГЁ Г§Г ГўГ Г­ГІГ Г¦ГҐГ­Г­Ві ГўГЁГІГ°Г ГІГЁ: {ex.Message}", "ГЏГ®Г¬ГЁГ«ГЄГ ", MessageBoxButton.OK, MessageBoxImage.Error);
   }
 }
 
@@ -397,20 +436,20 @@ EditExpenseCurrency = expense.Currency;
    {
         if (string.IsNullOrWhiteSpace(EditExpenseAmount))
    {
-    MessageBox.Show("Будь ласка, введіть суму витрати.", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+    MessageBox.Show("ГЃГіГ¤Гј Г«Г Г±ГЄГ , ГўГўГҐГ¤ВіГІГј Г±ГіГ¬Гі ГўГЁГІГ°Г ГІГЁ.", "Г“ГўГ ГЈГ ", MessageBoxButton.OK, MessageBoxImage.Warning);
     return;
      }
 
          if (!decimal.TryParse(EditExpenseAmount, out decimal amount) || amount <= 0)
            {
-       MessageBox.Show("Будь ласка, введіть коректну суму (число більше 0).", "Увага", MessageBoxButton.OK, MessageBoxImage.Warning);
+       MessageBox.Show("ГЃГіГ¤Гј Г«Г Г±ГЄГ , ГўГўГҐГ¤ВіГІГј ГЄГ®Г°ГҐГЄГІГ­Гі Г±ГіГ¬Гі (Г·ГЁГ±Г«Г® ГЎВіГ«ГјГёГҐ 0).", "Г“ГўГ ГЈГ ", MessageBoxButton.OK, MessageBoxImage.Warning);
         return;
             }
 
              var expense = await _expenseService.GetExpenseByIdAsync(_editingExpenseId);
    if (expense == null)
   {
-           MessageBox.Show("Витрату не знайдено.", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+           MessageBox.Show("Г‚ГЁГІГ°Г ГІГі Г­ГҐ Г§Г­Г Г©Г¤ГҐГ­Г®.", "ГЏГ®Г¬ГЁГ«ГЄГ ", MessageBoxButton.OK, MessageBoxImage.Error);
        IsEditExpenseModalVisible = false;
   return;
     }
@@ -424,7 +463,7 @@ EditExpenseCurrency = expense.Currency;
 
      await _expenseService.UpdateExpenseAsync(expense);
 
- MessageBox.Show("Витрату успішно оновлено!", "Успіх", MessageBoxButton.OK, MessageBoxImage.Information);
+ MessageBox.Show("Г‚ГЁГІГ°Г ГІГі ГіГ±ГЇВіГёГ­Г® Г®Г­Г®ГўГ«ГҐГ­Г®!", "Г“Г±ГЇВіГµ", MessageBoxButton.OK, MessageBoxImage.Information);
            IsEditExpenseModalVisible = false;
      ClearEditExpenseFields();
 
@@ -435,7 +474,7 @@ EditExpenseCurrency = expense.Currency;
             }
             catch (Exception ex)
          {
-    MessageBox.Show($"Помилка при оновленні витрати: {ex.Message}", "Помилка", MessageBoxButton.OK, MessageBoxImage.Error);
+    MessageBox.Show($"ГЏГ®Г¬ГЁГ«ГЄГ  ГЇГ°ГЁ Г®Г­Г®ГўГ«ГҐГ­Г­Ві ГўГЁГІГ°Г ГІГЁ: {ex.Message}", "ГЏГ®Г¬ГЁГ«ГЄГ ", MessageBoxButton.OK, MessageBoxImage.Error);
             }
       }
 
